@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>倒數計時器</title>
+
+    <style>
+        body {
+            font-family: '微軟正黑體', sans-serif;
+            font-weight: bold;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .countdown {
+            font-size: 16px;
+            color: #880000; /* 設定文字顏色為 #880000 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="countdown-container">
+    <h1><img src="world_boss.png" alt="BOSS圖示" width="20" height="20"> 世界BOSS倒數計時</h1>
+    <div class="countdown" id="countdown"></div>
+    <div class="countdown" id="referenceTime"></div>
+
+
+</div>
+
+<script>
+    // 設定初始目標時間，這裡以2023年12月14日14時30分00秒為例
+    let targetDate = new Date("2023-12-14T15:00:00");
+
+    // 更新倒數計時
+    function updateCountdown() {
+        const currentDate = new Date();
+        const timeDifference = targetDate - currentDate;
+
+        if (timeDifference > 0) {
+            const hours = Math.floor(timeDifference / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+            const countdownText = `${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}`;
+            document.getElementById("countdown").textContent = countdownText;
+
+            // 加入標籤顯示參考時間點及相關文字
+            const referenceTimeText = `${formatNumber(targetDate.getHours())}時${formatNumber(targetDate.getMinutes())}分 開始世界BOSS`;
+            document.getElementById("referenceTime").textContent = referenceTimeText;
+        } else {
+            document.getElementById("countdown").textContent = "已到達目標時間";
+
+            // 更新目標時間為下一個 3 小時 30 分鐘後
+            targetDate.setHours(targetDate.getHours() + 3);
+            targetDate.setMinutes(targetDate.getMinutes() + 30);
+
+            // 設定新的 setTimeout，下一次更新在目標時間到達後
+            setTimeout(updateCountdown, targetDate.getTime() - currentDate.getTime());
+        }
+    }
+
+    
+
+    // 補零函數，確保顯示兩位數
+    function formatNumber(number) {
+        return number < 10 ? `0${number}` : `${number}`;
+    }
+
+    // 每秒更新一次倒數計時
+    setInterval(updateCountdown, 1000);
+
+    // 初始執行一次
+    updateCountdown();
+
+
+</script>
+
+</body>
+</html>

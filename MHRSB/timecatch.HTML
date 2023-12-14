@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>倒數計時器</title>
+</head>
+<body>
+
+<h1>倒數計時器</h1>
+
+<div id="countdown"></div>
+
+<script>
+// 設定目標時間，這裡以2023年12月14日14時30分00秒為例
+const targetDate = new Date("2023-12-14T14:30:00");
+
+// 更新倒數計時
+function updateCountdown() {
+    const currentDate = new Date();
+    const timeDifference = targetDate - currentDate;
+
+    if (timeDifference > 0) {
+        const hours = Math.floor(timeDifference / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+        const countdownText = `${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(seconds)}`;
+        document.getElementById("countdown").textContent = countdownText;
+    } else {
+        document.getElementById("countdown").textContent = "已到達目標時間";
+    }
+}
+
+// 補零函數，確保顯示兩位數
+function formatNumber(number) {
+    return number < 10 ? `0${number}` : `${number}`;
+}
+
+// 每秒更新一次倒數計時
+setInterval(updateCountdown, 1000);
+
+// 初始執行一次，避免開啟頁面時的延遲
+updateCountdown();
+</script>
+
+</body>
+</html>

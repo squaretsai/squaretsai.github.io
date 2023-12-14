@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel篩選器</title>
+</head>
+<body>
+
+<!-- 新增輸入框、按鈕和多選按鈕 -->
+<div>
+    <label for="searchInput">搜尋：</label>
+    <input type="text" id="searchInput">
+    <button onclick="searchTable()">確認</button>
+</div>
+
+<div>
+    <!-- 新增多選按鈕 -->
+    <label>選擇篩選欄位：</label>
+    <input type="checkbox" id="filterName" onchange="toggleColumn(0)">威能名稱
+    <input type="checkbox" id="filterJob" onchange="toggleColumn(1)">職業
+    <input type="checkbox" id="filterType" onchange="toggleColumn(2)">類型
+    <input type="checkbox" id="filterPosition" onchange="toggleColumn(3)">部位
+    <input type="checkbox" id="filterEffect" onchange="toggleColumn(4)">效果
+</div>
+
+<!-- 職業按鈕 -->
+<button onclick="filterTable('死靈法師')">死靈法師</button>
+<button onclick="filterTable('野蠻人')">野蠻人</button>
+<button onclick="filterTable('巫師')">巫師</button>
+<button onclick="filterTable('德魯伊')">德魯伊</button>
+<button onclick="filterTable('遊俠')">遊俠</button>
+
+<!-- 表單 -->
+<table id="dataTable" border="1">
+    <thead>
+        <tr>
+            <th id="colName">威能名稱</th>
+            <th id="colJob">職業</th>
+            <th id="colType">類型</th>
+            <th id="colPosition">部位</th>
+            <th id="colEffect">效果</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- 插入13筆資料，這裡先假設填寫 -->
+<tr><td class="colName">刀鋒舞者的威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">迴旋刀鋒回到你身邊後環繞你一小段時間, 每次命中造成迴旋刀鋒返回傷害的 [10-15]%。刀鋒返回的距離, 刀鋒環繞的傷害最多可達返回傷害的 [20-30]%</td></tr>
+<tr><td class="colName">三詛咒之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">隕石術對健康目標造成的暴擊傷害提高 x[35-50]%。</td></tr>
+<tr><td class="colName">上古火焰之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當來自艾蘇的殘暴關鍵被動的兩種加成效果都啟動時, 你的攻擊速度提高 [40-50]%。</td></tr>
+<tr><td class="colName">大地衛士威能</td><td class="colJob">德魯伊</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">你每群控一名敵人, 你的下一個大地壁壘獲得 [15-25]% 加成數值, 最多可獲得 100.0%。</td></tr>
+<tr><td class="colName">不屈指揮官的威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">亡者大軍啟動時, 你的僕從攻擊速度提高 +[70-100]%, 並且受到的傷害降低 90%。</td></tr>
+<tr><td class="colName">不破電索之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">連鎖閃電有 [25-35]% 幾率傳遞額外 2.0 次。</td></tr>
+<tr><td class="colName">不穩灌注之威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當施放一個灌注技能, 在你周圍觸發一場灌注爆炸, 造成 {#}% 點同類型傷害並施加同類型的灌注效果。</td></tr>
+<tr><td class="colName">元素使的威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">在法力值不低於 100.0 點時施放核心或掌控技能, 暴擊幾率提高 +[20-40]%。</td></tr>
+<tr><td class="colName">分裂威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">骨矛會將位於首個被命中敵人身後的敵人陷入易傷, 持續 [1.5-2.5] 秒,來自骨矛的白骨碎片對易傷敵人造成 [50-100]% 加成傷害並且還會穿透他們。</td></tr>
+<tr><td class="colName">分裂能量之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">閃電矛在你施放時有 [11-20]% 幾率生成一個額外的閃電矛。</td></tr>
+<tr><td class="colName">引力威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">球狀閃電環繞在你周圍, 但其傷害降低 [10-20]%。</td></tr>
+<tr><td class="colName">心如止水之威能</td><td class="colJob"> 全職業</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你站立不動每持續一秒, 造成的傷害提高 x[5-10]%, 最多提高 x30.0%。</td></tr>
+<tr><td class="colName">月蝕之威能</td><td class="colJob"> 全職業</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">當你群控敵人時, 恢復 [1-4] 點你的主要資源。</td></tr>
+<tr><td class="colName">火焰行者的威能</td><td class="colJob">巫師</td><td class="colType">移動</td><td class="colPosition">護符, 靴子</td><td class="colEffect">接觸到你的火牆時給予你 +[15-25]% 移動速度加成, 持續 4.0 秒。</td></tr>
+<tr><td class="colName">充沛能量之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">爆裂電花有 [20-30]% 幾率傳遞至額外一名敵人</td></tr>
+<tr><td class="colName">充能威能</td><td class="colJob">巫師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">連鎖閃電每次從你身上彈開, 獲得 [4-6] 點法力</td></tr>
+<tr><td class="colName">加速威能</td><td class="colJob"> 全職業</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">使用核心技能造成暴擊會使你的攻擊速度提高 +[15-25]%, 持續 5.0 秒。</td></tr>
+<tr><td class="colName">布林凱索之威能</td><td class="colJob">野蠻人</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">騰空斬製造一次撼地重擊, 在 4 秒內造成 {#} 點物理傷害。站在撼地重擊範圍內時, 你獲得 [5-15]% 傷害減免。</td></tr>
+<tr><td class="colName">平衡威能</td><td class="colJob">德魯伊</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">灰熊狂怒啟動時, 你的靈力上限提高 [30-50] 點, 靈力生成速度提高 x20%。</td></tr>
+<tr><td class="colName">永生威能</td><td class="colJob">巫師</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">被群控或易傷的敵人對你造成的傷害降低 [20-25]%。</td></tr>
+<tr><td class="colName">先祖力量之威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">先祖之錘向外震盪, 對敵人造成 [32-50]%傷害。</td></tr>
+<tr><td class="colName">先祖迴響之威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">幸運一擊: 使用騰空斬、揚石飛沙或旋風斬對敵人造成傷害時, 最多有 [40-50]% 幾率召喚一位先祖施放相同的技能。該效果每 5.0 秒只能觸發一次</td></tr>
+<tr><td class="colName">共生威能</td><td class="colJob">德魯伊</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">自然之怒關鍵被動觸發一個免費技能後, 你相反類型的非終極技能的冷卻時間縮短 [4-8] 秒。</td></tr>
+<tr><td class="colName">共難之威能</td><td class="colJob"> 全職業</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">幸運一擊: 當你命中被群控的敵人時, 該群控效果有最多 [30-50]% 幾率擴散至另一個未被影響的敵人。</td></tr>
+<tr><td class="colName">冰川威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當你施放暴風雪時, 它會週期性生成會爆炸的冰刺, 造成 {#}% 點傷害。你的冰刺對被凍結的敵人造成 x25% 增傷傷害。</td></tr>
+<tr><td class="colName">冰凍回憶之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">雪崩關鍵被動現在作用於 1.0 次額外施法。</td></tr>
+<tr><td class="colName">冰雪帷幕威能</td><td class="colJob">巫師</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">施放寒冰甲使你變得不可阻擋, 持續 [2-3] 秒。</td></tr>
+<tr><td class="colName">冰霜尾行之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當寒冰甲啟動時, 你在身後留下會爆炸的冰刺, 造成 {#}% 點傷害。你的冰刺凍傷敵人 10%。</td></tr>
+<tr><td class="colName">冰霜使者的威能</td><td class="colJob">死靈法師</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">每隔 10.0 秒, 你的冰霜骷髏法師施放一陣暴風雪, 在 6.0 秒內造成 {#} 點冰霜傷害並持續凍傷敵人 8%</td></tr>
+<tr><td class="colName">冰霜苔原之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當深度凍結啟動時, 在範圍內形成會爆炸的冰刺, 造成 {#} 點冰霜傷害。你的冰刺 爆炸範圍擴大 50%。</td></tr>
+<tr><td class="colName">冰霜閃擊威能</td><td class="colJob">巫師</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">冰霜新星獲得額外一層使用次數, 但每有一層, 冷卻時間延長 [30-40]%。</td></tr>
+<tr><td class="colName">冰霜環軌之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">冰霜球到達目的地後會待在原地, 並爆炸額外 2.0 次, 造成 [20-30]% 傷害。</td></tr>
+<tr><td class="colName">回火打擊之威能</td><td class="colJob">野蠻人</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">切換武器 6.0 次後, 獲得 {#} 點強固。</td></tr>
+<tr><td class="colName">回彈威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">快速射擊有 [15-30]% 幾率回彈至另一個目標。</td></tr>
+<tr><td class="colName">地震威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">大地踐踏製造一次撼地重擊, 在 4 秒內對敵人造成 {#} 點物理傷害。站在撼地重擊範圍內時, 你造成 x[5-15]% 增傷傷害。</td></tr>
+<tr><td class="colName">好運之威能</td><td class="colJob">巫師</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">當你有啟動的屏障時, 你的幸運一擊幾率提高 +[10-20]%。</td></tr>
+<tr><td class="colName">安魂威能</td><td class="colJob">死靈法師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">你每有一個啟動的僕從, 獲得 [3-5] 點最大精魂值。</td></tr>
+<tr><td class="colName">死亡之願威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">狂暴狀態下獲得 {#} 點荊棘。</td></tr>
+<tr><td class="colName">自然平衡之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">施放風暴技能會使大地技能造成的暴擊傷害提高 x[30-45]%, 持續 4.0 秒。施放大地技能會使風暴技能暴擊幾率提高 +[8-12]%, 持續 4.0 秒。</td></tr>
+<tr><td class="colName">自然野性之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">狼人技能被視為風暴技能, 並且熊人技能被視為帶有自然之怒關鍵被動效果的大地技能。</td></tr>
+<tr><td class="colName">血脈掌握之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當你施放亡骸卷鬚時, 你獲得 +[10-20]% 暴擊幾率加成, 持續 6.0 秒。你對被亡骸卷鬚傷害的敵人造成 x[30-60]% 額外暴擊傷害。</td></tr>
+<tr><td class="colName">劫掠者的威能</td><td class="colJob">遊俠</td><td class="colType">移動</td><td class="colPosition">護符, 靴子</td><td class="colEffect">暗影步有額外一次使用次數。用暗影步消滅一名敵人會返還一次使用次數, 並且暗影步的傷害提高 x[1-6]%, 持續 2.0 秒, 最多提高 x[5-30]%。</td></tr>
+<tr><td class="colName">吞噬火焰之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當敵人受到的持續性傷害超過他們的總生命值時, 你對他們造成的燃燒傷害提高 x[30-40]%。</td></tr>
+<tr><td class="colName">吸納威能</td><td class="colJob"> 全職業</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">你對受持續性傷害效果影響的敵人有 +8.0% 躲閃幾率加成。當你躲閃時, 你獲得 [5-10] 你的主要資源</td></tr>
+<tr><td class="colName">折磨之威能</td><td class="colJob">死靈法師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">使用白骨技能造成暴擊使你的精魂回復速度提高 x[20-30]%, 持續 4 秒。</td></tr>
+<tr><td class="colName">投機者的威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">打破潛行時, 你會在自身周圍扔下一串會爆炸的昏迷手雷, 對敵人造成總計 {#} 點物理傷害, 並使其昏迷 0.5 秒。</td></tr>
+<tr><td class="colName">抓力旋風之威能</td><td class="colJob">野蠻人</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">旋風斬週期性將敵人拉到你的身邊。</td></tr>
+<tr><td class="colName">束縛灰燼之威能</td><td class="colJob">巫師</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">火盾可以讓你不受阻礙地穿過敵人。火盾啟動時穿行其中的敵人可以將其定身 [2-3] 秒。</td></tr>
+<tr><td class="colName">沉著微風之威能</td><td class="colJob">德魯伊</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">幸運一擊: 風剪最多有 [5-10]% 幾率完全恢復你的靈力。</td></tr>
+<tr><td class="colName">狂亂亡者之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你的召喚 僕從每對敵人造成一次傷害, 它們獲得 +[10-14]% 攻擊速度加成, 持續 3.0 秒, 最多提高 +[30-42]%。</td></tr>
+<tr><td class="colName">狂暴怒氣之威能</td><td class="colJob">野蠻人</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">{u}狂暴狀態下每秒獲得 [3-6]{/u} 點怒氣。</td></tr>
+<tr><td class="colName">狂暴熊人之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">灰熊狂怒的持續時間延長 [1-5] 秒。此外, 在灰熊狂怒啟動時造成暴擊會使你的暴擊傷害在持續時間內提高 x10%。</td></tr>
+<tr><td class="colName">狂暴撕裂之威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你在狂暴狀態下造成直接傷害時, 會在 5.0 秒內對目標造成已施加的基礎傷害的 [20-30]% (作為額外流血傷害)。</td></tr>
+<tr><td class="colName">迅血威能</td><td class="colJob">死靈法師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">生命球使你的終極技能的冷卻時間縮短 [0.5-1] 秒。</td></tr>
+<tr><td class="colName">防腐師之威能</td><td class="colJob">死靈法師</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">消耗一具亡骸有 [20-30]% 幾率生成一顆生命球。</td></tr>
+<tr><td class="colName">刺骨寒冰之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當你凍結敵人時有 [25-35]% 幾率使其變得易傷, 持續 3.0 秒。</td></tr>
+<tr><td class="colName">夜嚎者的威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">血性狂吼使暴擊幾率提高 +[5-10]%。此外, 血性狂吼也會影響附近的同伴和玩家, 持續 3.0 秒。</td></tr>
+<tr><td class="colName">奇才的威能</td><td class="colJob">巫師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">使用有冷卻時間的技能可以恢復 [15-25] 點法力。</td></tr>
+<tr><td class="colName">奇襲之威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">使用閃避或暗影步時, 你會扔下一串會爆炸的昏迷手雷, 對敵人造成總計 {#} 點物理傷害, 並使其昏迷 0.5 秒。</td></tr>
+<tr><td class="colName">幸運使者威能</td><td class="colJob">野蠻人</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">人形兵器的所有傷害加成啟動時, 幸運一擊的幾率提高 x[12-20]%。</td></tr>
+<tr><td class="colName">拉斯瑪的欽定者</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">每當你的鮮血技能造成壓制時, 你獲得 +[20-50]% 攻擊速度加成, 持續 攻擊速度加成, 持續 {c_number}4.0秒。</td></tr>
+<tr><td class="colName">易爆暗影之威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當暗影帷幕的暗影被移除時, 在你周圍觸發一場爆炸, 造成 {#} 點暗影傷害</td></tr>
+<tr><td class="colName">武器大師的威能</td><td class="colJob">野蠻人</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">你的武器精通技能獲得額外一次使用次數。幸運一擊: 使用武器精通技能對一名敵人造成傷害最多有 [32-50]% 幾率擊暈目標, 持續 2 秒。</td></tr>
+<tr><td class="colName">法師領主的威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">每有一名近距敵人, 維爾的禦雷術關鍵被動的傷害減免提高 [60-90]%, 最多可達 undefined。</td></tr>
+<tr><td class="colName">牧羊人的威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">每有一個啟動的同伴, 核心技能造成的傷害提高 x[6-8]%。</td></tr>
+<tr><td class="colName">采血者的威能</td><td class="colJob">死靈法師</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">你的骷髏戰士數量上限增加 2 個。</td></tr>
+<tr><td class="colName">保護者之威能</td><td class="colJob"> 全職業</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">對精英敵人造成傷害給予你一道屏障, 吸收最多 {#}% 點傷害, 持續 10.0 秒。該效果每 30 秒只能觸發一次。</td></tr>
+<tr><td class="colName">保護威能</td><td class="colJob"> 全職業</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">在非健康狀態下被命中, 會在你周圍召喚一個魔法泡, 持續 [3-5] 秒。站在該魔法泡中, 玩家免疫所有攻擊。每 90.0 秒只能生效一次。</td></tr>
+<tr><td class="colName">勇力之威能</td><td class="colJob"> 全職業</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">基礎技能給予 20.0% 傷害減免, 持續 [2-6] 秒。</td></tr>
+<tr><td class="colName">屍氣威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">消耗一具亡骸會使你下一個核心技能的傷害提高 x[5-10]%, 最多 x[25-50]%。</td></tr>
+<tr><td class="colName">幽靈行者威能</td><td class="colJob"> 全職業</td><td class="colType">移動</td><td class="colPosition">護符, 靴子</td><td class="colEffect">當處於不可阻擋以及效果結束後的 4.0 秒內, 你獲得 +[10-25]% 移動速度加成, 並且可以在敵人之間自由穿行。</td></tr>
+<tr><td class="colName">怒火回蕩之威能</td><td class="colJob">野蠻人</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">你的怒吼技能啟動時每秒生成 [2-4] 點怒氣。</td></tr>
+<tr><td class="colName">急促威能</td><td class="colJob"> 全職業</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">基礎技能獲得 +[15-30]% 攻擊速度加成。</td></tr>
+<tr><td class="colName">急速凍結威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">你每閃避 一次被凍傷或凍結的敵人對你發動的攻擊, 即可獲得一層可吸收 {#}% 點傷害的屏障, 持續 5.0 秒, 最多可吸收 {#}% 點傷害。</td></tr>
+<tr><td class="colName">急速煙塵之威能</td><td class="colJob">遊俠</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">你在疾行斬結束後自動丟出一枚煙霧手雷。用該方式每眩暈一名敵人, 疾行斬的冷卻時間就會縮短 [0.25-0.35] 秒, 最多縮短 [0.75-1.05] 秒。</td></tr>
+<tr><td class="colName">持久踐踏之威能</td><td class="colJob">野蠻人</td><td class="colType">移動</td><td class="colPosition">護符, 靴子</td><td class="colEffect">使用踢擊或大地踐踏對一名敵人造成傷害會重置騰空斬的冷卻時間。</td></tr>
+<tr><td class="colName">拷打威能</td><td class="colJob">死靈法師</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">受你的鐵處女影響的敵人在其造成直接傷害時, 有 [15-25]% 幾率陷入昏迷, 持續 1.0 秒。</td></tr>
+<tr><td class="colName">星光威能</td><td class="colJob"> 全職業</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">你每治療你 25.0% 點生命, 獲得 [10-20] 點你的主要資源。</td></tr>
+<tr><td class="colName">星辰碎裂之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">隕石術周圍落下流星, 撞擊時造成 {#} 點火焰傷害。你的流星還會燃燒其命中的敵人, 在 6.0 秒內造成 {#}% 點燃燒傷害。</td></tr>
+<tr><td class="colName">枯萎威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">暗影凋零關鍵被動效果對敵人造成 10.0 次傷害後, 你造成的傷害提高 x[50-120]%, 持續 6.0 秒。</td></tr>
+<tr><td class="colName">毒冰之威能</td><td class="colJob">遊俠</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">被凍傷的敵人由於毒素灌注中毒時, 會繼續每秒被凍傷 20%。你對被凍結的敵人造成的毒素傷害提高 x[10-25]%。</td></tr>
+<tr><td class="colName">毒素爆發之威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">幸運一擊: 毒素灌注暴擊有最多 10.0% 幾率生成毒池, 在 3.0 秒造成 {#} 點毒素傷害。當處於毒池中時, 你的毒素灌注技能沒有冷卻時間和使用次數限制。</td></tr>
+<tr><td class="colName">流沙之威能</td><td class="colJob">德魯伊</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">大地技能造成的傷害使敵人減速 [25-50]%, 持續 5.0 秒。</td></tr>
+<tr><td class="colName">致命黃昏之威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">閃避穿過受暗影灌注影響的敵人時, 獲得潛行, 持續 4.0 秒。發動攻擊打破潛行狀態會使你獲得 [1-5]% 的消滅提供生命上限加成, 持續 4.0 秒。</td></tr>
+<tr><td class="colName">虹吸命精之威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">幸運一擊: 使用核心技能對易傷敵人造成傷害有最多 [10-20]% 幾率掉落一瓶治療藥水。</td></tr>
+<tr><td class="colName">風笞之威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">在 1.5 秒內施放兩次雙重橫掃即可生成一個塵魔, 對目標身後的敵人造成 {#}% 點傷害。</td></tr>
+<tr><td class="colName">風暴爪之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">利爪撕扯暴擊時會對目標和周圍敵人造成 [20-30]% 已造成傷害的閃電傷害。</td></tr>
+<tr><td class="colName">風暴湧浪威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當你有屏障時，你對易傷敵人造成的傷害提高x[11-20]%。</td></tr>
+<tr><td class="colName">凋零之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">暗影凋零關鍵被動每對敵人造成一次傷害, 下一個暗影凋零的傷害在 10.0 秒提高 x[20-40]%, 最多提高 5.0 次。</td></tr>
+<tr><td class="colName">剝削者的威能</td><td class="colJob"> 全職業</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">你的群控持續時間延長 +20.0%。當敵人處於不可阻擋時, 你對他們造成的傷害提高 x[20-50]%。</td></tr>
+<tr><td class="colName">恐怖旋風之威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">旋風斬每引導一秒, 其暴擊幾率就會提高 +[5-10]%, 最多提高 +[20-40]%。</td></tr>
+<tr><td class="colName">恐怖熊人之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">粉碎現在也被視作大地技能。施放粉碎後, 地質尖刺會繼續在 2.0 秒內造成 {#}% 點傷害。</td></tr>
+<tr><td class="colName">恐狼的威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">熊狂怒將你變身成狼人。在變狼期間, 獲得 +[15-25]% 移動速度而非傷害減免, 及 [30-50]% 靈力消耗縮減。此外, 消滅敵人治療你 10.0% 生命上限。</td></tr>
+<tr><td class="colName">拳師的威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">敵人在受到踢擊或衝鋒傷害後, 若在接下來的 2.0 秒內並死亡將會發生爆炸, 對周圍敵人造成 {#}% 點傷害。</td></tr>
+<tr><td class="colName">效法灌注之威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你的暗影分身也會模仿施加到你技能上的灌注效果。施放一個灌注技能會使你啟動的暗影分身造成的傷害提高 x[8-16]%, 持續 5.0 秒。</td></tr>
+<tr><td class="colName">效率之威能</td><td class="colJob">巫師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">施放基礎技能使你下一個核心技能的法力消耗減少 [10-20]%。</td></tr>
+<tr><td class="colName">消解威能</td><td class="colJob">野蠻人</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">幸運一擊: 當痛割對至少一名流血敵人造成直接傷害時, 你有最高 [30-50]% 幾率獲得 20.0 點怒氣。</td></tr>
+<tr><td class="colName">浸血威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">血霧留下一道痕跡, 持續 4.0 秒, 並且每秒對站立其中的敵人造成 {#} 點暗影傷害。你的移動速度在血霧啟動期間不再減緩。</td></tr>
+<tr><td class="colName">浴血威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">血湧的新星會在短暫延遲後再次爆發, 造成的傷害減少 x[60-70]%。</td></tr>
+<tr><td class="colName">特技射擊威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">穿透射擊對一名敵人造成傷害時會向兩側分裂出 2 支額外的箭矢。分裂出來的箭矢造成穿透射擊基礎傷害的 [10-25]%, 並且不會分裂。</td></tr>
+<tr><td class="colName">狼首之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你的狼同伴現在變成狼人同伴。狼人同伴造成的傷害提高 +[75-100]%, 並且會傳播狂犬撕咬。</td></tr>
+<tr><td class="colName">破地者的威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">切換武器 10.0 次後, 你的下一次攻擊將會壓制並使壓制的傷害提高 x[30-50]%。</td></tr>
+<tr><td class="colName">荒原怒火之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你的同伴從獸性狂暴關鍵被動中獲得加成。</td></tr>
+<tr><td class="colName">迷蹤野獸之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">疾奔時, 利爪撕扯會尋找附近中毒的敵人, 立即對其造成毒素傷害的 [60-90]%。</td></tr>
+<tr><td class="colName">逃脫大師的威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">受到周圍敵人的傷害後, 你丟出一枚煙霧手雷, 在 10.0 秒內躲閃接下來的 [2-7] 次攻擊。該效果每 100.0 秒只能生效一次。</td></tr>
+<tr><td class="colName">針刺暴突威能</td><td class="colJob"> 全職業</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">造成的荊棘傷害有 [20-40]% 幾率對你周圍所有敵人造成傷害。</td></tr>
+<tr><td class="colName">閃電舞者的威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">雷暴暴擊時會生成 3.0 個飄舞霹靂追尋範圍內的敵人, 造成 {#} 點閃電傷害。</td></tr>
+<tr><td class="colName">骨質強風威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">白骨風暴消耗最多 8 具亡骸，其持續時間延長最多 [4-8] 秒。</td></tr>
+<tr><td class="colName">偏轉屏障之威能</td><td class="colJob"> 全職業</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">當你有屏障啟動時, 有 [7-13]% 幾率無視來自遠距敵人的直接傷害。</td></tr>
+<tr><td class="colName">堅定之威能</td><td class="colJob">巫師</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">承受直接傷害有 [2-6]% 幾率重置你的一個防禦技能的冷卻時間。</td></tr>
+<tr><td class="colName">堅定狂戰士的威能</td><td class="colJob">野蠻人</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">幸運一擊: 當你在狂暴狀態下造成直接傷害時, 最多有 35% 幾率獲得 {#} 點強固。</td></tr>
+<tr><td class="colName">專注之威能</td><td class="colJob">巫師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">你在前 3.0 秒內未受到傷害, 你的法力回復速度提高 x[10-20]%。</td></tr>
+<tr><td class="colName">帶電威能</td><td class="colJob">巫師</td><td class="colType">移動</td><td class="colPosition">護符, 靴子</td><td class="colEffect">收集爆裂電花也會使你的移動速度提高 +[10-15]%, 持續 4.0 秒。</td></tr>
+<tr><td class="colName">強力風暴的威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">大地之力關鍵被動也會作用於你的風暴技能。</td></tr>
+<tr><td class="colName">強健威能</td><td class="colJob">德魯伊</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">變形成狼人時, 獲得 [10-15]% 傷害減免。</td></tr>
+<tr><td class="colName">控制之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你對被定身、昏迷或被凍結敵人造成的傷害提高 x[30-40]%。</td></tr>
+<tr><td class="colName">控屍之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你的骷髏在存活期間造成的傷害提高, 10.0 秒後最高可達 x[20-30]%。</td></tr>
+<tr><td class="colName">旋風斥力之威能</td><td class="colJob">德魯伊</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">旋風甲也會提供物理傷害減免。此外, 你也會對所有附近盟友施加旋風甲。</td></tr>
+<tr><td class="colName">移風者的威能</td><td class="colJob">德魯伊</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">當颶風啟動時, 你的變形技能級別 +2。</td></tr>
+<tr><td class="colName">符文匠師的導體威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">風暴技能造成暴擊會使你周圍充滿電荷, 持續 [1-2] 秒週期引發閃電箭對範圍內的敵人造成 {#} 點閃電傷害。額外的暴擊可以延長該效果的持續時間</td></tr>
+<tr><td class="colName">終極暗影之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">治療效果超過生命上限 100.0% 時, 每點百分比使你下一次壓制攻擊造成的壓制傷害提高 +0.5%, 最多提高 [20-60]%。</td></tr>
+<tr><td class="colName">覓血者的威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">每有一個被穿刺的敵人, 血矛對其首要目標造成的傷害提高 x[15-25]%。</td></tr>
+<tr><td class="colName">貪婪狼性之威能</td><td class="colJob">德魯伊</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">使用利爪撕扯消滅敵人後, 你的下一個狼人技能產生 x[20-30]% 額外靈力, 造成的傷害提高 x[20-30]%。</td></tr>
+<tr><td class="colName">貧血之威能</td><td class="colJob">野蠻人</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">幸運一擊: 對流血敵人造成直接傷害最高有 [20-30]% 幾率擊暈他們 2.0 秒。</td></tr>
+<tr><td class="colName">逐風者的威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">龍捲風會追逐最多 [1-3] 個目標。</td></tr>
+<tr><td class="colName">透體寒冰之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">寒冰碎片穿透 [4-3] 次, 每命中一個後續的敵人, 其造成的傷害降低 [20-25]%。</td></tr>
+<tr><td class="colName">雪衛的威能</td><td class="colJob">巫師</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">在你自己的暴風雪中時, 你受到的傷害降低 [10-15]%。</td></tr>
+<tr><td class="colName">麻木慍怒之威能</td><td class="colJob">野蠻人</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">怒氣達到最大時, 每生成一點怒氣, 給予 {#} 點強固。</td></tr>
+<tr><td class="colName">淩空裂擊之威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">亂射的箭矢在回彈時有 [15-25]% 幾率分裂成 2 枚箭矢。</td></tr>
+<tr><td class="colName">喚能威能</td><td class="colJob">遊俠</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">使用基礎技能對精英敵人造成傷害, 生成 [3-7] 點能量。</td></tr>
+<tr><td class="colName">寒冰煉金師的威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">幸運一擊: 使用暗影灌注技能對被凍傷或被凍結敵人造成傷害最多有 75.0% 幾率釋放一次爆炸, 對目標和周圍敵人造成 {#} 點冰霜傷害, 使其凍傷 15.0%。</td></tr>
+<tr><td class="colName">復仇威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">幸運一擊: 使敵人陷入易傷狀態時最多有 [30-50]% 幾率使暴擊幾率提高 +3.0%, 持續 3.0 秒, 最多提高 +9%。</td></tr>
+<tr><td class="colName">惡饞威能</td><td class="colJob">遊俠</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">消滅一名處於易傷狀態的敵人可以使你的能量回復速度提高 x[50-70]%, 持續 4.0 秒。</td></tr>
+<tr><td class="colName">殘傷威能</td><td class="colJob">德魯伊</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">當你在熊人狀態下被定身時, 你有 [20-30]% 幾率獲得 1.0 點靈力。</td></tr>
+<tr><td class="colName">殘酷供養之威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">迫害關鍵被動產生的爆炸每傷害到一名敵人, 恢復你 {#} 點生命, 最多恢復 {#} 點生命。</td></tr>
+<tr><td class="colName">湧能鮮血之威能</td><td class="colJob">死靈法師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">生命值全滿時, 生命球給予 [10-20] 點精魂。</td></tr>
+<tr><td class="colName">焚化之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">在引導焚燒期間, 你的燃燒傷害提高 x[20-30]%。</td></tr>
+<tr><td class="colName">無畏酋長的威能</td><td class="colJob">野蠻人</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">當你施放怒吼技能時, 附近每有一名敵人, 該技能的冷卻時間就會縮短 [2.7-5.4] 秒, 最多縮短 12.0 秒。</td></tr>
+<tr><td class="colName">無情武師之威能</td><td class="colJob">野蠻人</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">從人形兵器關鍵被動中獲得的所有傷害加成啟動時, 怒氣生成速度提高 x[20-36]%。</td></tr>
+<tr><td class="colName">無情怒火之威能</td><td class="colJob">野蠻人</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">使用核心技能消滅一名敵人可以返還其 [10-20]% 的基礎怒氣消耗。每次施放技能只能觸發一次。</td></tr>
+<tr><td class="colName">無盡怒火之威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你在滿怒時每產生一點怒氣, 你的下一個核心技能造成 x[1-2]% 增傷, 最高可達 x[15-30]%。</td></tr>
+<tr><td class="colName">硬化白骨之威能</td><td class="colJob">死靈法師</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">當你有 7.0 個或以上的僕從, 你僕從的傷害減免提高 [15-20]%。</td></tr>
+<tr><td class="colName">絞殺者的威能</td><td class="colJob">遊俠</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">幸運一擊: 對處於易傷狀態的敵人造成直接傷害最多有 [25-45]% 幾率眩暈他們 2.0 秒。</td></tr>
+<tr><td class="colName">虛空之威能</td><td class="colJob">死靈法師</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">枯萎的褻瀆區域生成時會將附近的敵人拉進去。</td></tr>
+<tr><td class="colName">詛咒加碼之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">根據移動的距離, 骨靈造成最多 x[15-25]% 增傷傷害。</td></tr>
+<tr><td class="colName">超強電流之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">不穩電流有 [10-20]% 幾率施放一個額外的電沖技能。</td></tr>
+<tr><td class="colName">超載威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">幸運一擊: 造成閃電傷害時, 最多有 [10-20]% 幾率使目標超載, 持續 3.0 秒。你對該目標造成的傷害都會使其發出脈衝, 對周圍敵人造成額外傷害。</td></tr>
+<tr><td class="colName">逸脫威能</td><td class="colJob"> 全職業</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">在被群控狀態下變得受傷會給予你不可阻擋, 持續 4.0 秒。該效果有 [20-40] 秒冷卻時間。</td></tr>
+<tr><td class="colName">暗影切割威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">施放疾行斬時, 在你的位置生成一個也會施放疾行斬的暗影分身, 造成基礎傷害的 [25-35]%。</td></tr>
+<tr><td class="colName">暗影覆身威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">站立不動時每隔 3.0 秒獲得一層免費的暗影帷幕暗影。每層暗影帷幕暗影給予你 [2-4]% 傷害減免。</td></tr>
+<tr><td class="colName">暗嚎之威能</td><td class="colJob">德魯伊</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">挫志咆哮現在是狼人技能。此外, 挫志咆哮會定身中毒的敵人, 持續 [2-4] 秒。</td></tr>
+<tr><td class="colName">極度奸詐之威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">使用敏捷技能對眩暈敵人造成傷害可獲得潛行, 持續 4.0 秒。發動攻擊打破潛行效果給予你 [15-45]% 控制受限類效果持續時間縮減加成, 持續 4.0 秒。</td></tr>
+<tr><td class="colName">毀天滅地之威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">煉獄烈焰持續期間會降下一陣流星, 落地時造成 {#} 點火焰傷害。你的流星會定身敵人 3 秒。</td></tr>
+<tr><td class="colName">碎冰威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">如果敵人在被凍結狀態下死亡, 由碎冰關鍵被動導致的爆炸造成的傷害提高 x[30-40]%。</td></tr>
+<tr><td class="colName">碎肉威能</td><td class="colJob">死靈法師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">使用分解生成亡骸時獲得 [10-20] 點精魂。</td></tr>
+<tr><td class="colName">碎顱者的威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">擊暈一名流血的敵人會對其造成總流血傷害的 [22-40]% (作為物理傷害)。</td></tr>
+<tr><td class="colName">群奔之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">獲得 1 個額外同伴。此外, 你的同伴技能造成 x[10-20]% 加成傷害。</td></tr>
+<tr><td class="colName">違抗之威能</td><td class="colJob"> 全職業</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">當造成任何形式的傷害, 你獲得 x[0.25-0.5]% 護甲加成, 持續 4.0 秒, 最多可疊加至 x[25-50]%。</td></tr>
+<tr><td class="colName">雷暴之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">颶風每持續一秒, 其傷害提高 x[7-15]%。</td></tr>
+<tr><td class="colName">塵魔的威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">旋風斬會留下塵魔, 對周圍敵人造成 {#}% 點傷害。</td></tr>
+<tr><td class="colName">滲透者的威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">劇毒陷阱不打破潛行, 當你處於潛行不會觸發冷卻時間或部署時間。離開潛行後, 所有劇毒陷阱都會啟動, 並且每放一個陷阱會使陷阱的冷卻時間為 [5-8] 秒</td></tr>
+<tr><td class="colName">熊族狂戰的威能</td><td class="colJob">野蠻人</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">在狂暴狀態下消滅敵人有 40.0% 幾率使你的搏鬥技能的冷卻時間縮減效果提高 [16-32]%, 持續 2.0 秒。</td></tr>
+<tr><td class="colName">精力偷取之威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">每一層乘勝追擊關鍵被動效果使你每秒獲得 {#} 點生命。</td></tr>
+<tr><td class="colName">精力爆發之威能</td><td class="colJob">遊俠</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">你的手雷技能被算作陷阱技能。每當你埋設一個陷阱或是扔出手雷, 你獲得 +[10-18]% 移動速度加成, 持續 3.0秒。</td></tr>
+<tr><td class="colName">精英拳師之威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">每次核心技能對一名敵人造成直接傷害時, 你的下一個衝鋒或騰空斬技能造成 x[15-20]% 增傷傷害, 最多提高 x[225-300]%。</td></tr>
+<tr><td class="colName">腐蝕之威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你的灌注技能對處於易傷狀態的敵人效果提高 x[20-40]%。</td></tr>
+<tr><td class="colName">腐爛威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">分解可以最多連鎖傳遞至 2.0 個額外目標。分解生成亡骸時, 有 [30-60]% 幾率在所有受影響目標的腳下生成亡骸。</td></tr>
+<tr><td class="colName">蓄勢待擊之威能</td><td class="colJob"> 全職業</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">使用基礎技能攻擊敵人會使你下一個施放的核心技能的傷害提高 x[5-10]%, 最多 x30.0%</td></tr>
+<tr><td class="colName">裹覆威能</td><td class="colJob">巫師</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">當深度凍結啟動時, 你每秒恢復 [10-20]% 你的生命與法力上限。</td></tr>
+<tr><td class="colName">裸露血肉之威能</td><td class="colJob">死靈法師</td><td class="colType">資源</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">幸運一擊: 當使用白骨技能命中易傷敵人時, 最多有 10.0% 幾率生成 [30-50] 點精魂。</td></tr>
+<tr><td class="colName">酷刑之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你對同時受到衰老和鐵處女影響的敵人造成的暗影傷害提高 x[30-40]%。</td></tr>
+<tr><td class="colName">魁梧威能</td><td class="colJob">死靈法師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">你的傀儡有 [1-4]% 幾率使其剩餘冷卻時間縮短 2.0 秒, 並且傀儡有 [0.5-2]% 幾率在用普通攻擊對敵人造成傷害時生成一具亡骸。</td></tr>
+<tr><td class="colName">劇毒煉金師的威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">幸運一擊: 使用暗影灌注技能對中毒的敵人造成傷害最多有 {c_number} 75%  幾率產生一次毒爆, 在 5.0 秒內對目標和周圍敵人施加 {#} 點毒素傷害。</td></tr>
+<tr><td class="colName">墮暗之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">骨牢生成一灘枯萎, 在 6.0 秒內造成 [50-100]% 加成傷害。</td></tr>
+<tr><td class="colName">彈道威能</td><td class="colJob">德魯伊</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">當你擁有強固時, 大地技能級別 +2。</td></tr>
+<tr><td class="colName">憤怒欺淩之威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">消耗 100.0 點怒氣後, 你的下一個武器精通技能造成 x[82-100]% 增傷傷害。</td></tr>
+<tr><td class="colName">潮汐威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">血潮發射兩道額外浪潮, 每一道造成的傷害比前一道減少 x[50-60]%。</td></tr>
+<tr><td class="colName">碾石威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">大地技能對被群控的敵人造成 x[40-50]%額外暴擊傷害。</td></tr>
+<tr><td class="colName">箭鏃風暴之威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">幸運一擊: 你的神射手技能最多有 10.0% 幾率在敵人所在位置降下箭雨, 在 3.0 秒內造成 {#} 點物理傷害。你最多同時存在 5.0 個啟動的箭雨。</td></tr>
+<tr><td class="colName">蔭蔽威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">幸運一擊: 使用神射手技能造成暴擊有最多 [30-50]% 幾率給予一個免費的暗影帷幕的暗影。</td></tr>
+<tr><td class="colName">賦能收割者之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">揮斬造成的暴擊有 [10-20]% 幾率在目標腳下生成一灘枯萎, 造成 [20-60]% 加成傷害。該效果每 3.0 秒只能觸發一次。</td></tr>
+<tr><td class="colName">踐踏大地之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">踐踏現在會在其持續時間內召喚 6.0 個山崩土柱, 造成 [70-80]% 普通傷害。踐踏現在也被視作自然魔法和大地技能。</td></tr>
+<tr><td class="colName">震動變換威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">大地尖刺會在一條直線上發射尖刺, 並且有 [1.5-2.5] 秒的冷卻時間。</td></tr>
+<tr><td class="colName">震盪波威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">粉碎會製造一道向前方傳導的震盪波, 對路徑上的目標造成 [90-130]% 傷害。</td></tr>
+<tr><td class="colName">餘震之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">山崩的每一個大地尖柱攻擊兩次, 每次命中造成額外 [6-12]% 加成傷害。</td></tr>
+<tr><td class="colName">魯莽狂戰之威能</td><td class="colJob">野蠻人</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">幸運一擊: 使用核心技能對一名敵人造成傷害時, 最多有 [22-40]% 幾率使狂暴的持續時間延長 1 秒。如果造成暴擊, 延長持續時間翻倍。</td></tr>
+<tr><td class="colName">齒狀骨刺之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">骨化精魂關鍵被動還會使你每有一點精魂( 50.0 點以上)便使你的白骨技能的暴擊傷害提高 +1.0%, 最多提高 +[30-40]%。</td></tr>
+<tr><td class="colName">燒灼四肢之威能</td><td class="colJob">巫師</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">定身結束後, 敵人被減速 [25-35]%, 持續 4.0 秒。</td></tr>
+<tr><td class="colName">燃燒怒火之威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">在狂暴狀態下, 你每秒對周圍敵人造成 {#} 點火焰傷害。</td></tr>
+<tr><td class="colName">親蛇威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你可以有額外 1.0 只多頭蛇, 但多頭蛇的持續時間縮短 [20-30]%。</td></tr>
+<tr><td class="colName">鋼鐵戰士之威能</td><td class="colJob">野蠻人</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">鋼鐵之膚也會使你獲得不可阻擋, 以及 [10-20]%傷害減免。</td></tr>
+<tr><td class="colName">靜電附著威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你施放的電荷彈有 [15-25]% 幾率被吸引至敵人, 並且持續時間延長 300.0%。</td></tr>
+<tr><td class="colName">優勢大師的威能</td><td class="colJob"> 全職業</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">技能施放時, 基於你可用的主要資源量最多可造成 x[10-20]% 增傷, 主要資源全滿時獲得最大加成。</td></tr>
+<tr><td class="colName">擎天步之威能</td><td class="colJob">野蠻人</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">騰空斬每命中一名敵人, 其冷卻時間縮短 [3-5] 秒, 最多縮短 9 秒。</td></tr>
+<tr><td class="colName">環繞刀鋒之威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">快刀亂刺對你周圍一圈內的敵人造成傷害, 並且造成 x[8-15]% 增傷傷害。</td></tr>
+<tr><td class="colName">療愈石之威能</td><td class="colJob">德魯伊</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">大地壁壘的持續時間延長 6 秒。此外, 用大地技能消滅一名敵人會為你已啟動的大地壁壘的屏障補充 {#} 點護盾值。</td></tr>
+<tr><td class="colName">簇擁智者之威能</td><td class="colJob"> 全職業</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">每一個近距敵人可以使你每秒恢復 {#} 點生命, 最多每秒恢復 50 點生命。</td></tr>
+<tr><td class="colName">縱火威能</td><td class="colJob">巫師</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">幸運一擊: 燃燒傷害有最多 [5-10]% 幾率恢復 10.0 點法力。</td></tr>
+<tr><td class="colName">聯動之威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">使用一個敏捷技能會使你下一個詭詐技能的冷卻時間縮短 20%。使用一個詭詐技能會使你的下一個敏捷技能造成的傷害提高 x[10-30]%。</td></tr>
+<tr><td class="colName">還擊之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">基於你的強固數值, 你的核心技能造成最多 x[20-40]% 增傷傷害。</td></tr>
+<tr><td class="colName">霜噬威能</td><td class="colJob">遊俠</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">被凍傷的敵人在被你的手雷技能命中後, 有相當於你雙倍暴擊幾率的幾率立即被凍結, 持續 2.0 秒。你對被凍結的敵人造成的暴擊傷害提高 x[10-25]%。</td></tr>
+<tr><td class="colName">黏稠威能</td><td class="colJob">死靈法師</td><td class="colType">通用</td><td class="colPosition">護符, 靴子, 胸部, 手套, 頭盔, 盾</td><td class="colEffect">你的骷髏法師數量上限增加 2 個。</td></tr>
+<tr><td class="colName">懲戒之威能</td><td class="colJob"> 全職業</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">遠距敵人在命中你時有 8.0% 幾率被擊暈 2.0 秒。你對被擊暈的敵人造成 x[20-40]% 增傷傷害。</td></tr>
+<tr><td class="colName">懲擊威能</td><td class="colJob"> 全職業</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你對受傷敵人造成暴擊的幾率提高 x[10-20]%。當你處於健康狀態時, 你獲得 x[20-40]%群控持續時間加成。</td></tr>
+<tr><td class="colName">爆炸血霧之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">血霧會在周圍的亡骸身上觸發邪爆。當血霧引爆一具亡骸後, 其冷卻時間縮短 [0.2-0.5] 秒。</td></tr>
+<tr><td class="colName">爆炸捕手的威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">幸運一擊: 對受你陷阱技能影響的敵人造成直接傷害有最多 [30-50]% 幾率使其易傷, 持續 3.0 秒。</td></tr>
+<tr><td class="colName">爆裂白骨之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">骨牢的一部分被摧毀或持續時間結束後, 會在其周圍造成 {#}% 點傷害。</td></tr>
+<tr><td class="colName">獸皮行者的威能</td><td class="colJob">德魯伊</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">當你使用可以改變你形態的變形技能時, 獲得 {#} 點生命值。如果你處於滿生命狀態, 則獲得等量的強固</td></tr>
+<tr><td class="colName">穩壓威能</td><td class="colJob">巫師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當不穩電流未啟動時, 你的電沖技能有 [5-10]% 幾率觸發一次免費施放。</td></tr>
+<tr><td class="colName">騙子的威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">被群控的敵人對你造成的傷害降低 [15-25]%。被群控的敵人對你造成直接傷害時, 你的移動速度提高 +15.0%, 持續 2.0 秒。</td></tr>
+<tr><td class="colName">騙術師的威能</td><td class="colJob">遊俠</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">鐵蒺藜也會扔下一串會爆炸的昏迷手雷, 對敵人造成總計 {#} 點物理傷害, 並使其昏迷 0.5 秒。</td></tr>
+<tr><td class="colName">飄忽威脅之威能</td><td class="colJob">遊俠</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">當你同時擁有兩種近身格鬥關鍵被動效果時, 被一名近距敵人命中, 你的躲閃幾率提高 +[1-5]%。成功躲閃會重置該加成</td></tr>
+<tr><td class="colName">饑渴鮮血之威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">當血矛命中已被刺穿的敵人時, 有 [10-20]% 幾率對附近的敵人發射一支血矛。</td></tr>
+<tr><td class="colName">犧牲威能</td><td class="colJob">死靈法師</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你的犧牲加成效果提高 [15-25]%。</td></tr>
+<tr><td class="colName">護盾風暴之威能</td><td class="colJob">死靈法師</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">白骨風暴每次對敵人造成傷害, 獲得一層相當於你基礎生命 [2-5]% 的屏障, 持續 10.0 秒。</td></tr>
+<tr><td class="colName">躍動導體之威能</td><td class="colJob">巫師</td><td class="colType">移動</td><td class="colPosition">護符, 靴子</td><td class="colEffect">使用傳送術後獲得 [20-25]% 移動速度加成, 持續 3.0 秒。</td></tr>
+<tr><td class="colName">鐵血之威能</td><td class="colJob">野蠻人</td><td class="colType">防禦</td><td class="colPosition">護符, 胸部, 頭盔, 褲子, 盾</td><td class="colEffect">附近每有一名流血的敵人, 獲得 [2-4]%傷害減免, 最多獲得 [10-20]%。</td></tr>
+<tr><td class="colName">魔怒威能</td><td class="colJob">野蠻人</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">產生 100.0 點怒氣後, 你的下一個核心技能生成一個塵魔, 對目標後方敵人造成 {#}% 點傷害。</td></tr>
+<tr><td class="colName">襲風者威能</td><td class="colJob"> 全職業</td><td class="colType">移動</td><td class="colPosition">護符, 靴子</td><td class="colEffect">造成暴擊給予 +[8-16]% 移動速度加成, 持續 1.0 秒, 最多 6 秒。</td></tr>
+<tr><td class="colName">驕狂威能</td><td class="colJob"> 全職業</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">你有一面啟動的屏障時, 你造成 x[15-25]% 增傷傷害。</td></tr>
+<tr><td class="colName">變形石之威能</td><td class="colJob">德魯伊</td><td class="colType">攻擊</td><td class="colPosition">護符, 手套, 戒指, 單手武, 雙手武</td><td class="colEffect">滾石現為核心技能並且消耗 60.0 點靈力, 造成 [80-100]% 普通傷害。</td></tr>
+<tr><td class="colName">變身索債之威能</td><td class="colJob">德魯伊</td><td class="colType">資源</td><td class="colPosition">戒指</td><td class="colEffect">使用熊人技能對中毒的敵人造成傷害時, 立即造成毒素傷害的 [120-150]% 並消耗中毒效果。</td></tr>
+
+        <!-- 其他資料行 -->
+    </tbody>
+</table>
+
+<script>
+    // 篩選表格
+    function filterTable(job) {
+        var rows = document.querySelectorAll('#dataTable tbody tr');
+        for (var i = 0; i < rows.length; i++) {
+            var cells = rows[i].querySelectorAll('.colJob'); // 使用 class 選擇器
+            var profession = cells[0].textContent;
+            rows[i].style.display = (profession === job) ? 'table-row' : 'none';
+        }
+    }
+
+    // 搜索表格
+    function searchTable() {
+        var searchText = document.getElementById('searchInput').value.toLowerCase();
+        var rows = document.querySelectorAll('#dataTable tbody tr');
+
+        for (var i = 0; i < rows.length; i++) {
+            var cells = rows[i].querySelectorAll('.colName, .colJob, .colType, .colPosition, .colEffect'); // 使用 class 選擇器
+            var found = false;
+
+            for (var j = 0; j < cells.length; j++) {
+                var cellText = cells[j].textContent.toLowerCase();
+                if (cellText.indexOf(searchText) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+
+            rows[i].style.display = found ? 'table-row' : 'none';
+        }
+    }
+
+    // 切換欄位可見性
+    function toggleColumn(colIndex) {
+        var col = document.querySelectorAll('.col' + getColumnName(colIndex)); // 使用 class 選擇器
+        for (var i = 0; i < col.length; i++) {
+            col[i].style.display = col[i].style.display === 'none' ? 'table-cell' : 'none';
+        }
+    }
+
+    // 獲取欄位名稱
+    function getColumnName(index) {
+        switch (index) {
+            case 0:
+                return 'Name';
+            case 1:
+                return 'Job';
+            case 2:
+                return 'Type';
+            case 3:
+                return 'Position';
+            case 4:
+                return 'Effect';
+            default:
+                return '';
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,232 @@
+[
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0001_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/ci-huo-long",
+        "name": "雌火龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0002_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/huo-long",
+        "name": "火龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0002_50_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/hu-huo-long",
+        "name": "護火龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0005_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/kai-long",
+        "name": "鎧龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0008_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/guai-niao",
+        "name": "怪鳥"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0009_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/du-guai-niao",
+        "name": "毒怪鳥"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0021_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/tao-mao-shou-wang",
+        "name": "桃毛獸王"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0022_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/xue-shi-zi-wang",
+        "name": "雪獅子王"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0070_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/ying-zhi-zhu",
+        "name": "影蜘蛛"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0071_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/hei-shi-long",
+        "name": "黑蝕龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0100_51_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/hu-lei-e-long",
+        "name": "護雷顎龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0113_51_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/hu-xiong-zhua-long",
+        "name": "護兇爪龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0150_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/pi-shou",
+        "name": "闢獸"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0150_50_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/hu-pi-shou",
+        "name": "護闢獸"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0151_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/sha-hai-long",
+        "name": "沙海龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0152_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/chan-wa",
+        "name": "纏蛙"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0153_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/yan-wei-long",
+        "name": "炎尾龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0154_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/ci-hua-zhi-zhu",
+        "name": "刺花蜘蛛"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0155_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/zhao-pen-long",
+        "name": "沼噴龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0156_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/huang-lei-long",
+        "name": "煌雷龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0157_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/bo-yi-long",
+        "name": "波衣龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0158_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/yu-yan-zhang",
+        "name": "獄焰鱆"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0159_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/he-yuan-shou",
+        "name": "赫猿獸"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0160_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/suo-ren-long",
+        "name": "鎖刃龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0160_50_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/hu-suo-ren-long",
+        "name": "護鎖刃龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0161_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/feng-jia-long",
+        "name": "風鋏龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0162_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/dong-feng-long",
+        "name": "凍峰龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0163_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/an-qi-zhang",
+        "name": "暗器鱆"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0164_50_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/bai-chi-long",
+        "name": "白熾龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1006_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/ju-feng",
+        "name": "巨蜂"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1022_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/tao-mao-shou",
+        "name": "桃毛獸"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1023_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/xue-shi-zi",
+        "name": "雪獅子"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1150_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/lei-jia-long",
+        "name": "雷甲龍♂"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1151_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/dun-tu-long",
+        "name": "盾突龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1152_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/xie-ci-chong",
+        "name": "血刺蟲"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1153_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/rui-meng-long",
+        "name": "銳猛龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1154_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/yin-chi-long",
+        "name": "音翅龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1155_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/ju-wen-long",
+        "name": "鋸吻龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1156_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/ji-qi-long",
+        "name": "棘鰭龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1157_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/xian-ci-long",
+        "name": "銛刺龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1158_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/kui-meng-long",
+        "name": "盔猛龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1159_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/mian-ci-chong",
+        "name": "眠刺蟲"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1160_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/jiao-ni",
+        "name": "膠鯢"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1161_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/dian-jiao-shou",
+        "name": "電角獸"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1162_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/jian-yu-shou",
+        "name": "箭羽獸"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM1163_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/zhi-ying-zhi-zhu",
+        "name": "稚影蜘蛛"
+    }
+]

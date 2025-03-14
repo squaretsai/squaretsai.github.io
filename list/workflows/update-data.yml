@@ -1,0 +1,36 @@
+name: Update JSON Data
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Update JSON
+        run: |
+          # 從環境變數中獲取資料
+          DATA='[
+            {
+              "稱呼": "'"$NAME"'",
+              "遊戲名": "'"$GAME"'",
+              "PSN": "'"$PSN"'",
+              "ID": "'"$ID"'",
+              "備註": "'"$NOTE"'"
+            }
+          ]'
+          echo $DATA > list/data.json
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add list/data.json
+          git commit -m "Update JSON data"
+          git push

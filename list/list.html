@@ -1,105 +1,133 @@
-const githubToken = "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";
-const repo = "squaretsai/squaretsai.github.io"; // 使用者名稱/倉庫名稱
-const jsonFilePath = "list/data.json"; // JSON 檔案的路徑
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成員列表</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <style>
+        /* 你的 CSS 樣式 */
+    </style>
+    <script>
+        const repo = "squaretsai/squaretsai.github.io"; // 使用者名稱/倉庫名稱
+        const jsonFilePath = "list/data.json"; // JSON 檔案的路徑
 
-// 加載 JSON 資料
-async function loadData() {
-    const url = `https://api.github.com/repos/${repo}/contents/${jsonFilePath}`;
-    const response = await fetch(url, {
-        headers: {
-            Authorization: `token ${githubToken}`,
-            Accept: "application/vnd.github.v3+json",
-        },
-    });
-    const data = await response.json();
-    const content = JSON.parse(atob(data.content)); // 解碼 Base64
-    renderTable(content);
-}
-
-// 渲染表格
-function renderTable(data) {
-    let table = document.getElementById("memberTable").getElementsByTagName('tbody')[0];
-    table.innerHTML = "";
-
-    data.forEach(row => {
-        let newRow = table.insertRow();
-        let labels = ["稱呼", "遊戲名", "PSN", "ID", "備註"];
-        for (let j = 0; j < 5; j++) {
-            let cell = newRow.insertCell(j);
-            cell.textContent = row[j] || "";
-            cell.setAttribute("data-label", labels[j]);
+        // 加載 JSON 資料
+        async function loadData() {
+            const url = `https://api.github.com/repos/${repo}/contents/${jsonFilePath}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            const content = JSON.parse(atob(data.content)); // 解碼 Base64
+            renderTable(content);
         }
-    });
-}
 
-// 添加新資料
-async function addRow() {
-    const name = document.getElementById("name").value;
-    const game = document.getElementById("game").value;
-    const psn = document.getElementById("psn").value;
-    const id = document.getElementById("id").value;
-    const note = document.getElementById("note").value;
+        // 渲染表格
+        function renderTable(data) {
+            let table = document.getElementById("memberTable").getElementsByTagName('tbody')[0];
+            table.innerHTML = "";
 
-    const newData = [name, game, psn, id, note];
-    await updateData(newData);
-    document.getElementById("memberForm").reset();
-}
-
-// 更新 JSON 資料
-async function updateData(newData) {
-    const url = `https://api.github.com/repos/${repo}/contents/${jsonFilePath}`;
-    const response = await fetch(url, {
-        headers: {
-            Authorization: `token ${githubToken}`,
-            Accept: "application/vnd.github.v3+json",
-        },
-    });
-    const fileData = await response.json();
-    const content = JSON.parse(atob(fileData.content));
-
-    // 新增資料
-    content.push(newData);
-
-    // 更新檔案
-    const updateResponse = await fetch(url, {
-        method: "PUT",
-        headers: {
-            Authorization: `token ${githubToken}`,
-            Accept: "application/vnd.github.v3+json",
-        },
-        body: JSON.stringify({
-            message: "更新成員列表",
-            content: btoa(JSON.stringify(content)), // 編碼為 Base64
-            sha: fileData.sha, // 需要提供檔案的 SHA
-        }),
-    });
-    const result = await updateResponse.json();
-    if (result.content) {
-        alert("資料已成功更新！");
-        loadData(); // 重新加載資料
-    } else {
-        alert("更新失敗，請檢查網路或權限。");
-    }
-}
-
-// 匯入 Excel
-async function importFromExcel(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-        const tableData = json.slice(1).map(row => [row[0], row[1], row[2], row[3], row[4]]);
-        for (const row of tableData) {
-            await updateData(row); // 逐筆更新
+            data.forEach(row => {
+                let newRow = table.insertRow();
+                let labels = ["稱呼", "遊戲名", "PSN", "ID", "備註"];
+                for (let j = 0; j < 5; j++) {
+                    let cell = newRow.insertCell(j);
+                    cell.textContent = row[j] || "";
+                    cell.setAttribute("data-label", labels[j]);
+                }
+            });
         }
-    };
-    reader.readAsArrayBuffer(file);
-}
 
-// 頁面加載時自動加載資料
-window.onload = loadData;
+        // 添加新資料
+        async function addRow() {
+            const name = document.getElementById("name").value;
+            const game = document.getElementById("game").value;
+            const psn = document.getElementById("psn").value;
+            const id = document.getElementById("id").value;
+            const note = document.getElementById("note").value;
+
+            const newData = [name, game, psn, id, note];
+            await updateData(newData);
+            document.getElementById("memberForm").reset();
+        }
+
+        // 更新 JSON 資料
+        async function updateData(newData) {
+            const url = `https://api.github.com/repos/${repo}/contents/${jsonFilePath}`;
+            const response = await fetch(url);
+            const fileData = await response.json();
+            const content = JSON.parse(atob(fileData.content));
+
+            // 新增資料
+            content.push(newData);
+
+            // 更新檔案
+            const updateResponse = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    Accept: "application/vnd.github.v3+json",
+                },
+                body: JSON.stringify({
+                    message: "更新成員列表",
+                    content: btoa(JSON.stringify(content)), // 編碼為 Base64
+                    sha: fileData.sha, // 需要提供檔案的 SHA
+                }),
+            });
+            const result = await updateResponse.json();
+            if (result.content) {
+                alert("資料已成功更新！");
+                loadData(); // 重新加載資料
+            } else {
+                alert("更新失敗，請檢查網路或權限。");
+            }
+        }
+
+        // 匯入 Excel
+        async function importFromExcel(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                const tableData = json.slice(1).map(row => [row[0], row[1], row[2], row[3], row[4]]);
+                for (const row of tableData) {
+                    await updateData(row); // 逐筆更新
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 頁面加載時自動加載資料
+        window.onload = loadData;
+    </script>
+</head>
+<body>
+    <form id="memberForm" onsubmit="event.preventDefault(); addRow();">
+        <input type="text" id="name" placeholder="稱呼" required>
+        <input type="text" id="game" placeholder="遊戲名">
+        <input type="text" id="psn" placeholder="PSN">
+        <input type="text" id="id" placeholder="ID">
+        <input type="text" id="note" placeholder="備註">
+        <button type="submit">添加</button>
+    </form>
+    <input type="file" accept=".xlsx" onchange="importFromExcel(event)">
+
+    <table id="memberTable">
+        <thead>
+            <tr>
+                <th>稱呼</th>
+                <th>遊戲名</th>
+                <th>PSN</th>
+                <th>ID</th>
+                <th>備註</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 資料會從 JSON 動態加載 -->
+        </tbody>
+    </table>
+</body>
+</html>

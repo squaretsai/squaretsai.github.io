@@ -60,21 +60,64 @@
         }
     </style>
     <script>
-        function addRow() {
-            let table = document.getElementById("memberTable").getElementsByTagName('tbody')[0];
-            let newRow = table.insertRow();
-            let columns = ["name", "game", "psn", "id", "note"];
-            let labels = ["稱呼", "遊戲名", "PSN", "ID", "備註"];
-            
-            for (let i = 0; i < columns.length; i++) {
-                let cell = newRow.insertCell(i);
-                cell.textContent = document.getElementById(columns[i]).value;
-                cell.setAttribute("data-label", labels[i]);
+        const googleSheetUrl = "https://script.google.com/macros/s/AKfycbxyp6_1JwESXUSYeylPs1cBuOeOGvDwZnj5ZJzs8pWazaxRpBXm0jiZhr6J2TkGkcgxBg/exec";
+
+        // 加載 Google Sheets 資料
+        async function loadData() {
+            try {
+                const response = await fetch(googleSheetUrl);
+                const data = await response.json();
+                renderTable(data);
+            } catch (error) {
+                console.error("加載資料失敗:", error);
             }
-            
+        }
+
+        // 渲染表格
+        function renderTable(data) {
+            let table = document.getElementById("memberTable").getElementsByTagName('tbody')[0];
+            table.innerHTML = "";
+
+            data.forEach(row => {
+                let newRow = table.insertRow();
+                let labels = ["稱呼", "遊戲名", "PSN", "ID", "備註"];
+                for (let j = 0; j < 5; j++) {
+                    let cell = newRow.insertCell(j);
+                    cell.textContent = row[j] || "";
+                    cell.setAttribute("data-label", labels[j]);
+                }
+            });
+        }
+
+        // 添加新資料到 Google Sheets
+        async function addRow() {
+            const name = document.getElementById("name").value;
+            const game = document.getElementById("game").value;
+            const psn = document.getElementById("psn").value;
+            const id = document.getElementById("id").value;
+            const note = document.getElementById("note").value;
+
+            const data = { name, game, psn, id, note };
+
+            try {
+                const response = await fetch(googleSheetUrl, {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                });
+                if (response.ok) {
+                    alert("資料已成功提交！");
+                    loadData(); // 重新加載資料
+                } else {
+                    alert("提交資料失敗，請稍後再試。");
+                }
+            } catch (error) {
+                console.error("提交資料失敗:", error);
+            }
+
             document.getElementById("memberForm").reset();
         }
-        
+
+        // 匯出 Excel
         function exportToExcel() {
             let table = document.getElementById("memberTable");
             let wb = XLSX.utils.book_new();
@@ -82,7 +125,8 @@
             XLSX.utils.book_append_sheet(wb, ws, "成員列表");
             XLSX.writeFile(wb, "成員列表.xlsx");
         }
-        
+
+        // 匯入 Excel
         function importFromExcel(event) {
             let file = event.target.files[0];
             let reader = new FileReader();
@@ -92,10 +136,10 @@
                 let sheetName = workbook.SheetNames[0];
                 let sheet = workbook.Sheets[sheetName];
                 let json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-                
+
                 let table = document.getElementById("memberTable").getElementsByTagName('tbody')[0];
                 table.innerHTML = "";
-                
+
                 for (let i = 1; i < json.length; i++) {
                     let row = json[i];
                     if (row.length > 0) {
@@ -111,6 +155,9 @@
             };
             reader.readAsArrayBuffer(file);
         }
+
+        // 頁面加載時自動加載資料
+        window.onload = loadData;
     </script>
 </head>
 <body>
@@ -124,7 +171,7 @@
     </form>
     <button onclick="exportToExcel()">匯出 Excel</button>
     <input type="file" accept=".xlsx" onchange="importFromExcel(event)">
-    
+
     <table id="memberTable">
         <thead>
             <tr>
@@ -136,27 +183,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr class="highlight-blue">
-                <td data-label="稱呼">阿力</td>
-                <td data-label="遊戲名">深白色</td>
-                <td data-label="PSN"></td>
-                <td data-label="ID"></td>
-                <td data-label="備註"></td>
-            </tr>
-            <tr class="highlight-yellow">
-                <td data-label="稱呼">小郭</td>
-                <td data-label="遊戲名">阿爾米奧</td>
-                <td data-label="PSN"></td>
-                <td data-label="ID">QM5Q688E</td>
-                <td data-label="備註"></td>
-            </tr>
-            <tr>
-                <td data-label="稱呼">狼宮</td>
-                <td data-label="遊戲名">狼宮</td>
-                <td data-label="PSN">Cash_Lau</td>
-                <td data-label="ID"></td>
-                <td data-label="備註"></td>
-            </tr>
+            <!-- 資料會從 Google Sheets 動態加載 -->
         </tbody>
     </table>
 </body>

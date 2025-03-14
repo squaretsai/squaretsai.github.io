@@ -1,4 +1,4 @@
-const githubToken = "你的 GitHub Personal Access Token";
+const githubToken = "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";
 const repo = "squaretsai/squaretsai.github.io"; // 使用者名稱/倉庫名稱
 const jsonFilePath = "list/data.json"; // JSON 檔案的路徑
 
@@ -14,6 +14,35 @@ async function loadData() {
     const data = await response.json();
     const content = JSON.parse(atob(data.content)); // 解碼 Base64
     renderTable(content);
+}
+
+// 渲染表格
+function renderTable(data) {
+    let table = document.getElementById("memberTable").getElementsByTagName('tbody')[0];
+    table.innerHTML = "";
+
+    data.forEach(row => {
+        let newRow = table.insertRow();
+        let labels = ["稱呼", "遊戲名", "PSN", "ID", "備註"];
+        for (let j = 0; j < 5; j++) {
+            let cell = newRow.insertCell(j);
+            cell.textContent = row[j] || "";
+            cell.setAttribute("data-label", labels[j]);
+        }
+    });
+}
+
+// 添加新資料
+async function addRow() {
+    const name = document.getElementById("name").value;
+    const game = document.getElementById("game").value;
+    const psn = document.getElementById("psn").value;
+    const id = document.getElementById("id").value;
+    const note = document.getElementById("note").value;
+
+    const newData = [name, game, psn, id, note];
+    await updateData(newData);
+    document.getElementById("memberForm").reset();
 }
 
 // 更新 JSON 資料
@@ -51,35 +80,6 @@ async function updateData(newData) {
     } else {
         alert("更新失敗，請檢查網路或權限。");
     }
-}
-
-// 渲染表格
-function renderTable(data) {
-    let table = document.getElementById("memberTable").getElementsByTagName('tbody')[0];
-    table.innerHTML = "";
-
-    data.forEach(row => {
-        let newRow = table.insertRow();
-        let labels = ["稱呼", "遊戲名", "PSN", "ID", "備註"];
-        for (let j = 0; j < 5; j++) {
-            let cell = newRow.insertCell(j);
-            cell.textContent = row[j] || "";
-            cell.setAttribute("data-label", labels[j]);
-        }
-    });
-}
-
-// 添加新資料
-async function addRow() {
-    const name = document.getElementById("name").value;
-    const game = document.getElementById("game").value;
-    const psn = document.getElementById("psn").value;
-    const id = document.getElementById("id").value;
-    const note = document.getElementById("note").value;
-
-    const newData = [name, game, psn, id, note];
-    await updateData(newData);
-    document.getElementById("memberForm").reset();
 }
 
 // 匯入 Excel

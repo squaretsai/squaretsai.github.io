@@ -44,10 +44,16 @@
         "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/ying-zhi-zhu",
         "name": "影蜘蛛"
     },
+
     {
         "image": "https://mhwilds.kiranico.net/em_icon/EM0071_00_0.webp",
         "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/hei-shi-long",
         "name": "黑蝕龍"
+    },
+    {
+        "image": "https://mhwilds.kiranico.net/em_icon/EM0082_00_0.webp",
+        "url": "https://mhwilds.kiranico.com/zh-Hant/data/monsters/pao-hu-long",
+        "name": "泡弧龍"
     },
     {
         "image": "https://mhwilds.kiranico.net/em_icon/EM0100_51_0.webp",

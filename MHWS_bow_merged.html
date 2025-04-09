@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<meta name="app-version" content="1.0.03211222">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MHWs屬性弓傷害計算機1.01版</title>
+    <link rel="shortcut icon" type="image/png" href="favicon.png">
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f4f4f4;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: auto; 
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        details {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        details summary {
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 3px;
+            vertical-align: middle;
+        }
+        td:first-child {
+            width: 30%;
+            white-space: nowrap;
+        }
+        label {
+            font-weight: normal;
+            white-space: nowrap;
+            display: inline-block;
+            max-width: 100%;
+        }
+        input {
+            width: auto;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        select {
+            width: auto;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+
+        }
+        button {
+            width: 100%;
+            padding: 6px;
+            background: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: gray;
+        }
+        @media (max-width: 768px) {
+            td {
+                display: block;
+                width: 100%;
+
+            }
+            select {
+                display: block;
+                width: auto;
+                width: 100%;
+                margin-bottom: 10px;
+
+            }
+        }
+        .damage-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            margin-top: 10px;
+        }
+        .damage-box {
+            background: #fff;
+            padding: 5px;
+            
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            font-weight: normal;
+            font-size: 16px;
+        }
+        .status { border-left: 4px solid #007bff;
+                      border-right: 4px solid #007bff; }
+        .oneshot { border-left: 4px solid #28a745;
+                      border-right: 4px solid #28a745; }
+        .totalshot { border-left: 4px solid #dc3545; 
+                        border-right: 4px solid #dc3545; }
+        .ratio { border-left: 4px solid #6A0DAD; 
+                        border-right: 4px solid #6A0DAD; }
+    </style>
+<script>
+/*author: forfivesix*/
+const COLOR = '#FFD700' //選取後的顏色
+
+const skillOptions = {
+
+    /*招式：v1動作值、v2屬性補正、v3箭數、v4v5貫通瓶*/
+    action:[ //
+        {value: "0",  v1: 9,  v2: 0.2,  v3: 1, v4: 3,  v5: 0.1, vfollow: false,
+                      vtype: 'normalshot', text: "lv1平射 - [9/0.2/x1]"},
+        
+        {value: "1",  v1: 10, v2: 0.35, v3: 2, v4: 4,  v5: 0.15, vfollow: false,
+                      vtype: 'normalshot', text: "lv2平射 - [10/0.35/x2]"},
+        
+        {value: "2",  v1: 11, v2: 0.5,  v3: 3, v4: 5,  v5: 0.2, vfollow: false,
+                      vtype: 'normalshot', text: "lv3平射 - [11/0.5/x3]"},
+        
+        //{value: "3",  v1: 12, v2: 0.5,  v3: 3, v4: 6,  v5: 0.3, vfollow: false,
+        //              vtype: 'normalshot', text: "lv4平射 - [12/0.5/x3]"},
+        
+        {value: "4",  v1: 9,  v2: 0.3,  v3: 3, v4: 3,  v5: 0.1, vfollow: false,
+                      vtype: 'powershot', text: "lv1剛射(迅雷閃擊) - [9/0.3/x3]"},
+        
+        {value: "5",  v1: 10, v2: 0.5,  v3: 4, v4: 4,  v5: 0.15, vfollow: false,
+                      vtype: 'powershot', text: "lv2剛射 - [10/0.5/x4]"},
+        
+        {value: "6",  v1: 11, v2: 0.6,  v3: 5, v4: 5,  v5: 0.2, vfollow: false,
+                      vtype: 'powershot', text: "lv3剛射 - [11/0.6/x5]"},
+        
+        //{value: "7",  v1: 12, v2: 0.6,  v3: 5, v4: 6,  v5: 0.3, vfollow: false,
+        //              vtype: 'powershot', text: "lv4剛射 - [12/0.6/x5]"},
+        
+        {value: "8",  v1: 12, v2: 0.45, v3: 4, v4: 4,  v5: 0.1, vfollow: false,
+                      vtype: 'powershot', text: "lv1剛連射 - [12/0.45/x4]"},
+        
+        {value: "9", v1: 13, v2: 0.65, v3: 5, v4: 5,  v5: 0.15, vfollow: false,
+                      vtype: 'powershot', text: "lv2剛連射 - [13/0.65/x5]"},
+        
+        {value: "10", v1: 14, v2: 0.75, v3: 6, v4: 6,  v5: 0.2, vfollow: false,
+                      vtype: 'powershot', text: "lv3剛連射 - [14/0.75/x6]"},
+        
+        //{value: "11", v1: 15, v2: 0.65, v3: 6, v4: 7,  v5: 0.3, vfollow: false,
+        //              vtype: 'powershot', text: "lv4剛連射 - [15/0.65/x6]"},
+        
+        {value: "12", v1: 9,  v2: 0.3,  v3: 3, v4: 3,  v5: 0.1, vfollow: false,
+                      vtype: 'jumpshot', text: "lv1飛燕射擊 - [9/0.3/x3]"},
+        
+        {value: "13", v1: 10, v2: 0.5,  v3: 4, v4: 4,  v5: 0.15, vfollow: false,
+                      vtype: 'jumpshot', text: "lv2飛燕射擊 - [10/0.5/x4]"},
+        
+        {value: "14", v1: 11, v2: 0.6,  v3: 5, v4: 5,  v5: 0.2, vfollow: false,
+                      vtype: 'jumpshot', text: "lv3飛燕射擊 - [11/0.6/x5]"},
+        
+        //{value: "15", v1: 12, v2: 0.6,  v3: 5, v4: 6,  v5: 0.3, vfollow: false,
+        //              vtype: 'jumpshot', text: "lv4飛燕射擊 - [12/0.6/x5]"},
+        
+        {value: "16", v1: 25, v2: 1,    v3: 1, v4: 0,  v5: 0, vfollow: false,
+                      vtype: 'spshot', text: "引導箭 - [25/1/x1] (貫通瓶無效)"},
+        
+        {value: "17", v1: 18, v2: 0.3,  v3: 6, v4: 11,  v5: 0.3, vfollow: false,
+                      vtype: 'piereshot', text: "龍之千矢 - [18/0.3/x6]"},
+        
+        {value: "18", v1: 23, v2: 0.3,  v3: 1, v4: 0,  v5: 0, vfollow: false,
+                      vtype: 'piereshot', text: "龍之一矢(正常版) - [23/0.3/x1] (只看第1hit、貫通瓶無效)"},
+        
+        {value: "29", v1: 16, v2: 0.3,  v3: 1, v4: 0,  v5: 0,  vfollow: false,
+                      vtype: 'piereshot', text: "龍之一矢(銜接版) - [16/0.3/x1] (只看第1hit、貫通瓶無效)"},
+        
+        {value: "30",  v1: 12,  v2: 0.5,  v3: 3, v4: 6,  v5: 0.3, vfollow: true,
+                      vtype: 'normalshot', text: "[引導狀態] 平射 - [12/0.5/x3] (不分lv)"},
+        
+        {value: "31",  v1: 12,  v2: 0.6,  v3: 3, v4: 6,  v5: 0.3, vfollow: true,
+                      vtype: 'powershot', text: "[引導狀態] 迅雷閃擊 - [12/0.6/x3]"},
+        
+        {value: "32",  v1: 12,  v2: 0.6,  v3: 5, v4: 6,  v5: 0.3, vfollow: true,
+                      vtype: 'powershot', text: "[引導狀態] 剛射 - [12/0.6/x5] (不分lv)"},
+        
+        {value: "33",  v1: 15,  v2: 0.65,  v3: 6, v4: 7,  v5: 0.3, vfollow: true,
+                      vtype: 'powershot', text: "[引導狀態] 剛連射 - [15/0.65/x6] (不分lv)"},
+        
+        {value: "34",  v1: 12,  v2: 0.6,  v3: 5, v4: 6,  v5: 0.3, vfollow: true,
+                      vtype: 'jumpshot', text: "[引導狀態] 飛燕射擊 - [12/0.6/x5] (不分lv)"},
+        
+        {value: "35",  v1: 21,  v2: 0.3,  v3: 6, v4: 14,  v5: 0.3, vfollow: true,
+                      vtype: 'piereshot', text: "[引導狀態] 千矢 - [21/0.3/x6]"},
+        
+        {value: "36",  v1: 19,  v2: 0.3,  v3: 1, v4: 0,  v5: 0, vfollow: true,
+                      vtype: 'piereshot', text: "[引導狀態] 一矢(正常版) - [19/0.3/x3] (只看第1hit、貫通瓶無效)"},
+        
+        {value: "37",  v1: 27,  v2: 0.3,  v3: 1, v4: 0,  v5: 0, vfollow: true,
+                      vtype: 'piereshot', text: "[引導狀態] 一矢(銜接版) - [12/0.5/x3] (只看第1hit、貫通瓶無效)"},
+        
+        {value: "99", v1: 99, v2: 99,  v3: 99, v4: 99,  v5: 99, vfollow: false,
+                      vtype: 'custom', text: "自行設定"},
+    ],
+    
+    dist:[ //射擊距離 done
+        {value: "0",  v1: 1.1, v2:1, text: "◎ 適中 - 物理x1.1 (引導狀態x1)"},
+        {value: "1",  v1: 0.8, v2:0.8, text: "○ 過近 - 物理x0.8"},
+        {value: "2",  v1: 0.2, v2:0.2, text: "◌ 過遠 - 物理x0.2"},
+    ],
+
+    /*狀態相關:v1補正*/
+    angrymult: [ // 魔物狀態補正 缺資料
+        { value: "0", v1: 1.1, text: "x1.1 - 大多數魔物" },
+        { value: "1", v1: 1.0, text: "x1.0 - 纏蛙、煌雷龍、獄炎蛸、護兇爪龍、怪鳥、護雷顎龍、鎖刃龍" },
+        { value: "2", v1: 0.9, text: "x0.9 - 雌火龍"}
+    ],  
+
+    monsterstatus: [ // 魔物狀態補正 缺資料
+        { value: "0", v1: 0, text: "一般狀態" },
+        { value: "1", v1: 1, text: "憤怒(請選擇怒補)" },
+        { value: "2", v1: 0, text: "睡眠(單次傷害x2，實作太麻煩請自己腦補)" ,disabled: true }
+    ],  
+
+    wcoating: [ // 瓶子 缺貫通
+        { value: "0", v1: 1, text: "不裝瓶" },
+        { value: "1", v1: 1.4, text: "接擊瓶 (物理x1.4)" },
+        { value: "2", v1: 1.3, text: "強擊瓶 (物理x1.3)" },
+        { value: "3", v1: 99, text: "貫通瓶 (下修動作值屬補+追加貫通hit，本計算機只看第1 hit)" },
+        { value: "4", v1: 1, text: "其他瓶會覆蓋掉屬性值，自己把屬性歸零來看就好。" ,disabled: true }
+    ],  
+
+    /*技能：v1通常加算 v2通常乘算*/
+    attackboost: [ // 攻擊 done
+        { value: "0", v1: 0, v2: 1, text: "Lv0 - 增加攻擊力。"},
+        { value: "1", v1: 3, v2: 1, text: "Lv1 - 攻擊力+3" },
+        { value: "2", v1: 5, v2: 1, text: "Lv2 - 攻擊力+5" },
+        { value: "3", v1: 7, v2: 1, text: "Lv3 - 攻擊力+7" },
+        { value: "4", v1: 8, v2: 1.02, text: "Lv4 - 攻擊力x1.02+8" },
+        { value: "5", v1: 9, v2: 1.04, text: "Lv5 - 攻擊力x1.04+9" }
+    ],
+    criticaleye: [ // 看破 done
+        { value: "0", v1: 0, text: "Lv0 - 增加會心率。" },
+        { value: "1", v1: 4, text: "Lv1 - 會心率+4%" },
+        { value: "2", v1: 8, text: "Lv2 - 會心率+8%" },
+        { value: "3", v1: 12, text: "Lv3 - 會心率+12%" },
+        { value: "4", v1: 16, text: "Lv4 - 會心率+16%" },
+        { value: "5", v1: 20, text: "Lv5 - 會心率+20%" }
+    ],
+    criticalboost: [ // 超會心 done
+        { value: "0", v1: 1.25, text: "Lv0 - 增加物理會心攻擊的倍率。(原本為1.25倍)" },
+        { value: "1", v1: 1.28, text: "Lv1 - 物理會心傷害改為1.28倍" },
+        { value: "2", v1: 1.31, text: "Lv2 - 物理會心傷害改為1.31倍" },
+        { value: "3", v1: 1.34, text: "Lv3 - 物理會心傷害改為1.34倍" },
+        { value: "4", v1: 1.37, text: "Lv4 - 物理會心傷害改為1.37倍" },
+        { value: "5", v1: 1.4, text: "Lv5 - 物理會心傷害改為1.4倍" }
+    ],
+    criticaldraw: [ // 拔刀術【技】 done
+        { value: "0", v1: 0, text: "Lv0 - 增加拔刀後一段時間的會心率。 " },
+        { value: "1", v1: 50,  text: "Lv1 - 會心率+50%" },
+        { value: "2", v1: 75,  text: "Lv2 - 會心率+75%" },
+        { value: "3", v1: 100,  text: "Lv3 - 會心率+100%" }
+    ],
+    elementattack: [ // 屬性攻擊強化 done
+        { value: "0", v1: 0, v2: 1, text: "Lv0 - 強化屬性值。" },
+        { value: "1", v1: 40, v2: 1, text: "Lv1 - 屬性值+40" },
+        { value: "2", v1: 50, v2: 1.1, text: "Lv2 - 屬性值x1.1+50" },
+        { value: "3", v1: 60, v2: 1.2, text: "Lv3 - 屬性值x1.2+60" }
+    ],
+    criticalelement: [ // 會心擊【屬性】 done
+        { value: "0", v1: 1, text: "Lv0 - 增加會心攻擊時的屬性傷害。" },
+        { value: "1", v1: 1.05, text: "Lv1 - 會心時屬性傷害x1.05" },
+        { value: "2", v1: 1.1, text: "Lv2 - 會心時屬性傷害x1.1" },
+        { value: "3", v1: 1.15, text: "Lv3 - 會心時屬性傷害x1.15" }
+    ],
+    chargemaster: [ // 蓄力大師 done
+        { value: "0", v1: 0, text: "Lv0 - 增加平射/剛射/剛連射的屬性傷害" },
+        { value: "1", v1: 0.05, text: "Lv1 - 平射/剛射/剛連射的屬性傷害x1.05" },
+        { value: "2", v1: 0.1, text: "Lv2 - 平射/剛射/剛連射的屬性傷害x1.1" },
+        { value: "3", v1: 0.15, text: "Lv3 - 平射/剛射/剛連射的屬性傷害x1.15" }
+    ],
+    normalshot: [ // 通常彈・通常箭強化 done
+        { value: "0", v1: 0, text: "Lv0 - 增加通常射擊、 飛燕射擊的攻擊力。" },
+        { value: "1", v1: 0.05, text: "Lv1 - 通常射擊、 飛燕射擊的威力1.05倍" }
+    ],
+    piercingshot: [ // 貫通彈・龍之箭強化 done
+        { value: "0", v1: 0, text: "Lv0 - 增加龍之箭、 龍之千矢的攻擊力。" },
+        { value: "1", v1: 0.05, text: "Lv1 - 龍之箭、 龍之千矢的威力1.05倍" }
+    ],
+    spreadshots: [ // 散彈・剛射強化 done
+        { value: "0", v1: 0, text: "Lv0 - 增加剛射、迅雷閃擊的攻擊力。" },
+        { value: "1", v1: 0.05, text: "Lv1 - 剛射、迅雷閃擊的威力1.05倍" }
+    ],
+    tetradshot: [ // 第四射擊 部分done
+        { value: "0", v1: 0, v2: 0, text: "Lv0 - 提升裝瓶後第4跟第6瓶的攻擊力，以及第4到第10瓶的會心率。(裝瓶會重置計數)" },
+        { value: "1", v1: 3, v2: 8, text: "Lv1 - 攻擊力+3、會心率+8%" },
+        { value: "2", v1: 6, v2: 10, text: "Lv2 - 攻擊力+6、會心率+10%" },
+        { value: "3", v1: 10, v2: 12, text: "Lv3 - 攻擊力+10、會心率+12%" }
+    ],
+    tetradshotact: [ // 第四射擊啟動狀態
+        { value: "0", text: "第5瓶或第7瓶之後射擊的狀態(只有會心觸發)" },
+        { value: "1", text: "第4或第6瓶射擊的狀態(會心跟攻擊都觸發)" }
+        //{ value: "2", text: "會從輸入招式開始計算射擊次數，並自動調整觸發狀況(尚未實裝)" }
+    ],
+    specialammoboost: [ // 特殊射擊強化 done
+        { value: "0", v1: 0, text: "Lv0 - 增加龍之箭、 龍之千矢和誘導箭的威力。" },
+        { value: "1", v1: 0.1, text: "Lv1 - 龍之箭、 龍之千矢和誘導箭的威力1.1倍" },
+        { value: "2", v1: 0.2, text: "Lv2 - 龍之箭、 龍之千矢和誘導箭的威力1.2倍" }
+    ],
+    punishingdraw: [ // 拔刀術【力】
+        { value: "0", text: "誰是第1hit？太麻煩了，不弄。" }
+    ],
+    airborne: [ // 飛燕 
+        { value: "0", v1: 0, text: "Lv0 - 強化跳躍攻擊。" },
+        { value: "1", v1: 0.1, text: "Lv1 - 跳躍攻擊的攻擊力1.1倍(只實裝在飛燕射擊上)" }
+    ],
+    resentment: [ // 怨恨 done
+        { value: "0", v1:0, text: "Lv0 - 體力計量表有紅色部分時，增加攻擊力。" },
+        { value: "1", v1:5, text: "Lv1 - 攻擊力+5" },
+        { value: "2", v1:10, text: "Lv2 - 攻擊力+10" },
+        { value: "3", v1:15, text: "Lv3 - 攻擊力+15" },
+        { value: "4", v1:20, text: "Lv4 - 攻擊力+20" },
+        { value: "5", v1:25, text: "Lv5 - 攻擊力+25" }
+    ],
+    adrenalinerush: [ // 巧擊 done
+        { value: "0", v1:0, text: "Lv0 - Just迴避時增加30秒內的攻擊力。(時間內不會重複發動)" },
+        { value: "1", v1:10, text: "Lv1 - 攻擊力+10" },
+        { value: "2", v1:15, text: "Lv2 - 攻擊力+15" },
+        { value: "3", v1:20, text: "Lv3 - 攻擊力+20" },
+        { value: "4", v1:25, text: "Lv4 - 攻擊力+25" },
+        { value: "5", v1:30, text: "Lv5 - 攻擊力+30" }
+    ],
+    peakperformance: [ // 無傷 done
+        { value: "0", v1:0, text: "Lv0 - 體力全滿時增加攻擊力。" },
+        { value: "1", v1:3, text: "Lv1 - 攻擊力+3" },
+        { value: "2", v1:6, text: "Lv2 - 攻擊力+6" },
+        { value: "3", v1:10, text: "Lv3 - 攻擊力+10" },
+        { value: "4", v1:15, text: "Lv4 - 攻擊力+15" },
+        { value: "5", v1:20, text: "Lv5 - 攻擊力+20" }
+    ],
+    counterstrike: [ // 逆襲 done
+        { value: "0", v1:0, text: "Lv0 - 被擊飛後，增加30秒內的攻擊力。(重複發動會重置時間)" },
+        { value: "1", v1:10, text: "Lv1 - 攻擊力+10" },
+        { value: "2", v1:15, text: "Lv2 - 攻擊力+15， 小幅延長時間" },
+        { value: "3", v1:25, text: "Lv3 - 攻擊力+25， 延長時間" }
+    ],
+    weaknessexploit: [ // 弱點特效 done
+        { value: "0", v1: 0, v2: 0, text: "Lv0 - 物理肉質45以上增加會心率。(傷口再追加會心率)" },
+        { value: "1", v1: 5, v2: 3, text: "Lv1 - 會心率+5% 傷口再+3%" },
+        { value: "2", v1: 10, v2: 5, text: "Lv2 - 會心率+10% 傷口再+5%" },
+        { value: "3", v1: 15, v2: 10, text: "Lv3 - 會心率+15% 傷口再+10%" },
+        { value: "4", v1: 20, v2: 15, text: "Lv4 - 會心率+20% 傷口再+15%" },
+        { value: "5", v1: 30, v2: 20, text: "Lv5 - 會心率+30% 傷口再+20%" }
+    ],
+    maximummight: [ // 精神抖擻 done
+        { value: "0", v1:0, text: "Lv0 - 維持耐力計量表全滿3秒後增加會心率，直到耐力被消耗一定程度後結束。" },
+        { value: "1", v1:10, text: "Lv1 - 會心率+10%" },
+        { value: "2", v1:20, text: "Lv2 - 會心率+20%" },
+        { value: "3", v1:30, text: "Lv3 - 會心率+30%" },
+        { value: "4", v1:0, text: "如果你不是龍矢流，我想問你為什麼會點開？",disabled: true }
+    ],
+    convertelement: [ // 屬性轉換 額外傷害待補
+        { value: "0", v1: 0, text: "Lv0 - 受到屬性攻擊後增加龍屬性值並造成額外龍屬性傷害。（有冷卻時間）" },
+        { value: "1", v1: 80, text: "Lv1 - 龍屬性值+80，累積屬性傷害後造成額外龍屬傷害(暫無資料不計算)" },
+        { value: "2", v1: 120, text: "Lv2 - 龍屬性值+120，並於累積屬性傷害後造成較多額外龍屬性傷害(暫無資料不計算)" },
+        { value: "3", v1: 180, text: "Lv3 - 龍屬性值+180，並於累積屬性傷害後造成更多額外龍屬性傷害(暫無資料不計算)" }
+    ],
+    agitator: [ // 挑戰者 done
+        { value: "0", v1: 0, v2: 0, text: "Lv0 - 魔物發怒時增加攻擊力與會心率。(上面狀態記得選憤怒)" },
+        { value: "1", v1: 4, v2: 3, text: "Lv1 - 攻擊力+4，會心率+3%" },
+        { value: "2", v1: 8, v2: 5, text: "Lv2 - 攻擊力+8，會心率+5%" },
+        { value: "3", v1: 12, v2: 7, text: "Lv3 - 攻擊力+12，會心率+7%" },
+        { value: "4", v1: 16, v2: 10, text: "Lv4 - 攻擊力+16，會心率+10%" },
+        { value: "5", v1: 20, v2: 15, text: "Lv5 - 攻擊力+20，會心率+15%" }
+    ],
+    latentpower: [ // 力量解放 done
+        { value: "0", v1: 0, text: "Lv0 - 戰鬥狀態120秒後(體力減少會加速)，120秒內增加會心率並減少耐力消耗。(結束後重新計時)" },
+        { value: "1", v1: 10, text: "Lv1 - 會心率+10%，減少耐力消耗量30%" },
+        { value: "2", v1: 20, text: "Lv2 - 會心率+20%，減少耐力消耗量30%" },
+        { value: "3", v1: 30, text: "Lv3 - 會心率+30%，減少耐力消耗量50%" },
+        { value: "4", v1: 40, text: "Lv4 - 會心率+40%，減少耐力消耗量50%" },
+        { value: "5", v1: 50, text: "Lv5 - 會心率+50%，減少耐力消耗量50%" }
+    ],
+    heroics: [ // 火場怪力 done
+        { value: "0", v1: 1, text: "Lv0 - 體力35%以下增加攻擊力與防禦力。" },
+        { value: "1", v1: 1, text: "Lv1 - 防禦力+50" },
+        { value: "2", v1: 1.05, text: "Lv2 - 攻擊力1.05倍、防禦力+50" },
+        { value: "3", v1: 1.05, text: "Lv3 - 攻擊力1.05倍、防禦力+100" },
+        { value: "4", v1: 1.1, text: "Lv4 - 攻擊力1.1倍、防禦力+100" },
+        { value: "5", v1: 1.3, text: "Lv5 - 攻擊力1.3倍，但無提升防禦力效果" }
+    ],
+    burst: [ // 連擊 done
+        { value: "0", v1: 0, v2: 0, text: "Lv0 - 連續攻擊會增加3秒內的攻擊力和屬性值，5hit後增幅上升(期間攻擊會重置時間)。" },
+        { value: "1", v1: 6, v2: 40, text: "Lv1 - (5hit後)攻擊力+6、屬性值+40" },
+        { value: "2", v1: 7, v2: 60, text: "Lv2 - (5hit後)攻擊力+7、屬性值+60" },
+        { value: "3", v1: 8, v2: 80, text: "Lv3 - (5hit後)攻擊力+8、屬性值+80" },
+        { value: "4", v1: 9, v2: 100, text: "Lv4 - (5hit後)攻擊力+9、屬性值+100" },
+        { value: "5", v1: 10, v2: 120, text: "Lv5 - (5hit後)攻擊力+10、屬性值+120" },
+        { value: "6", v1: 5, v2: 30, text: "第一段增幅(第2~4hit) - 基礎攻擊力+5、屬性值+30，各lv相同" }
+    ],
+    foray: [ // 攻勢 done
+        { value: "0", v1: 0,v2: 0, text: "Lv0 - 對毒或麻痺狀態的大型魔物增加攻擊力和會心率。" },
+        { value: "1", v1: 6,v2: 0, text: "Lv1 - 攻擊力+6" },
+        { value: "2", v1: 8,v2: 5, text: "Lv2 - 攻擊力+8、會心率+5%" },
+        { value: "3", v1: 10,v2: 10, text: "Lv3 - 攻擊力+10，會心率+10%" },
+        { value: "4", v1: 12,v2: 15, text: "Lv4 - 攻擊力+12，會心率+15%" },
+        { value: "5", v1: 15,v2: 20, text: "Lv5 - 攻擊力+15，會心率+20%" }
+    ],
+    coalescence: [ // 轉禍為福 done
+        { value: "0", v1: 1, text: "Lv0 - 解除狀態異常或屬性異常後，增加30秒內的屬性值和狀態異常值。(重複發動會重置時間)" },
+        { value: "1", v1: 1.05, text: "Lv1 - 屬性值1.05倍" },
+        { value: "2", v1: 1.1, text: "Lv2 - 屬性值1.1倍" },
+        { value: "3", v1: 1.15, text: "Lv3 - 屬性值1.15倍" }
+    ],
+    ambush: [ // 急襲 done
+        { value: "0", v1: 1, text: "Lv0 - 對大型魔物發動突襲攻擊後增加攻擊力30秒(時間內不會重複發動)。" },
+        { value: "1", v1: 1.05, text: "Lv1 - 攻擊力1.05倍" },
+        { value: "2", v1: 1.1, text: "Lv2 - 攻擊力1.1倍" },
+        { value: "3", v1: 1.15, text: "Lv3 - 攻擊力1.15倍" }
+    ],
+    antivirus: [ // 無我境界 done
+        { value: "0", v1: 0, text: "Lv0 - 感染狂龍病毒時較容易克服， 並增加克服狀態的會心率。(請跟黑蝕龍之力一起勾選)" },
+        { value: "1", v1: 3, text: "Lv1 - 稍微容易克服狂龍病毒， 克服狀態會心率+3%" },
+        { value: "2", v1: 6, text: "Lv2 - 容易克服狂龍病毒， 克服狀態會心率+6%" },
+        { value: "3", v1: 10, text: "Lv3 - 更容易克服狂龍病毒， 克服狀態會心率+10%" }
+    ],
+    elementalabsorption: [ // 屬性吸收 done
+        { value: "0", v1: 0, text: "Lv0 - 受到屬性攻擊後120秒內增加屬性值與屬耐、連續被彈會提升階段（結束後冷卻90秒）。" },
+        { value: "1", v1: 30, text: "Lv1 - 屬性值+30/+40/+50， 受攻擊屬性的耐性+4/+8/+12" },
+        { value: "2", v1: 40, text: "Lv2 - 屬性值+40/+50/+60， 受攻擊屬性的耐性+6/+12/+18" },
+        { value: "3", v1: 50, text: "Lv3 - 屬性值+50/+60/+70， 受攻擊屬性的耐性+8/+16/+24" }
+    ],
+    elementalabsorptionact: [ // 屬性吸啟動狀態
+        { value: "0", v1: 0, text: "第一階段" },
+        { value: "1", v1: 10, text: "第二階段" },
+        { value: "2", v1: 20, text: "第三階段" }
+    ],
+    selfimprovement: [ // 鑽研 done
+        { value: "0", v1: 0, text: "Lv0 - 隨任務時間推移增加攻擊力與防禦力。 （增幅於30分鐘後達到上限）" },
+        { value: "1", v1: 4, text: "Lv1 - 發動技能效果10分後(攻擊力+4)" },
+        { value: "2", v1: 8, text: "Lv1 - 發動技能效果20分後(攻擊力+8)" },
+        { value: "3", v1: 12, text: "Lv1 - 發動技能效果30分後(攻擊力+12)" }
+    ],
+    rathalos: [ // 火龍之力 資料待補
+        { value: "0", v1: 0, v2: 0, text: "0件 - 攻擊命中時，隨機造成額外火屬性傷害(沒資料未實裝)" },
+        { value: "1", v1: 33, v2: 24, text: "2件 - 攻擊命中時，隨機造成額外火屬性傷害。",disabled: true },
+        { value: "2", v1: 33, v2: 60, text: "4件 - 攻擊命中時，隨機造成更多額外火屬性傷害。",disabled: true }
+    ],
+    xuwu: [ // 暗器鱆之力 done
+        { value: "0", v1: 0, text: "0件 - 食用全熟肉等道具後，一定時間內增加基礎攻擊力(無法與種子藥丸疊加)" },
+        { value: "1", v1: 15, text: "2件 - 攻擊力+15。(請從[雜項&道具]-[怪力種子]一欄勾選)",disabled: true },
+        { value: "2", v1: 25, text: "4件 - 攻擊力+25。(請從[雜項&道具]-[怪力種子]一欄勾選)",disabled: true }
+    ],
+    blangonga: [ // 雪獅子王之鬥志 done 拆包10/20 日YT驗3/6 待驗 好像會重複藥品
+        { value: "0", v1: 0, v2: 0, text: "0件 - 使用動作「吼叫」時，提升周圍成員180秒內的攻擊力(自己不會觸發、無法與粉塵疊加)。" },
+        { value: "1", v1: 3, v2: 180, text: "2件 - 3分攻擊力+3。(請從[雜項&道具]-[鬼人粉塵]一欄勾選)", disabled: true },
+        { value: "2", v1: 6, v2: 180, text: "4件 - 3分攻擊力+6。(請從[雜項&道具]-[鬼人粉塵]一欄勾選)", disabled: true }
+    ],
+    odogaron: [ // 兇爪龍之力 done
+        { value: "0", v1: 0, text: "0件 - 技能「連擊」效果發動時延長其有效時間，增加基礎攻擊力。" },
+        { value: "1", v1: 3, text: "2件 - 「連擊」延長1秒，基礎攻擊力+3。" },
+        { value: "2", v1: 10, text: "4件 - 「連擊」延長2秒，基礎攻擊力+10。" }
+    ],
+    nuudra: [ // 獄焰鱆之叛逆  資料待補
+        { value: "0", v1: 0, text: "0件 - 技能「怨恨」發動時，造成少量額外傷害。(沒資料未實裝)" },
+        { value: "1", v1: 18, text: "2件 - 技能「怨恨」發動時，造成少量額外傷害。",disabled: true },
+        { value: "2", v1: 40, text: "4件 - 技能「怨恨」發動時，造成額外傷害。",disabled: true }
+    ],
+    jindahaad: [ // 凍峰龍之叛逆 done
+        { value: "0", v1: 0, text: "0件 - 從繩束縛狀態或凍結狀態回復後、 從拘束攻擊解放後或角力後，提升60秒內的攻擊力。" },
+        { value: "1", v1: 25, text: "2件 - 攻擊力+25。" },
+        { value: "2", v1: 50, text: "4件 - 攻擊力+50。" }
+    ],
+    goremagala: [ // 黑蝕龍之力 done
+        { value: "0", v1: 0, v2: 0, text: "0件 - 自動感染狂龍病毒。(克服狂龍時會心率+15%，克服狀態會持續60秒)" },
+        { value: "1", v1: 0, v2: 15, text: "2件 - 克服狂龍症後會心率+15%。(以已克服為計算)" },
+        { value: "2", v1: 15, v2: 15, text: "4件 - 克服狂龍症後會心率+15%、攻擊力+15。(以已克服為計算)" },
+        { value: "3", v1: 10, v2: 0, text: "4件 - 感染狂龍病毒時攻擊力+10(以未克服為計算)" }
+    ],
+    butteryleathercraft: [ // 皮革製品的滑順質感 done
+        { value: "0", v1: 0, text: "0件 - 利用地形滑行後，增加一定時間內的會心率。" },
+        { value: "1", v1: 30, text: "3件 - 會心率+30%。" }
+    ],
+    fortifyingpelt: [ // 毛皮的昂揚 done
+        { value: "0", v1: 1, text: "0件 - 任務期間每次力竭倒下後， 提升攻擊力與防禦力。（最多2次）" },
+        { value: "1", v1: 1.1, text: "3件 - 第1次力竭後，攻擊力1.1倍。" },
+        { value: "2", v1: 1.15, text: "3件 - 第2次力竭後，攻擊力1.15倍。" }
+    ],
+    lordsfavor: [ // 霸主的自尊 done
+        { value: "0", v1: 0, text: "0件 - 發動於一定範圍內對同伴生效的效果（如旋律效果）時，20秒內攻擊力上升。" },
+        { value: "1", v1: 10, text: "3件 - 20秒內攻擊力+10" }
+    ],
+    lordsfury: [ // 霸主的盛怒 done
+        { value: "0", v1: 0, text: "0件 - 陷入狀態異常時提升攻擊力。" },
+        { value: "1", v1: 10, text: "3件 - 攻擊力+10。" }
+    ],
+    corruptedmantle: [ // 蝕攻衣裝
+        { value: "0", v1: 1, v2: 0, text: "不使用" },
+        { value: "1", v1: 1.1, v2: 30,text: "蝕攻衣裝(克服狀態)：攻擊力1.1倍、會心+30%、平射有額外追擊 (貫通瓶除外)" },
+        { value: "2", v1: 1, v2: 10,text: "蝕攻衣裝(感染狀態)：會心+10%、平射有額外追擊 (貫通瓶除外)" },
+        { value: "3", v1: 1.2, v2: 0,text: "迴避衣裝(迴避成功)：攻擊力1.2倍、維持10秒鐘" }
+    ],
+    corruptedmotion: [ // 蝕攻衣裝平射追加hit-動作值屬補
+        {value: "0",  v1: 2, v2: 0.2,  v3: 1, v4: 0,  v5: 0, 
+                      vtype: 'normalshot', text: "lv1平射追加 - [2/0.2/x1]"},
+        {value: "1",  v1: 2, v2: 0.35, v3: 2, v4: 0,  v5: 0,  
+                      vtype: 'normalshot', text: "lv2平射追加 - [2/0.35/x2]"},
+        {value: "2",  v1: 2, v2: 0.5,  v3: 3, v4: 0,  v5: 0, 
+                      vtype: 'normalshot', text: "lv3平射追加 - [2/0.5/x3]"},
+        {value: "3",  v1: 3, v2: 0.5,  v3: 3, v4: 0,  v5: 0, 
+                      vtype: 'normalshot', text: "引導狀態平射追加 - [3/0.5/x3]"}
+    ],
+    horn: [ // 笛子旋律 done
+        { value: "0", v1: 1, text: "不使用" },
+        { value: "1", v1: 1.03, text: "攻擊力UP[小] - 攻擊x1.03" },
+        { value: "2", v1: 1.045, text: "攻擊力UP[小]追加 - 攻擊x1.045" },
+        { value: "3", v1: 1.045, text: "攻擊力UP[大] - 攻擊x1.045" },
+        { value: "4", v1: 1.1, text: "攻擊力UP[大]追加 - 攻擊x1.1" }
+    ],
+    food: [ // 貓飯(肉) done
+        { value: "0", v1: 0, text: "不使用" },
+        { value: "1", v1: 2, text: "肉 - 攻擊+2" },
+        { value: "2", v1: 5, text: "請客 - 攻擊+5" }
+    ],
+    foodrandom: [ // 飄忽術 done
+        { value: "0", v1: 0, text: "不使用" },
+        { value: "1", v1: 7, text: "小 - 攻擊+7、效果10秒(勾選視為發動)" },
+        { value: "2", v1: 15, text: "大 - 攻擊+15、效果10秒(勾選視為發動)" }
+    ],
+    demondrug: [ // 鬼人藥+大 done
+        { value: "0", v1: 0, text: "不使用" },
+        { value: "1", v1: 5, text: "鬼人藥(=最愛菇類的爆炸菇) - 攻擊+5" },
+        { value: "2", v1: 7, text: "鬼人藥大 - 攻擊+7" }
+    ],
+    mightseed: [ // 種子藥丸+鬼人彈 done
+        { value: "0", v1: 0, text: "不使用" },
+        { value: "1", v1: 10, text: "怪力種子or弩槍鬼人彈 - 攻擊+10" },
+        { value: "2", v1: 25, text: "怪力藥丸 - 攻擊+25" },
+        { value: "3", v1: 15, text: "蠻勇的餐桌I - 2分鐘攻擊+15" },
+        { value: "4", v1: 25, text: "蠻勇的餐桌II - 2分鐘攻擊+25" }
+    ],    
+    demonopowder: [ // 粉塵
+        { value: "0", v1: 0, text: "不使用" },
+        { value: "1", v1: 10, text: "鬼人粉塵 - 3分鐘攻擊+10" },
+        { value: "2", v1: 3, text: "戰嚎I - 3分鐘攻擊+3" },
+        { value: "3", v1: 6, text: "戰嚎II - 3分鐘攻擊+6" }
+    ]
+};
+
+
+function getSkillValue(skillCategory) {
+    let skill = skillOptions[skillCategory].find(
+        skill => skill.value === document.getElementById(`skill-${skillCategory}`).value
+        );
+    return {
+        value: skill.value,
+        v1: skill ? skill.v1 : 0,
+        v2: skill ? skill.v2 : 0,
+        v3: skill ? skill.v3 : 0,
+        v4: skill ? skill.v4 : 0,
+        v5: skill ? skill.v5 : 0,
+        vtype: skill ? skill.vtype : 0,
+        vfollow: skill ? skill.vfollow : 0,
+        text: skill ? skill.text : "" 
+    };
+}
+
+function calculateDamage() {
+
+    //計算攻擊力
+    let wattack = parseFloat(document.getElementById('wattack').value);
+    let wattackmult = 1000000 * getSkillValue('attackboost').v2 
+            * getSkillValue('heroics').v1 
+            * getSkillValue('ambush').v1
+            * getSkillValue('fortifyingpelt').v1
+            * getSkillValue('horn').v1
+            * (1 + 0.15 * document.getElementById('cathorn').checked)
+            * getSkillValue('corruptedmantle').v1
+            * (1 + getSkillValue('airborne').v1 * (getSkillValue('action').vtype == 'jumpshot'));
+    let wattackplus = getSkillValue('attackboost').v1
+                + getSkillValue('tetradshot').v1 * (document.getElementById('skill-tetradshotact').value == 1)
+                + getSkillValue('burst').v1
+                + getSkillValue('resentment').v1 
+                + getSkillValue('adrenalinerush').v1 
+                + getSkillValue('peakperformance').v1 
+                + getSkillValue('counterstrike').v1 
+                + getSkillValue('agitator').v1 * (getSkillValue('monsterstatus').v1) 
+                + getSkillValue('foray').v1 
+                + getSkillValue('selfimprovement').v1
+                + getSkillValue('blangonga').v1
+                + (getSkillValue('burst').v1 > 0 ? getSkillValue('odogaron').v1 : 0)
+                + getSkillValue('xuwu').v1
+                + getSkillValue('goremagala').v1
+                + getSkillValue('jindahaad').v1
+                + getSkillValue('lordsfavor').v1
+                + getSkillValue('lordsfury').v1
+                + getSkillValue('food').v1
+                + getSkillValue('foodrandom').v1
+                + (3 * document.getElementById('foodswim').checked)
+    let wattackplus2 = getSkillValue('demondrug').v1
+                + getSkillValue('mightseed').v1
+                + (6 * document.getElementById('powercharm').checked)
+                + getSkillValue('demonopowder').v1
+    let actualattack = (wattack * wattackmult / 1000000) + wattackplus + wattackplus2
+
+    //計算屬性值
+    let welement = parseFloat(document.getElementById('welement').value);
+    let elementlimit = Math.max(welement+350,welement*1.9)
+   let actionType = getSkillValue('action').vtype; // 先定義動作類型
+
+let welemult = 1000000 * getSkillValue('elementattack').v2 
+                   * getSkillValue('coalescence').v1
+                   * (1 + getSkillValue('chargemaster').v1 * ['normalshot', 'powershot'].includes(actionType));
+
+    let weleplus = getSkillValue('elementattack').v1 
+                + getSkillValue('burst').v2
+                + getSkillValue('convertelement').v1
+                + getSkillValue('elementalabsorption').v1
+                + getSkillValue('elementalabsorptionact').v1 * (getSkillValue('elementalabsorption').v1 !== 0);
+    let actualelement = 0
+    if (welement !== 0 && !isNaN(welement)){
+        actualelement = (welement * welemult / 1000000) + weleplus
+        actualelement = actualelement> elementlimit ? elementlimit: actualelement;
+    }
+
+    //計算會心值
+    let wcritical = parseFloat(document.getElementById('wcritical').value);
+    if (isNaN(wcritical)){wcritical = 0}
+    let weaknessexploit = getSkillValue('weaknessexploit');
+    weaknessexploit.v1 *= (parseFloat(document.getElementById('monsterpsy').value) >= 45);
+    weaknessexploit.v2 *= document.getElementById('monsterhurt').checked;
+    let actualcritical = wcritical 
+                        + getSkillValue('criticaleye').v1 
+                        + getSkillValue('criticaldraw').v1 
+                        + getSkillValue('tetradshot').v2 * (parseFloat(document.getElementById('skill-tetradshotact').value) < 2)
+                        + weaknessexploit.v1 + weaknessexploit.v2 
+                        + getSkillValue('maximummight').v1
+                        + getSkillValue('agitator').v2 * (getSkillValue('monsterstatus').v1)
+                        + getSkillValue('latentpower').v1
+                        + getSkillValue('foray').v2
+                        + getSkillValue('antivirus').v1 * (getSkillValue('goremagala').v2 == 15)
+                        + getSkillValue('goremagala').v2
+                        + getSkillValue('butteryleathercraft').v1
+                        + getSkillValue('corruptedmantle').v2
+    actualcritical = actualcritical>100 ? 100: actualcritical;
+    let negcrt = false
+    if (actualcritical<0){
+        actualcritical *= -1
+        negcrt = true
+    }
+
+    document.getElementById('cal-status').innerHTML = `[實際狀態值(包含隱藏值)]<br>物${parseFloat(actualattack.toFixed(2))}、屬${parseFloat(actualelement.toFixed(2))}、會心${parseFloat(actualcritical.toFixed(0))}%`;
+    document.getElementById('fomula-statusattack').innerHTML = `${parseFloat(actualattack.toFixed(2))} = ${wattack} × ${wattackmult/1000000} + ${wattackplus} + ${wattackplus2} ≤ ???`;
+    document.getElementById('fomula-statuselement').innerHTML = `${parseFloat(actualelement.toFixed(2))} = ${welement} × ${welemult/1000000} + ${weleplus} ≤ ${elementlimit}`;
+
+    //計算傷害值
+    let action = getSkillValue('action');
+    if (action.vtype === 'custom'){
+        action.v1 = document.getElementById('cust-motion').value
+        action.v2 = document.getElementById('cust-ele').value
+        action.v3 = 1
+    }
+    let angrymult = getSkillValue('monsterstatus').v1? getSkillValue('angrymult').v1 : 1
+    let coating = getSkillValue('wcoating').v1;
+    if (coating === 99 && action.v4 !==0 ){
+        action.v1 = action.v4
+        action.v2 = action.v5
+        coating = 1;
+    }
+    let dist = getSkillValue('dist').v1
+    if (action.vfollow){dist = getSkillValue('dist').v2}//引導狀態的距離補正
+
+    //射擊種類強化
+    let shotmult = (1 + getSkillValue('normalshot').v1 * (action.vtype == 'normalshot')
+                         + getSkillValue('normalshot').v1 * (action.vtype == 'jumpshot'))
+                    * (1 + getSkillValue('spreadshots').v1 * (action.vtype == 'powershot'))
+                    * (1 + getSkillValue('piercingshot').v1 * (action.vtype == 'piereshot'))
+                    * (1 + getSkillValue('specialammoboost').v1 * (action.vtype == 'piereshot') 
+                         + getSkillValue('specialammoboost').v1 * (action.vtype == 'spshot'))
+    //物理傷害倍率
+    let psymult = 1000000 * action.v1 / 100 // 暫乘1000000避免浮點數爆炸
+                    * document.getElementById('monsterpsy').value / 100
+                    * shotmult
+                    * coating
+                    * dist
+                    * angrymult
+    let psydamage = parseFloat((actualattack * psymult / 1000000).toFixed(1)) 
+    let citialpsymult = getSkillValue('criticalboost').v1
+    if (negcrt) { citialpsymult = 0.75 }
+    let critialpsydamage = parseFloat((actualattack * psymult / 1000000 * citialpsymult).toFixed(1))
+    //屬性傷害倍率
+    let elemult = 1000000 * action.v2 // 暫乘1000000避免浮點數爆炸
+                    * document.getElementById('monsterele').value / 100
+                    * angrymult
+    let eledamage = parseFloat((actualelement / 10 * elemult / 1000000).toFixed(1))
+    let citialelemult = getSkillValue('criticalelement').v1
+    if (negcrt) {citialelemult = 1}
+    let critialeledamage = parseFloat((actualelement / 10 * elemult / 1000000 * citialelemult).toFixed(1))
+
+    let damage = psydamage + eledamage
+    let critialdamage = critialpsydamage + critialeledamage
+    let averagedamage = damage * (100 - actualcritical) / 100 
+                        + critialdamage * (actualcritical) / 100
+    let totalaveragedamage = averagedamage * action.v3
+
+    //追加傷害(蝕攻)
+    if (document.getElementById('skill-corruptedmantle').value !== '0' && action.vtype === 'normalshot'){
+        let corruptedaction = skillOptions.corruptedmotion[document.getElementById('skill-action').value]
+        if (getSkillValue('wcoating').v1 === 99){
+            corruptedaction.v1 = 0
+            corruptedaction.v2 = 0
+        }
+        
+        let corpsydamage = parseFloat((actualattack * psymult / 1000000 
+            / action.v1 * corruptedaction.v1).toFixed(1)) 
+        let corcritialpsydamage = parseFloat((actualattack * psymult / 1000000 
+            / action.v1 * corruptedaction.v1 * citialpsymult).toFixed(1))
+        let coreledamage = parseFloat((actualelement / 10 * elemult 
+            / action.v2 * corruptedaction.v2 / 1000000).toFixed(1))
+        let corcritialeledamage = parseFloat((actualelement / 10 * elemult 
+            / action.v2 * corruptedaction.v2 / 1000000 * citialelemult).toFixed(1))
+        let cordamage = corpsydamage + coreledamage
+        let corcritialdamage = corcritialpsydamage + corcritialeledamage
+        let coraveragedamage = cordamage * (100 - actualcritical) / 100 
+                            + corcritialdamage * (actualcritical) / 100
+        let cortotalaveragedamage = coraveragedamage * corruptedaction.v3
+
+
+        document.getElementById('cal-singlehit').innerHTML =     `[單箭傷害(+蝕攻追擊)]<br>物${psydamage.toFixed(1)}(+${corpsydamage.toFixed(1)}) + 屬${eledamage.toFixed(1)}(+${coreledamage.toFixed(1)}) = ${damage.toFixed(1)}(+${cordamage.toFixed(1)}) `;
+        document.getElementById('cal-singlecrithit').innerHTML = `[會心時單箭傷害(+蝕攻追擊)]<br>物${critialpsydamage.toFixed(1)}(+${corcritialpsydamage.toFixed(1)}) + 屬${critialeledamage.toFixed(1)}(+${corcritialeledamage.toFixed(1)}) = ${critialdamage.toFixed(1)}(+${corcritialdamage.toFixed(1)}) `;
+
+        document.getElementById('cal-totalavresult').innerHTML = `[總平均傷害(+蝕攻追擊)]<br>${averagedamage.toFixed(1)}×${action.v3.toFixed(0)}箭(+${coraveragedamage.toFixed(1)}×${corruptedaction.v3.toFixed(0)}箭) = ${totalaveragedamage.toFixed(1)}(+${cortotalaveragedamage.toFixed(1)}) = ${(totalaveragedamage+cortotalaveragedamage).toFixed(1)}`;
+
+        //係數使用
+        let averagepsymult = psymult * (1+corruptedaction.v1/100) / 1000000 * (100 - actualcritical) / 100 
+                            + psymult * (1+corruptedaction.v1/100) / 1000000 * citialpsymult * (actualcritical) / 100
+        let averageelemult = elemult/10 * (1+corruptedaction.v2) / 1000000 * (100 - actualcritical) / 100 
+                            + elemult/10 * (1+corruptedaction.v2) / 1000000 * citialelemult * (actualcritical) / 100
+        let averagepsymultw = wattackmult / 1000000 * psymult * (1+corruptedaction.v1/100) / 1000000 * (100 - actualcritical) / 100 
+                            + wattackmult / 1000000 * psymult * (1+corruptedaction.v1/100) / 1000000 * citialpsymult * (actualcritical) / 100
+        let averageelemultw = welemult / 1000000 * elemult/10 * (1+corruptedaction.v2) / 1000000 * (100 - actualcritical) / 100 
+                            + welemult / 1000000 * elemult/10 * (1+corruptedaction.v2) / 1000000 * citialelemult * (actualcritical) / 100
+
+        document.getElementById('cal-psyelemult').innerHTML = `[每1點狀態值增加傷害]<br>物=${averagepsymult.toFixed(4)}、屬=${averageelemult.toFixed(4)}`;
+        document.getElementById('cal-peratio').innerHTML = `(1點狀態攻擊力 &asymp; ${parseFloat((averagepsymult / averageelemult).toFixed(2))}點狀態屬性值)`;
+        document.getElementById('cal-psyelemultw').innerHTML = `[每1點武器值增加傷害]<br>物=${averagepsymultw.toFixed(4)}、屬=${averageelemultw.toFixed(4)}    `;
+        document.getElementById('cal-peratiow').innerHTML = `(1點武器攻擊力 &asymp; ${parseFloat((averagepsymultw / averageelemultw).toFixed(2))}點武器屬性值)`;
+   
+
+    }else{
+
+        document.getElementById('cal-singlehit').innerHTML =     `[單箭傷害]<br>物${psydamage.toFixed(1)} + 屬${eledamage.toFixed(1)} = ${damage.toFixed(1)} `;
+        document.getElementById('cal-singlecrithit').innerHTML = `[會心時單箭傷害]<br>物${critialpsydamage.toFixed(1)} + 屬${critialeledamage.toFixed(1)} = ${critialdamage.toFixed(1)} `;
+        document.getElementById('cal-totalavresult').innerHTML = `[總平均傷害]<br>${averagedamage.toFixed(1)} × ${action.v3.toFixed(0)}箭 = ${totalaveragedamage.toFixed(1)}`;
+
+        //係數使用
+        let averagepsymult = psymult / 1000000 * (100 - actualcritical) / 100 
+                            + psymult / 1000000 * citialpsymult * (actualcritical) / 100
+        let averageelemult = elemult/10 / 1000000 * (100 - actualcritical) / 100 
+                            + elemult/10 / 1000000 * citialelemult * (actualcritical) / 100
+        let averagepsymultw = wattackmult / 1000000 * psymult / 1000000 * (100 - actualcritical) / 100 
+                            + wattackmult / 1000000 * psymult / 1000000 * citialpsymult * (actualcritical) / 100
+        let averageelemultw = welemult / 1000000 * elemult/10 / 1000000 * (100 - actualcritical) / 100 
+                            + welemult / 1000000 * elemult/10 / 1000000 * citialelemult * (actualcritical) / 100
+
+        document.getElementById('cal-psyelemult').innerHTML = `[每1點狀態值增加傷害]<br>物=${averagepsymult.toFixed(4)}、屬=${averageelemult.toFixed(4)}`;
+        document.getElementById('cal-peratio').innerHTML = `(1點狀態攻擊力 &asymp; ${parseFloat((averagepsymult / averageelemult).toFixed(2))}點狀態屬性值)`;
+        document.getElementById('cal-psyelemultw').innerHTML = `[每1點武器值增加傷害]<br>物=${averagepsymultw.toFixed(4)}、屬=${averageelemultw.toFixed(4)}    `;
+        document.getElementById('cal-peratiow').innerHTML = `   (1點武器攻擊力 &asymp; ${parseFloat((averagepsymultw / averageelemultw).toFixed(2))}點武器屬性值)`;
+        
+    }
+    document.getElementById('fomula-statuspsydamage').innerText = `${psydamage.toFixed(1)}(${critialpsydamage.toFixed(1)}) = ${actualattack} × ${action.v1}/100 × ${document.getElementById('monsterpsy').value}/100 × ${shotmult} × ${coating} × ${dist} × ${angrymult} (× ${citialpsymult})`;
+    document.getElementById('fomula-statuseledamage').innerText = `${eledamage.toFixed(1)}(${critialeledamage.toFixed(1)}) = ${actualelement}/10 × ${action.v2} × ${document.getElementById('monsterele').value}/100 × ${angrymult} (× ${citialelemult})`;
+
+    saveStateToURL();
+}   
+
+/*以下跟網頁相關*/
+
+// 將當前表單數值編碼到 URL
+function saveStateToURL() {
+    let params = new URLSearchParams();
+    
+    document.querySelectorAll('input, select').forEach(el => {
+        if (el.type === 'checkbox') {
+            params.set(el.id, el.checked ? 1 : 0);
+        } else {
+            params.set(el.id, el.value);
+        }
+    });
+    
+    history.replaceState(null, '', '?' + params.toString());
+}
+
+function loadStateFromURL() {
+    let params = new URLSearchParams(window.location.search);
+    
+    document.querySelectorAll('input, select').forEach(el => {
+        if (params.has(el.id)) {
+            if (el.type === 'checkbox') {
+                el.checked = params.get(el.id) === '1';
+            } else {
+                el.value = params.get(el.id);
+                if (el.value !== '0' && el.type === 'select-one'){
+                    
+                    el.style.backgroundColor = COLOR
+                }
+            }
+        }
+    });
+    let extraInputs1 = document.getElementById("extra-inputs");
+    let extraInputs2 = document.getElementById("extra-inputs2");
+
+    if (document.getElementById("skill-action").value === "99") {
+        extraInputs1.style.display = "table-row";  // 顯示額外輸入框
+        extraInputs2.style.display = "table-row";
+    } else {
+        extraInputs1.style.display = "none";  // 隱藏額外輸入框
+        extraInputs2.style.display = "none";
+    }
+
+    let extraangrymult = document.getElementById("extra-angrymult");
+    if (document.getElementById("skill-monsterstatus").value === "1") {
+        extraangrymult.style.display = "table-row";  // 顯示額外輸入框
+    } else {
+        extraangrymult.style.display = "none";  // 隱藏額外輸入框
+    }
+
+    if (params.size>0){
+        calculateDamage() 
+        foldallsetting()
+    }
+}
+
+// 重置所有選項
+function resetOption() {
+    // 清空所有輸入框
+    document.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
+    document.querySelectorAll('input[type="checkbox"]').forEach(input => input.checked = false);
+    document.querySelectorAll('select').forEach(select => {
+        select.selectedIndex = 0; // 重置選擇
+        select.style.backgroundColor = ''; // 移除背景顏色，恢復預設
+    });
+    populateFormFields()
+
+    // 清空計算結果
+    document.getElementById("btn-copy").style.display = "none"; // 預設隱藏按鈕
+    document.getElementById('cal-status').innerHTML = "[實際狀態值(包含隱藏值)]<br>物-屬-會心";
+    document.getElementById('cal-singlehit').innerHTML = "[單箭傷害]<br>物+屬=總";
+    document.getElementById('cal-singlecrithit').innerHTML = "[會心時單箭傷害]<br>物+屬=總";
+    document.getElementById('cal-totalavresult').innerHTML = "[總平均傷害]<br>單箭平均傷害×箭數=總平均傷害";
+    document.getElementById('cal-psyelemult').innerHTML = "[每1點狀態值增加傷害]<br>攻擊力-屬性值";
+    document.getElementById('cal-peratio').innerHTML = "[狀態物屬比]";
+    document.getElementById('cal-psyelemultw').innerHTML = "[每1點武器值增加傷害]<br>攻擊力-屬性值";
+    document.getElementById('cal-peratiow').innerHTML = "[武器值物屬比]";
+
+    history.pushState(null, '', window.location.pathname);
+}
+
+function foldallsetting(){
+    let detailsElements = document.querySelectorAll("details");
+    let allClosed = Array.from(detailsElements).every(details => !details.open); // 檢查是否全部都關閉
+
+    detailsElements.forEach(details => {
+        details.open = allClosed; // 若全部關閉則展開，否則全部摺疊
+    });
+}
+
+function copypage(){
+    const url = window.location.href;
+    const shortenerURL = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`;
+
+    fetch(shortenerURL)
+        .then(response => response.text())
+        .then(shortUrl => {
+            navigator.clipboard.writeText(shortUrl);
+            alert("縮短網址已複製：" + shortUrl);
+        })
+        .catch(error => {
+            console.error("縮址失敗：", error);
+            alert("無法縮短網址！");
+        });
+}
+
+// 設置表單欄位的預設值
+function populateFormFields() {
+    document.getElementById('monsterpsy').value = 80;
+    document.getElementById('monsterele').value = 30;
+    document.getElementById('wattack').value = 205;
+    document.getElementById('welement').value = 230;
+    document.getElementById('wcritical').value = 5;
+}
+
+// 動態生成 select 元素的選項
+function populateSelectOptions() {
+    for (const [key, options] of Object.entries(skillOptions)) {
+        const selectElement = document.getElementById(`skill-${key}`);
+        if (!selectElement) continue;
+
+        options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.value;
+            optionElement.textContent = option.text;
+            selectElement.appendChild(optionElement);
+
+            // 檢查 option 是否要設為 disabled
+            if (option.disabled) {
+                optionElement.disabled = true;
+            }
+
+            selectElement.appendChild(optionElement);
+        });
+    }
+}
+
+//更新魔物設定縮略
+function updateMonsterSummary() {
+    let phys = document.getElementById("monsterpsy").value || 0;
+    let ele = document.getElementById("monsterele").value || 0;
+    let hurt = document.getElementById("monsterhurt").checked ? `, 傷口` : ``;
+    let status = getSkillValue('monsterstatus').v1;
+    if (status === 1) {status = `, 憤怒, 怒補: ${getSkillValue("angrymult").v1}`;} 
+    else{status = ``;}
+    document.getElementById("monster-summary").innerHTML = 
+        `<b>目標肉質</b> <br>(物理: ${phys}, 屬性: ${ele}${hurt}${status})`;
+}
+function updateWeaponSummary() {
+    let wattack = document.getElementById("wattack").value;
+    let welement = document.getElementById("welement").value;
+    if (isNaN(welement)){ welement = 0 }
+    let wcritical = document.getElementById("wcritical").value;
+    if (isNaN(wcritical)){ wcritical = 0 }
+    let wcoating = document.getElementById("skill-wcoating").value;
+    if (wcoating === '1') { wcoating = `, 接擊瓶`;
+    }else if (wcoating === '2') { wcoating = `, 強擊瓶`;
+    }else if (wcoating === '3') { wcoating = `, 貫通瓶`;
+    }else{ wcoating = ``;
+    }
+    let motion = String(getSkillValue('action').text)
+    if (motion === '自行設定'){
+        let custmotion = document.getElementById("cust-motion").value;
+        let custele = document.getElementById("cust-ele").value;
+        motion += ` - [${custmotion}/${custele}/x1]`
+    }
+    let dist = document.getElementById("skill-dist").value
+    if (dist === '0') { dist = `◎`;
+    }else if (dist === '1') { dist = `○`;
+    }else if (dist === '2') { dist = `◌`;
+    }
+
+    document.getElementById("w-set-summary").innerHTML = 
+        `<b>武器設定</b> <br>(攻${wattack}, 屬${welement}, 會${wcritical}%${wcoating}, ${motion}, ${dist})`;
+}
+function updateWSkillSummary() {
+    let summary = document.getElementById("w-skill-summary");
+    let selectedSkills = [];
+
+    document.querySelectorAll("#w-skill select").forEach(select => {
+        let labelElement = document.querySelector(`label[for="${select.id}"]`); // 直接透過 for 屬性抓 label
+        let label = labelElement ? labelElement.textContent.trim() : "";
+        let value = select.value;
+
+        if (select.id === "skill-tetradshot" && value !== "0"){
+            if (document.getElementById("skill-tetradshotact").value === '0'){
+                selectedSkills.push(`${label}Lv${value}(+會)`);
+            }else if(document.getElementById("skill-tetradshotact").value === '1'){
+                selectedSkills.push(`${label}Lv${value}(+攻會)`);
+            }            
+        }else if (value !== "0") { // 過濾掉未選擇的技能
+            if (select.id !== "skill-tetradshotact"){
+                selectedSkills.push(`${label}Lv${value}`);
+            }
+
+        }
+
+
+    });
+
+    summary.innerHTML = `<b>武器技能</b>${selectedSkills.length > 0 ? "<br> (" + selectedSkills.join(", ") +")" : ""}`;
+}
+function updateEqSkillSummary() {
+    let summary = document.getElementById("eq-skill-summary");
+    let selectedSkills = [];
+
+    document.querySelectorAll("#eq-skill select").forEach(select => {
+        let labelElement = document.querySelector(`label[for="${select.id}"]`); // 直接透過 for 屬性抓 label
+        let label = labelElement ? labelElement.textContent.trim() : "";
+        let value = select.value;
+        if (select.id === "skill-elementalabsorption" && value !== "0"){
+                  selectedSkills.push(`${label}Lv${value}(${getSkillValue('elementalabsorptionact').text})`);
+        }else if (value !== "0") { // 過濾掉未選擇的技能
+            if (select.id !== "skill-elementalabsorptionact"){
+                selectedSkills.push(`${label}Lv${value}`);
+            }
+
+        }
+
+
+    });
+
+    summary.innerHTML = `<b>防具技能</b>${selectedSkills.length > 0 ? "<br> (" + selectedSkills.join(", ") +")" : ""}`;
+}
+function updateadSkillSummary() {
+    let summary = document.getElementById("ad-skill-summary");
+    let selectedSkills = [];
+
+    document.querySelectorAll("#ad-skill select").forEach(select => {
+        let labelElement = document.querySelector(`label[for="${select.id}"]`); // 直接透過 for 屬性抓 label
+        let label = labelElement ? labelElement.textContent.trim() : "";
+        let value = select.value;
+        if (value !== "0") { // 過濾掉未選擇的技能
+            selectedSkills.push(`${label}:${select.options[select.selectedIndex].text}`);
+        }
+    });
+
+    summary.innerHTML = `<b>套裝技能</b>${selectedSkills.length > 0 ? "<br> (" + selectedSkills.join("<br> ") +")" : ""}`;
+}
+function updategroupSkillSummary() {
+    let summary = document.getElementById("group-skill-summary");
+    let selectedSkills = [];
+
+    document.querySelectorAll("#group-skill select").forEach(select => {
+        let labelElement = document.querySelector(`label[for="${select.id}"]`); // 直接透過 for 屬性抓 label
+        let label = labelElement ? labelElement.textContent.trim() : "";
+        let value = select.value;
+        if (value !== "0") { // 過濾掉未選擇的技能
+            selectedSkills.push(`${label}:${select.options[select.selectedIndex].text}`);
+        }
+    });
+
+    summary.innerHTML = `<b>團體技能</b>${selectedSkills.length > 0 ? "<br> (" + selectedSkills.join("<br>") +")" : ""}`;
+}
+function updateOtherSkillSummary() {
+    let summary = document.getElementById("other-skill-summary");
+    let selectedSkills = [];
+
+    document.querySelectorAll("#other-skill select, #other-skill input[type='checkbox']").forEach(input => {
+        let labelElement = document.querySelector(`label[for="${input.id}"]`);
+        let label = labelElement ? labelElement.textContent.trim() : "";
+        let value = input.type === "checkbox" ? (input.checked ? "✔" : "0") : input.value;
+        
+        if ((input.type === "checkbox" && input.checked) || (input.type === "select-one" && value !== "0")) { 
+            selectedSkills.push(`${label}`);
+        }
+    });
+
+    summary.innerHTML = `<b>雜項&道具</b>${selectedSkills.length > 0 ? "<br> (" + selectedSkills.join(", ") + ")" : ""}`;
+}
+
+/*執行階段*/
+
+
+
+// 頁面加載後初始化欄位
+window.onload = function() {
+    populateFormFields();
+    populateSelectOptions();
+
+    // 嘗試從 URL 載入狀態
+    loadStateFromURL();
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("select").forEach(select => {
+        
+        // 設定顏色的函式
+        function updateColor(element) {
+            if (element.value !== '' && element.value !== '0') {
+                element.style.backgroundColor = COLOR; // 變更顏色
+            } else {
+                element.style.backgroundColor = ""; // 恢復原狀
+            }
+        }
+
+        // 監聽 `change` 事件，當使用者選擇新值時變色
+        select.addEventListener("change", function () {
+            //  alert(this.value)
+            updateColor(this);
+        });
+
+        // 頁面載入時根據當前選擇的值更新顏色 (處理從網址讀取的情況)
+        updateColor(select);
+    });
+
+    const btnCopy = document.getElementById("btn-copy");
+    const btnCalculate = document.getElementById("btn-calculate");
+    btnCopy.style.display = "none"; // 預設隱藏按鈕
+
+    document.getElementById("btn-calculate").addEventListener("click", function() {
+        btnCopy.style.display = "block"; // 顯示按鈕
+    });
+    btnCalculate.style.marginBottom = "10px"; // 兩個按鈕之間留白 10px
+
+    //縮略
+    document.getElementById("monster-details").addEventListener("toggle", function () {
+        setTimeout(() => { // 使用 setTimeout 確保判斷時狀態已更新
+            if (!this.open) { // 只有當 <details> 關閉時才更新
+                updateMonsterSummary();
+            }else{
+                document.getElementById("monster-summary").innerHTML = `<b>目標肉質</b>`
+            }
+        }, 0);
+    });
+    document.getElementById("w-set").addEventListener("toggle", function () {
+        setTimeout(() => { // 使用 setTimeout 確保判斷時狀態已更新
+            if (!this.open) { // 只有當 <details> 關閉時才更新
+                updateWeaponSummary();
+            }else{
+                document.getElementById("w-set-summary").innerHTML = `<b>武器設定</b>`
+            }
+        }, 0);
+    });
+    document.getElementById("w-skill").addEventListener("toggle", function () {
+        setTimeout(() => { // 使用 setTimeout 確保判斷時狀態已更新
+            if (!this.open) { // 只有當 <details> 關閉時才更新
+                updateWSkillSummary();
+            }else{
+                document.getElementById("w-skill-summary").innerHTML = `<b>武器技能</b>`
+            }
+        }, 0);
+    });
+    document.getElementById("eq-skill").addEventListener("toggle", function () {
+        setTimeout(() => { // 使用 setTimeout 確保判斷時狀態已更新
+            if (!this.open) { // 只有當 <details> 關閉時才更新
+                updateEqSkillSummary();
+            }else{
+                document.getElementById("eq-skill-summary").innerHTML = `<b>防具技能</b>`
+            }
+        }, 0);
+    });
+    document.getElementById("ad-skill").addEventListener("toggle", function () {
+        setTimeout(() => { // 使用 setTimeout 確保判斷時狀態已更新
+            if (!this.open) { // 只有當 <details> 關閉時才更新
+                updateadSkillSummary();
+            }else{
+                document.getElementById("ad-skill-summary").innerHTML = `<b>套裝技能</b>`
+            }
+        }, 0);
+    });
+    document.getElementById("group-skill").addEventListener("toggle", function () {
+        setTimeout(() => { // 使用 setTimeout 確保判斷時狀態已更新
+            if (!this.open) { // 只有當 <details> 關閉時才更新
+                updategroupSkillSummary();
+            }else{
+                document.getElementById("group-skill-summary").innerHTML = `<b>團體技能</b>`
+            }
+        }, 0);
+    });
+    document.getElementById("other-skill").addEventListener("toggle", function () {
+        setTimeout(() => { // 使用 setTimeout 確保判斷時狀態已更新
+            if (!this.open) { // 只有當 <details> 關閉時才更新
+                updateOtherSkillSummary();
+            }else{
+                document.getElementById("other-skill-summary").innerHTML = `<b>雜項&道具</b>`
+            }
+        }, 0);
+    });
+    document.getElementById("skill-action").addEventListener("change", function() {
+        let extraInputs1 = document.getElementById("extra-inputs");
+        let extraInputs2 = document.getElementById("extra-inputs2");
+
+        if (this.value === "99") {
+            extraInputs1.style.display = "table-row";  // 顯示額外輸入框
+            extraInputs2.style.display = "table-row";
+        } else {
+            extraInputs1.style.display = "none";  // 隱藏額外輸入框
+            extraInputs2.style.display = "none";
+        }
+    });
+    document.getElementById("skill-monsterstatus").addEventListener("change", function() {
+        let extraangrymult = document.getElementById("extra-angrymult");
+
+        if (this.value === "1") {
+            extraangrymult.style.display = "table-row";  // 顯示額外輸入框
+        } else {
+            extraangrymult.style.display = "none";  // 隱藏額外輸入框
+        }
+    });
+});
+
+
+
+
+</script>
+</head>
+<script>
+    const CACHE_KEY = "app_version";
+    const APP_VERSION = document.querySelector('meta[name="app-version"]').content;
+
+    function checkCache() {
+        const cachedVersion = localStorage.getItem(CACHE_KEY);
+        if (cachedVersion !== APP_VERSION) {
+            console.log("版本變更，清除快取並重新載入");
+            localStorage.setItem(CACHE_KEY, APP_VERSION);
+            location.reload(true); // 強制重新載入
+        }
+    }
+
+    checkCache();
+</script>
+
+
+
+<body>
+    <div class="container">
+        <h2 id="title">Monster Hunter Wilds 1.01<br>屬性弓箭傷害計算機β</h2>
+
+        <button onclick="foldallsetting()" id="btn-fold">摺疊/展開所有欄位</button>
+        <br><br>
+        <details id="monster-details" open >
+            <summary id="monster-summary"><b>目標肉質</b></summary>
+            <table>
+                <tr>
+                    <td><label for="monsterpsy">物理肉質：</label></td>
+                    <td><input type="number" id="monsterpsy"></td>
+                </tr>
+                <tr>
+                    <td><label for="monsterele">屬性肉質：</label></td>
+                    <td><input type="number" id="monsterele"></td>
+                </tr>
+                <tr>
+                    <td><label for="monsterhurt">傷口(傷口肉質需查詢<a href="https://mhwilds.kiranico.com/zh-Hant/data/monsters" target="_blank">wiki</a>)</label></td>
+                    <td><input type="checkbox" id="monsterhurt"></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-monsterstatus">狀態(發怒、睡眠)</label></td>
+                    <td><select id="skill-monsterstatus"></select></td>
+                </tr>
+                <tr id="extra-angrymult" style="display: none;">
+                    <td><label for="skill-angrymult">發怒補正</label></td>
+                    <td><select id="skill-angrymult"></select></td>
+                </tr>
+            </table>
+        </details>
+        <details id="w-set" open >
+            <summary id="w-set-summary"><b>武器設定</b></summary>
+            <table>
+                <tr>
+                    <td><label for="wattack">武器攻擊力(不含武器係數)：</label></td>
+                    <td><input type="number" id="wattack"></td>
+                </tr>
+                <tr>
+                    <td><label for="welement">武器屬性值：</label></td>
+                    <td><input type="number" id="welement"></td>
+                </tr>
+                <tr>
+                    <td><label for="wcritical">武器會心率(%)：</label></td>
+                    <td><input type="number" id="wcritical"></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-wcoating">瓶：</label></td>
+                    <td><select id="skill-wcoating"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-action">招式：</label></td>
+                    <td><select id="skill-action"></select></td>
+                </tr>
+                <tr id="extra-inputs" style="display: none;">
+                    <td><label for="cust-motion"> - 動作值：</label></td>
+                    <td><input type="number" id="cust-motion"></td>
+                </tr>
+                <tr id="extra-inputs2" style="display: none;">
+                    <td><label for="cust-ele"> - 屬性補正：</label></td>
+                    <td><input type="number" id="cust-ele"></td>
+                </tr>
+
+                    <td><label for="skill-dist">瞄準距離：</label></td>
+                    <td><select id="skill-dist"></select></td>
+                </tr>
+            </table>
+        </details>
+        <details id="w-skill" open>
+            <summary id="w-skill-summary"><b>武器技能</b></summary>
+            <table>
+                <tr>
+                    <td><label for="skill-attackboost">攻擊</label></td>
+                    <td><select id="skill-attackboost"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-criticaleye">看破</label></td>
+                    <td><select id="skill-criticaleye"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-criticalboost">超會心</label></td>
+                    <td><select id="skill-criticalboost"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-criticaldraw">拔刀術【技】</label></td>
+                    <td><select id="skill-criticaldraw"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-elementattack">屬性攻擊強化</label></td>
+                    <td><select id="skill-elementattack"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-criticalelement">會心擊【屬性】</label></td>
+                    <td><select id="skill-criticalelement"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-chargemaster">蓄力大師</label></td>
+                    <td><select id="skill-chargemaster"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-normalshot">通常彈・通常箭強化</label></td>
+                    <td><select id="skill-normalshot"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-piercingshot">貫通彈・龍之箭強化</label></td>
+                    <td><select id="skill-piercingshot"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-spreadshots">散彈・剛射強化</label></td>
+                    <td><select id="skill-spreadshots"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-tetradshot">第四射擊</label></td>
+                    <td>
+                        <select id="skill-tetradshot"></select>
+                        <select id="skill-tetradshotact"></select>
+                    </td>
+
+                </tr>
+                <tr>
+                    <td><label for="skill-specialammoboost">特殊射擊強化</label></td>
+                    <td><select id="skill-specialammoboost"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-punishingdraw">拔刀術【力】</label></td>
+                    <td><select id="skill-punishingdraw"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-airborne">飛燕</label></td>
+                    <td><select id="skill-airborne"></select></td>
+                </tr>
+            </table>
+        </details>
+        <details id="eq-skill" open>
+            <summary id="eq-skill-summary"><b>防具技能</b></summary>
+            <table>
+                <tr>
+                    <td><label for="skill-resentment">怨恨</label></td>
+                    <td><select id="skill-resentment"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-adrenalinerush">巧擊</label></td>
+                    <td><select id="skill-adrenalinerush"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-peakperformance">無傷</label></td>
+                    <td><select id="skill-peakperformance"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-counterstrike">逆襲</label></td>
+                    <td><select id="skill-counterstrike"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-weaknessexploit">弱點特效</label></td>
+                    <td><select id="skill-weaknessexploit"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-maximummight">精神抖擻</label></td>
+                    <td><select id="skill-maximummight"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-convertelement">屬性轉換</label></td>
+                    <td><select id="skill-convertelement"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-agitator">挑戰者</label></td>
+                    <td><select id="skill-agitator"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-latentpower">力量解放</label></td>
+                    <td><select id="skill-latentpower"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-heroics">火場怪力</label></td>
+                    <td><select id="skill-heroics"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-burst">連擊</label></td>
+                    <td><select id="skill-burst"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-foray">攻勢</label></td>
+                    <td><select id="skill-foray"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-coalescence">轉禍為福</label></td>
+                    <td><select id="skill-coalescence"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-ambush">急襲</label></td>
+                    <td><select id="skill-ambush"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-antivirus">無我境界</label></td>
+                    <td><select id="skill-antivirus"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-elementalabsorption">屬性吸收</label></td>
+                    <td>
+                        <select id="skill-elementalabsorption"></select>
+                        <select id="skill-elementalabsorptionact"></select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="skill-selfimprovement">鑽研</label></td>
+                    <td><select id="skill-selfimprovement"></select></td>
+                </tr>
+            </table>
+        </details>
+        <details id="ad-skill" open>
+            <summary id="ad-skill-summary"><b>套裝技能</b></summary>
+            <table>
+                <tr>
+                    <td><label for="skill-rathalos">火龍之力(炎熱化)</label></td>
+                    <td><select id="skill-rathalos"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-xuwu">暗器鱆之力(蠻勇的餐桌)</label></td>
+                    <td><select id="skill-xuwu"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-blangonga">雪獅子王之鬥志(戰嚎)</label></td>
+                    <td><select id="skill-blangonga"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-odogaron">兇爪龍之力(連擊強化)</label></td>
+                    <td><select id="skill-odogaron"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-nuudra">獄焰鱆之叛逆(恨擊)</label></td>
+                    <td><select id="skill-nuudra"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-jindahaad">凍峰龍之叛逆(束縛反攻)</label></td>
+                    <td><select id="skill-jindahaad"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-goremagala">黑蝕龍之力(黑蝕一體)</label></td>
+                    <td><select id="skill-goremagala"></select></td>
+                </tr>
+            </table>
+        </details>
+        <details id="group-skill" open>
+            <summary id="group-skill-summary"><b>團體技能</b></summary>
+            <table>
+                <tr>
+                    <td><label for="skill-butteryleathercraft">皮革製品的滑順質感</label></td>
+                    <td><select id="skill-butteryleathercraft"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-fortifyingpelt">毛皮的昂揚</label></td>
+                    <td><select id="skill-fortifyingpelt"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-lordsfavor">霸主的自尊</label></td>
+                    <td><select id="skill-lordsfavor"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-lordsfury">霸主的盛怒</label></td>
+                    <td><select id="skill-lordsfury"></select></td>
+                </tr>
+            </table>
+        </details>
+        <details id="other-skill" open>
+            <summary id="other-skill-summary"><b>雜項&道具</b></summary>
+            <table>
+                <tr>
+                    <td><label for="skill-corruptedmantle">蝕攻、迴避衣裝</label></td> <!--done-->
+                    <td><select id="skill-corruptedmantle"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="powercharm">力量之護符(攻擊力+6)</label></td> <!--done-->
+                    <td><input type="checkbox" id="powercharm"></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-food">貓飯</label></td>
+                    <td><select id="skill-food"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-foodrandom">餐點飄忽術</label></td>
+                    <td><select id="skill-foodrandom"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="foodswim">餐點擅泳術(攻擊力+3)</label></td> <!--done-->
+                    <td><input type="checkbox" id="foodswim"></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-demondrug">鬼人藥/鬼人藥大</label></td>
+                    <td><select id="skill-demondrug"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-mightseed">怪力種子/怪力藥丸/鬼人彈</label></td>
+                    <td><select id="skill-mightseed"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="demonopowder">鬼人粉塵</label></td> <!--done-->
+                    <td><select id="skill-demonopowder"></select></td>
+                </tr>
+                <tr>
+                    <td><label for="cathorn">隨從鬼人笛(攻擊力x1.15)</label></td> <!--done-->
+                    <td><input type="checkbox" id="cathorn"></td>
+                </tr>
+                <tr>
+                    <td><label for="skill-horn">狩獵笛旋律</label></td>
+                    <td><select id="skill-horn"></select></td>
+                </tr>
+            </table>
+        </details>
+        <button onclick="calculateDamage()" id="btn-calculate">計算傷害</button>
+        <button onclick="copypage()" id="btn-copy">複製結果頁面</button>
+        <div class="damage-container">
+            <div class="damage-box status" id="cal-status">[實際狀態值(包含隱藏值)]<br>物-屬-會心</div>
+            <br>
+            <div class="damage-box oneshot" id="cal-singlehit">[單箭傷害]<br>物+屬=總</div>
+            <div class="damage-box oneshot" id="cal-singlecrithit">[會心時單箭傷害]<br>物+屬=總</div>
+            <br>
+            <div class="damage-box totalshot" id="cal-totalavresult">[總平均傷害]<br>單箭平均傷害×箭數=總平均傷害</div>
+            <br>
+            <div class="damage-box ratio" id="cal-psyelemult">[每1點狀態值增加傷害]<br>攻擊力-屬性值</div>
+            <div class="damage-box ratio" id="cal-peratio">[狀態物屬比]</div>
+            <div class="damage-box ratio" id="cal-psyelemultw">[每1點武器值增加傷害]<br>攻擊力-屬性值</div>
+            <div class="damage-box ratio" id="cal-peratiow">[武器值物屬比]</div>
+            <br>
+        </div>
+
+        <details id="fomula" close>
+            <summary id="fomula-summary"><b>計算式</b></summary>
+            <br>
+            <table>
+                <tr>
+                    <tr>狀態攻撃力 = 武器攻擊力 × 乘算技能 + 加算技能 + 道具 ≤ 上限值(不明)</tr>
+                    <tr><div id="fomula-statusattack"></div></tr>
+                </tr>
+                <tr>
+                    <tr>狀態屬性值 = 武器屬性值 × 乘算技能 + 加算技能 ≤ 上限值 = max(武器屬性值+350, 武器屬性值*1.9)</tr>
+                    <tr><div id="fomula-statuselement"></div></tr>
+                </tr>
+                <br>
+                <tr>
+                    <tr>物理傷害(會心傷害) = 狀態攻撃力 × 動作値/100 × 肉質/100 × 各射擊類型強化 × 瓶補正 × 距離補正 × 發怒補正 (× 會心補正)</td>
+                    <tr><div id="fomula-statuspsydamage"></div></tr>
+                </tr>   
+                <tr>
+                    <tr>屬性傷害(會心傷害) = 狀態屬性值/10 × 屬性補正 × 肉質/100 × 發怒補正 (× 属性會心補正)</td>
+                    <tr><div id="fomula-statuseledamage"></div></tr>
+                </tr>
+            </table>
+            <br>
+
+        </details>
+
+
+        <button onclick="resetOption()" id="btn-reset">重置所有選項</button>
+        <br>
+        <br>
+
+        <details id="fixlist" close>
+            <summary id="fixlist-summary"><b>計算機更新紀錄</b></summary>
+            <br>
+            2025/3/11:<br>
+            蓄力大師修正為適用所有平射類型<br>
+            引導狀態的距離補正是1.0<br>
+            檢查用戶端快取版本<br>
+            修復複製頁面不會反白已選擇項目的bug<br>
+            修正第四射擊的射擊狀態在摺疊模式不會正常顯示<br>
+            移動第四射擊的預設狀態(因為通常只加會心)<br>
+            以及其他部分文字修正<br>
+            <br>
+            2025/3/12:<br>
+            根據<a href="https://youtu.be/dbR7p8M4Eyc" target="_blank">《皆で一緒にモンハンライフ》驗證</a>，修正屬性吸收的數值<br>
+            修正飛燕的乘算位置(經查是乘在攻擊力)<br>
+            複製網址會自動計算傷害、折疊所有輸入欄位方便比較<br>
+            以及其他部分文字修正<br>
+            <br>
+            2025/3/13:<br>
+            根據<a href="https://www.bilibili.com/opus/1043304692174553094" target="_blank">《流川神木》驗證</a>，追加各魔物怒補數值<br>
+            修正打開初始頁面會自動計算一次傷害的bug<br>
+            以及其他部分文字修正<br>
+            <br>
+            2025/3/14<br>
+            蓄力大師數值錯誤(弓應該是1.05-1.1-1.15、更爛了)<br>
+            蓄力大師計算擺放位置錯誤(實際上是放在狀態屬性值的乘算上)<br>
+            計算式展示數值錯誤(但結果是對的)<br>
+            貓飯沒有反應到計算上(不小心刪掉了)<br>
+            以及其他部分文字修正<br>
+            單位屬性值的計算忘記除10<br>
+            調整結果呈現方式<br>
+            追加武器物屬比<br>
+            <br>
+            2025/3/17<br>
+            修正蝕攻衣裝的會心率沒有正常運作的bug(我恨javascript的分號...)<br>
+            <br>
+            2025/3/21<br>
+            根據<a href="https://youtu.be/YyPQ7GmdDVg?si=Ocgsp2mBjS7YyTNJ" target="_blank">《皆で一緒にモンハンライフ》驗證</a>，追加部分加成技能與種子的選項覆蓋設定<br>
+            <br>
+        </details>
+    </div>
+    <script src="data.js"></script>
+    <footer style="text-align: center; margin-top: 20px; font-size: 14px; color: gray;">
+        © 2025 <a href="https://alkalisk.notion.site/5b0d91b989034ac2b5dcfa1ef88a6831?pvs=4" target="_blank">ForFiveSix (是伍陸)</a></br>
+        Ver.1.0.03211222, <a href="https://forms.gle/zoq4EgsbakpXF7Kb9" target="_blank">Bug與錯誤請回報表單</a><br>
+        All Rights Reserved. 接著還有弓箭整體心得...(懶)<br>
+        <a href="https://www.stylemap.co.jp/"><img src="https://www.f-counter.net/j/65/1741375016/" alt="アクセスカウンター"></a>
+    </footer>
+</body>
+</html>

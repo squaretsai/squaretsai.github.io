@@ -3,6 +3,7 @@ body {
     background-color: #f0f0f0;
     margin: 0;
     padding: 20px;
+    overflow-x: hidden; /* 防止手機出現左右滑動 */
 }
 
 .container {
@@ -17,7 +18,7 @@ h1 {
 
 .monster-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 列佈局 */
+    grid-template-columns: repeat(3, 1fr); /* 桌機：3 欄 */
     gap: 20px;
     padding: 20px;
 }
@@ -51,6 +52,25 @@ h1 {
     font-size: 14px;
     color: #333;
     text-align: center;
-    word-wrap: break-word; /* 確保長名稱不會溢出 */
-    max-width: 100px; /* 限制名稱寬度 */
+    word-wrap: break-word;
+    max-width: 100px;
+}
+
+/* 響應式設計：手機版 */
+@media screen and (max-width: 768px) {
+    .monster-grid {
+        grid-template-columns: repeat(2, 1fr); /* 手機顯示兩欄 */
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .monster-button img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .monster-name {
+        font-size: 13px;
+        max-width: 80px;
+    }
 }

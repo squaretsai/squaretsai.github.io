@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>成員查詢頁面</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD0lNEGZK4p4J6KqFq2Lbq8B_Q6gSN0r4w",
+      authDomain: "mhwildslist.firebaseapp.com",
+      projectId: "mhwildslist",
+      storageBucket: "mhwildslist.firebasestorage.app",
+      messagingSenderId: "298155343695",
+      appId: "1:298155343695:web:eaf22e718f7ec0450c4f3a",
+      measurementId: "G-PYEZXNBSDG"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    let allData = [];
+
+    async function loadData() {
+      const querySnapshot = await getDocs(collection(db, "members"));
+      allData = querySnapshot.docs.map(doc => doc.data());
+      displayResults(allData);
+    }
+
+    function displayResults(data) {
+      const tbody = document.getElementById("result");
+      tbody.innerHTML = "";
+      data.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${item.nickname}</td>
+          <td>${item.gameName}</td>
+          <td>${item.psn}</td>
+          <td>${item.id}</td>
+          <td>${item.note}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.filterResults = function () {
+      const keyword = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = allData.filter(item => {
+        return Object.values(item).some(val =>
+          (val || "").toLowerCase().includes(keyword)
+        );
+      });
+      displayResults(filtered);
+    }
+
+    loadData();
+  </script>
+  <style>
+    html { font-size: 18px; }
+    body { font-family: sans-serif; padding: 20px; max-width: 900px; margin: auto; }
+    input { width: 100%; padding: 10px; font-size: 1rem; margin-bottom: 15px; }
+    table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; word-break: break-word; }
+    thead { background-color: #f2f2f2; }
+  </style>
+</head>
+<body>
+  <h2>成員查詢頁面</h2>
+  <input type="text" id="searchInput" placeholder="請輸入關鍵字進行搜尋..." oninput="filterResults()">
+  <table>
+    <thead>
+      <tr><th>稱呼</th><th>遊戲名</th><th>PSN</th><th>ID</th><th>備註</th></tr>
+    </thead>
+    <tbody id="result"></tbody>
+  </table>
+</body>
+</html>

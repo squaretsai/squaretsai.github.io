@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>社群成員清單</title>
+  <script type="module">
+    // 引入 Firebase 套件
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    // Firebase 設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyD0lNEGZK4p4J6KqFq2Lbq8B_Q6gSN0r4w",
+      authDomain: "mhwildslist.firebaseapp.com",
+      projectId: "mhwildslist",
+      storageBucket: "mhwildslist.firebasestorage.app",
+      messagingSenderId: "298155343695",
+      appId: "1:298155343695:web:eaf22e718f7ec0450c4f3a",
+      measurementId: "G-PYEZXNBSDG"
+    };
+
+    // 初始化 Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadData() {
+      const tbody = document.getElementById("list");
+      tbody.innerHTML = "";
+      const querySnapshot = await getDocs(collection(db, "members"));
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.nickname}</td>
+          <td>${data.gameName}</td>
+          <td>${data.psn}</td>
+          <td>${data.id}</td>
+          <td>${data.note}</td>
+          <td><button onclick="deleteEntry('${docSnap.id}')">刪除</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.deleteEntry = async function(id) {
+      await deleteDoc(doc(db, "members", id));
+      loadData();
+    };
+
+    window.addEntry = async function () {
+      const nickname = document.getElementById("nickname").value.trim();
+      const gameName = document.getElementById("gameName").value.trim();
+      const psn = document.getElementById("psn").value.trim();
+      const id = document.getElementById("id").value.trim();
+      const note = document.getElementById("note").value.trim();
+
+      if (!nickname || !gameName) {
+        alert("請填寫稱呼與遊戲名！");
+        return;
+      }
+
+      await addDoc(collection(db, "members"), {
+        nickname,
+        gameName,
+        psn,
+        id,
+        note
+      });
+
+      document.getElementById("nickname").value = "";
+      document.getElementById("gameName").value = "";
+      document.getElementById("psn").value = "";
+      document.getElementById("id").value = "";
+      document.getElementById("note").value = "";
+
+      loadData();
+    };
+
+    loadData();
+  </script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    label { display: block; margin-top: 10px; }
+    input, textarea, button { width: 100%; padding: 6px; margin-top: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+    button { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>社群成員清單</h2>
+  <label>稱呼 <input type="text" id="nickname" /></label>
+  <label>遊戲名 <input type="text" id="gameName" /></label>
+  <label>PSN <input type="text" id="psn" /></label>
+  <label>ID <input type="text" id="id" /></label>
+  <label>備註 <textarea id="note"></textarea></label>
+  <button onclick="addEntry()">新增資料</button>
+
+  <h3>目前清單</h3>
+  <table>
+    <thead>
+      <tr><th>稱呼</th><th>遊戲名</th><th>PSN</th><th>ID</th><th>備註</th><th>操作</th></tr>
+    </thead>
+    <tbody id="list"></tbody>
+  </table>
+</body>
+</html>

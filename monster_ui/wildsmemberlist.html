@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>社群成員清單（事件委派穩定版）</title>
+  <title>社群成員清單（修正版）</title>
   <style>
     html { font-size: 18px; }
     body { font-family: sans-serif; padding: 20px; max-width: 900px; margin: auto; }
@@ -60,7 +60,7 @@
 
     async function loadData() {
       const snapshot = await getDocs(collection(db, "members"));
-      allData = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+      allData = snapshot.docs.map(docSnap => ({ docid: docSnap.id, ...docSnap.data() }))
         .sort((a, b) => {
           if (a.order !== undefined && b.order !== undefined) {
             return a.order - b.order;
@@ -85,10 +85,10 @@
           <td>${data.note || ""}</td>
           <td>
             <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-              <button data-id="${data.id}" data-action="delete">刪除</button>
-              <button data-id="${data.id}" data-action="edit">修改</button>
-              <button data-id="${data.id}" data-action="up" ${idx === 0 ? "disabled" : ""}>⬆</button>
-              <button data-id="${data.id}" data-action="down" ${idx === allData.length - 1 ? "disabled" : ""}>⬇</button>
+              <button data-docid="${data.docid}" data-action="delete">刪除</button>
+              <button data-docid="${data.docid}" data-action="edit">修改</button>
+              <button data-docid="${data.docid}" data-action="up" ${idx === 0 ? "disabled" : ""}>⬆</button>
+              <button data-docid="${data.docid}" data-action="down" ${idx === allData.length - 1 ? "disabled" : ""}>⬇</button>
             </div>
           </td>
         `;
@@ -133,13 +133,13 @@
 
     document.getElementById("list").addEventListener("click", async (e) => {
       if (e.target.tagName !== "BUTTON") return;
-      const id = e.target.dataset.id;
+      const docid = e.target.dataset.docid;
       const action = e.target.dataset.action;
-      const currentIndex = allData.findIndex(d => d.id === id);
+      const currentIndex = allData.findIndex(d => d.docid === docid);
       const current = allData[currentIndex];
 
       if (action === "delete") {
-        await deleteDoc(doc(db, "members", id));
+        await deleteDoc(doc(db, "members", docid));
         loadData();
       } else if (action === "edit") {
         document.getElementById("nickname").value = current.nickname || "";
@@ -147,18 +147,18 @@
         document.getElementById("psn").value = current.psn || "";
         document.getElementById("uid").value = current.id || "";
         document.getElementById("note").value = current.note || "";
-        editId = current.id;
+        editId = current.docid;
         document.getElementById("submitBtn").textContent = "儲存修改";
         document.getElementById("form-container").style.display = "block";
       } else if (action === "up" && currentIndex > 0) {
         const target = allData[currentIndex - 1];
-        await updateDoc(doc(db, "members", current.id), { order: target.order });
-        await updateDoc(doc(db, "members", target.id), { order: current.order });
+        await updateDoc(doc(db, "members", current.docid), { order: target.order });
+        await updateDoc(doc(db, "members", target.docid), { order: current.order });
         loadData();
       } else if (action === "down" && currentIndex < allData.length - 1) {
         const target = allData[currentIndex + 1];
-        await updateDoc(doc(db, "members", current.id), { order: target.order });
-        await updateDoc(doc(db, "members", target.id), { order: current.order });
+        await updateDoc(doc(db, "members", current.docid), { order: target.order });
+        await updateDoc(doc(db, "members", target.docid), { order: current.order });
         loadData();
       }
     });

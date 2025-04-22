@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>社群成員清單（修正版）</title>
+  <title>社群成員清單（含搜尋功能）</title>
   <style>
     html { font-size: 18px; }
     body { font-family: sans-serif; padding: 20px; max-width: 900px; margin: auto; }
@@ -13,6 +13,7 @@
     th, td { border: 1px solid #ccc; padding: 6px; text-align: left; word-break: break-word; }
     button { cursor: pointer; }
     #form-container { display: none; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; border-radius: 5px; background: #f9f9f9; }
+    #searchInput { margin-top: 20px; margin-bottom: 10px; font-size: 1rem; padding: 6px; }
   </style>
 </head>
 <body>
@@ -27,6 +28,8 @@
     <label>備註 <textarea id="note"></textarea></label>
     <button id="submitBtn">新增資料</button>
   </div>
+
+  <input type="text" id="searchInput" placeholder="🔍 搜尋稱呼、遊戲名、PSN、備註...">
 
   <h3>目前清單</h3>
   <table>
@@ -57,6 +60,7 @@
 
     let editId = null;
     let allData = [];
+    let filteredData = [];
 
     async function loadData() {
       const snapshot = await getDocs(collection(db, "members"));
@@ -69,13 +73,14 @@
           const tb = b.timestamp?.toDate?.() ?? new Date("2000-01-01");
           return tb - ta;
         });
+      filteredData = [...allData];
       renderTable();
     }
 
     function renderTable() {
       const tbody = document.getElementById("list");
       tbody.innerHTML = "";
-      allData.forEach((data, idx) => {
+      filteredData.forEach((data, idx) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${data.nickname || ""}</td>
@@ -88,13 +93,25 @@
               <button data-docid="${data.docid}" data-action="delete">刪除</button>
               <button data-docid="${data.docid}" data-action="edit">修改</button>
               <button data-docid="${data.docid}" data-action="up" ${idx === 0 ? "disabled" : ""}>⬆</button>
-              <button data-docid="${data.docid}" data-action="down" ${idx === allData.length - 1 ? "disabled" : ""}>⬇</button>
+              <button data-docid="${data.docid}" data-action="down" ${idx === filteredData.length - 1 ? "disabled" : ""}>⬇</button>
             </div>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
+
+    document.getElementById("searchInput").addEventListener("input", () => {
+      const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+      filteredData = allData.filter(d =>
+        d.nickname?.toLowerCase().includes(keyword) ||
+        d.gameName?.toLowerCase().includes(keyword) ||
+        d.psn?.toLowerCase().includes(keyword) ||
+        d.id?.toLowerCase().includes(keyword) ||
+        d.note?.toLowerCase().includes(keyword)
+      );
+      renderTable();
+    });
 
     document.getElementById("toggleFormBtn").addEventListener("click", () => {
       const form = document.getElementById("form-container");
@@ -135,8 +152,8 @@
       if (e.target.tagName !== "BUTTON") return;
       const docid = e.target.dataset.docid;
       const action = e.target.dataset.action;
-      const currentIndex = allData.findIndex(d => d.docid === docid);
-      const current = allData[currentIndex];
+      const currentIndex = filteredData.findIndex(d => d.docid === docid);
+      const current = filteredData[currentIndex];
 
       if (action === "delete") {
         await deleteDoc(doc(db, "members", docid));
@@ -150,13 +167,10 @@
         editId = current.docid;
         document.getElementById("submitBtn").textContent = "儲存修改";
         document.getElementById("form-container").style.display = "block";
-      } else if (action === "up" && currentIndex > 0) {
-        const target = allData[currentIndex - 1];
-        await updateDoc(doc(db, "members", current.docid), { order: target.order });
-        await updateDoc(doc(db, "members", target.docid), { order: current.order });
-        loadData();
-      } else if (action === "down" && currentIndex < allData.length - 1) {
-        const target = allData[currentIndex + 1];
+      } else if ((action === "up" || action === "down") && currentIndex !== -1) {
+        const targetIndex = action === "up" ? currentIndex - 1 : currentIndex + 1;
+        const target = filteredData[targetIndex];
+        if (!target) return;
         await updateDoc(doc(db, "members", current.docid), { order: target.order });
         await updateDoc(doc(db, "members", target.docid), { order: current.order });
         loadData();

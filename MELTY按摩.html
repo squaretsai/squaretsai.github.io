@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Melty 的情人節任務清單</title>
+  <style>
+    :root { --w: 720px; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; background:#f7f7fb; color:#111; }
+    main { max-width: var(--w); margin: 24px auto 64px; padding: 0 16px; }
+    h1 { font-size: 1.5rem; margin: 0 0 8px; }
+    p.desc { margin: 0 0 16px; color: #444; line-height: 1.8; }
+    .card { background:#fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.06); overflow: hidden; }
+    table { width:100%; border-collapse: collapse; }
+    thead th { text-align:left; font-weight:600; background:#fafafa; position: sticky; top:0; border-bottom:1px solid #eee; padding:12px 14px; }
+    tbody td { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; }
+    tbody tr:hover { background:#fcfcff; }
+    td.chk { width: 120px; text-align:center; }
+    input[type="checkbox"] { width: 22px; height: 22px; }
+    .toolbar { display:flex; gap:8px; align-items:center; margin:12px 0 16px; flex-wrap: wrap; }
+    .btn { background:#f2f3ff; border:1px solid #e1e4ff; color:#2733f0; padding:8px 12px; border-radius: 10px; cursor:pointer; font-weight:600; }
+    .btn:hover { filter: brightness(0.98); }
+    .muted { color:#666; font-size:.95rem; }
+    footer { max-width: var(--w); margin: 16px auto; padding: 0 16px; color:#666; font-size:.9rem; }
+    @media (prefers-color-scheme: dark) {
+      body { background:#0b0c10; color:#e8e8e8; }
+      .card { background:#121319; box-shadow: 0 8px 30px rgba(0,0,0,.45); }
+      thead th { background:#12141e; border-color:#23263a; }
+      tbody td { border-color:#1e2233; }
+      tbody tr:hover { background:#161a26; }
+      .btn { background:#1b1f36; border-color:#2a2f56; color:#aeb8ff; }
+      .muted, footer { color:#a9adc0; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Melty 的情人節任務清單</h1>
+    <p class="desc">
+      Melty 情人節快樂，這是我這個不浪漫的男友想給你的禮物，覺得你每天都睡不飽，希望你能天天都舒服的睡著。<br>
+      遊戲規則很簡單：今天開始每天都可以按摩到你說 OK。假如有做到，就幫我打個勾；沒做到的那天不打勾，兩天後會自動畫 X。<br>
+      而最後 X 的總數會算出一筆金額，就是看你要買什麼的零用金喔（無論是鍵盤、包包、衣服都可以喔～）。<br>
+      情人節快樂 ❤
+    </p>
+
+    <div class="toolbar">
+      <button class="btn" id="btnToggleAll">全選/全不選（僅未鎖定）</button>
+      <button class="btn" id="btnClear">清除本清單的儲存</button>
+      <span class="muted" id="startInfo"></span>
+      <span class="muted" id="count" style="margin-left:auto"></span>
+    </div>
+
+    <div class="card">
+      <table aria-label="30 天日期清單">
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th class="chk">完成</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <table aria-label="統計">
+        <tbody>
+          <tr>
+            <td style="padding:12px 14px;">統計</td>
+            <td style="padding:12px 14px; text-align:right;">
+              <span id="statsText" class="muted">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer>
+    小提醒：儲存僅限此裝置／此瀏覽器。若要跨裝置同步，請改用後端（例如 Firebase、Supabase）或自行加上 GitHub API 寫入功能。
+  </footer>
+
+  <script>
+    // ===== 可調整區 =====
+    const DAYS = 30; // 顯示天數
+    // 固定從 2025-08-29 開始
+    const FIXED_START = '2025-08-29'; // 若要改回「每天自動從今天開始」，改成 null
+    const TAIPEI_TZ = 'Asia/Taipei';
+    const PENALTY_PER_X = 1000; // 每個 X 的金額
+    const LOCK_AFTER_DAYS = 2;  // 過幾天未勾選就鎖定為 X
+    // ====================
+
+    // 工具：格式化 YYYY-MM-DD
+    function ymd(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const da = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${da}`;
+    }
+    function weekdayZH(d) { return '日一二三四五六'[d.getDay()]; }
+    function stripTime(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+    // 取得「台北時區」的今天日期（去除時間）
+    function todayInTaipei() {
+      const fmt = new Intl.DateTimeFormat('zh-TW', {
+        timeZone: TAIPEI_TZ,
+        year: 'numeric', month: '2-digit', day: '2-digit'
+      });
+      const parts = fmt.formatToParts(new Date());
+      const map = Object.fromEntries(parts.map(p => [p.type, p.value]));
+      const y = Number(map.year), m = Number(map.month), da = Number(map.day);
+      return new Date(y, m - 1, da);
+    }
+
+    function getStartDate() {
+      if (FIXED_START) {
+        const [y,m,da] = FIXED_START.split('-').map(Number);
+        return new Date(y, m - 1, da);
+      }
+      return todayInTaipei();
+    }
+
+    const start = getStartDate();
+    const STORE_KEY = `checklist:${ymd(start)}:${DAYS}`;
+
+    function loadState() {
+      try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+      catch { return {}; }
+    }
+    function saveState(s) { localStorage.setItem(STORE_KEY, JSON.stringify(s)); }
+
+    const state = loadState();
+    const tbody = document.getElementById('tbody');
+    const countEl = document.getElementById('count');
+    const statsText = document.getElementById('statsText');
+    const startInfo = document.getElementById('startInfo');
+
+    startInfo.textContent = `起始：${ymd(start)}（週${weekdayZH(start)}），共 ${DAYS} 天`;
+
+    function isLocked(targetDate) {
+      const today = todayInTaipei();
+      const diffDays = Math.floor((stripTime(today) - stripTime(targetDate)) / 86400000);
+      return diffDays >= LOCK_AFTER_DAYS; // 例：8/31 對 8/29 -> 2 天，鎖定
+    }
+
+    function render() {
+      tbody.innerHTML = '';
+      let dirty = false; // 是否需要回寫 localStorage
+
+      for (let i = 0; i < DAYS; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        const key = ymd(d);
+        const id = `cb-${key}`;
+        const locked = isLocked(d);
+
+        // 若已鎖定且尚未勾選，直接標記為 'X'
+        if (locked && state[key] !== true && state[key] !== 'X') { state[key] = 'X'; dirty = true; }
+
+        const tr = document.createElement('tr');
+        const tdDate = document.createElement('td');
+        const tdChk = document.createElement('td'); tdChk.className = 'chk';
+
+        const label = document.createElement('label');
+        label.setAttribute('for', id);
+        label.textContent = `${key}（週${weekdayZH(d)}）`;
+        tdDate.appendChild(label);
+
+        if (state[key] === 'X') {
+          // 顯示 X，且不可修改
+          const span = document.createElement('span');
+          span.textContent = '✕';
+          span.setAttribute('aria-label', '逾期未勾選，已鎖定');
+          span.style.fontWeight = '700';
+          tdChk.appendChild(span);
+        } else {
+          // 仍可使用 checkbox
+          const cb = document.createElement('input');
+          cb.type = 'checkbox'; cb.id = id; cb.checked = !!state[key];
+          if (locked) { cb.disabled = true; }
+          cb.addEventListener('change', () => {
+            state[key] = cb.checked;
+            saveState(state);
+            updateCounters();
+          });
+          tdChk.appendChild(cb);
+        }
+
+        tr.appendChild(tdDate);
+        tr.appendChild(tdChk);
+        tbody.appendChild(tr);
+      }
+
+      if (dirty) saveState(state);
+      updateCounters();
+    }
+
+    function updateCounters() {
+      let nChecked = 0, nX = 0;
+      for (let i = 0; i < DAYS; i++) {
+        const d = new Date(start); d.setDate(start.getDate() + i);
+        const v = state[ymd(d)];
+        if (v === true) nChecked++;
+        if (v === 'X') nX++;
+      }
+      countEl.textContent = `已勾選：${nChecked} / ${DAYS}`;
+      const amount = nX * PENALTY_PER_X;
+      const amountText = amount.toLocaleString('zh-TW');
+      statsText.textContent = `✕ 數：${nX}　金額：${amountText} 元`;
+    }
+
+    // 工具列功能（尊重鎖定：不會變動已鎖定之列）
+    document.getElementById('btnToggleAll').addEventListener('click', () => {
+      // 計算可變動項目的已勾選比例
+      let changeableChecked = 0, changeableTotal = 0;
+      for (let i = 0; i < DAYS; i++) {
+        const d = new Date(start); d.setDate(start.getDate() + i);
+        if (isLocked(d)) continue;
+        changeableTotal++;
+        if (state[ymd(d)] === true) changeableChecked++;
+      }
+      const target = changeableTotal === 0 ? false : (changeableChecked < changeableTotal / 2); // 少數原則
+      for (let i = 0; i < DAYS; i++) {
+        const d = new Date(start); d.setDate(start.getDate() + i);
+        if (isLocked(d)) continue;
+        const key = ymd(d); state[key] = target;
+        const cb = document.getElementById(`cb-${key}`); if (cb) cb.checked = target;
+      }
+      saveState(state); updateCounters();
+    });
+
+    document.getElementById('btnClear').addEventListener('click', () => {
+      if (!confirm('要清除這份清單在本機的儲存嗎？（無法復原）')) return;
+      localStorage.removeItem(STORE_KEY);
+      for (let i = 0; i < DAYS; i++) {
+        const d = new Date(start); d.setDate(start.getDate() + i);
+        const key = ymd(d);
+        const el = document.getElementById(`cb-${key}`);
+        if (el) el.checked = false;
+        delete state[key];
+      }
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

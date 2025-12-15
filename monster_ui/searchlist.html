@@ -1,17 +1,87 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>成員查詢頁面</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>社群成員清單（純讀搜尋版）</title>
+  <style>
+    :root { --gap: 12px; }
+    html { font-size: 18px; }
+    body { font-family: sans-serif; padding: 20px; max-width: 980px; margin: auto; }
+    h2 { margin: 0 0 12px; }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--gap);
+      margin: 12px 0 16px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #fafafa;
+    }
+    .toolbar input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+    }
+    .meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: #666;
+      font-size: 0.95rem;
+    }
+    .status {
+      margin: 8px 0 0;
+      font-size: 0.95rem;
+      color: #666;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 1rem; }
+    th, td { border: 1px solid #e0e0e0; padding: 10px; text-align: left; vertical-align: top; word-break: break-word; }
+    th { background: #f3f3f3; position: sticky; top: 0; z-index: 1; }
+    tbody tr:hover { background: #fcfcfc; }
+    .nowrap { white-space: nowrap; }
+    .muted { color: #888; }
+    @media (max-width: 720px) {
+      html { font-size: 16px; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+
+<body>
+  <h2>社群成員清單（純讀搜尋版）</h2>
+
+  <div class="toolbar">
+    <input id="searchInput" type="text" placeholder="🔍 搜尋：稱呼 / 遊戲名 / PSN / ID / 備註" />
+    <div class="meta">
+      <div>顯示筆數：<span id="countShown">0</span></div>
+      <div>總筆數：<span id="countTotal">0</span></div>
+    </div>
+    <div class="status" id="status">載入中…</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="nowrap">稱呼</th>
+        <th class="nowrap">遊戲名</th>
+        <th class="nowrap">PSN</th>
+        <th class="nowrap">ID</th>
+        <th>備註</th>
+      </tr>
+    </thead>
+    <tbody id="list"></tbody>
+  </table>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      getDocs
-    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
+    // ✅ 你的 Firebase 設定（沿用原本的）
     const firebaseConfig = {
       apiKey: "AIzaSyD0lNEGZK4p4J6KqFq2Lbq8B_Q6gSN0r4w",
       authDomain: "mhwildslist.firebaseapp.com",
@@ -24,59 +94,110 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
     let allData = [];
+    let filteredData = [];
+
+    const els = {
+      list: document.getElementById("list"),
+      search: document.getElementById("searchInput"),
+      countShown: document.getElementById("countShown"),
+      countTotal: document.getElementById("countTotal"),
+      status: document.getElementById("status")
+    };
+
+    function safeText(v) {
+      // 避免 undefined/null；也避免把東西塞進 HTML 造成注入
+      return (v ?? "").toString();
+    }
+
+    function setCounts() {
+      els.countTotal.textContent = String(allData.length);
+      els.countShown.textContent = String(filteredData.length);
+    }
+
+    function renderTable() {
+      els.list.innerHTML = "";
+
+      if (filteredData.length === 0) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="5" class="muted">沒有符合的資料</td>`;
+        els.list.appendChild(tr);
+        setCounts();
+        return;
+      }
+
+      for (const d of filteredData) {
+        const tr = document.createElement("tr");
+
+        // 用 textContent 避免 XSS
+        const tdNickname = document.createElement("td");
+        tdNickname.textContent = safeText(d.nickname);
+
+        const tdGameName = document.createElement("td");
+        tdGameName.textContent = safeText(d.gameName);
+
+        const tdPSN = document.createElement("td");
+        tdPSN.textContent = safeText(d.psn);
+
+        const tdId = document.createElement("td");
+        tdId.textContent = safeText(d.id);
+
+        const tdNote = document.createElement("td");
+        tdNote.textContent = safeText(d.note);
+
+        tr.append(tdNickname, tdGameName, tdPSN, tdId, tdNote);
+        els.list.appendChild(tr);
+      }
+
+      setCounts();
+    }
+
+    function applySearch() {
+      const keyword = els.search.value.trim().toLowerCase();
+      if (!keyword) {
+        filteredData = [...allData];
+      } else {
+        filteredData = allData.filter(d =>
+          safeText(d.nickname).toLowerCase().includes(keyword) ||
+          safeText(d.gameName).toLowerCase().includes(keyword) ||
+          safeText(d.psn).toLowerCase().includes(keyword) ||
+          safeText(d.id).toLowerCase().includes(keyword) ||
+          safeText(d.note).toLowerCase().includes(keyword)
+        );
+      }
+      renderTable();
+    }
 
     async function loadData() {
-      const querySnapshot = await getDocs(collection(db, "members"));
-      allData = querySnapshot.docs.map(doc => doc.data());
-      displayResults(allData);
+      els.status.textContent = "從雲端載入資料中…";
+
+      try {
+        const snapshot = await getDocs(collection(db, "members"));
+
+        allData = snapshot.docs
+          .map(docSnap => ({ docid: docSnap.id, ...docSnap.data() }))
+          .sort((a, b) => {
+            // 跟你管理版一致：先看 order，有就用；沒有再用 timestamp
+            if (a.order !== undefined && b.order !== undefined) return a.order - b.order;
+
+            const ta = a.timestamp?.toDate?.() ?? new Date("2000-01-01");
+            const tb = b.timestamp?.toDate?.() ?? new Date("2000-01-01");
+            return tb - ta;
+          });
+
+        filteredData = [...allData];
+        renderTable();
+        els.status.textContent = `載入完成（最後更新：${new Date().toLocaleString("zh-Hant-TW")}）`;
+      } catch (err) {
+        console.error(err);
+        els.status.textContent = "載入失敗：請確認 Firestore 讀取權限（Rules）或網路狀態。";
+      }
     }
 
-    function displayResults(data) {
-      const tbody = document.getElementById("result");
-      tbody.innerHTML = "";
-      data.forEach(item => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${item.nickname}</td>
-          <td>${item.gameName}</td>
-          <td>${item.psn}</td>
-          <td>${item.id}</td>
-          <td>${item.note}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    window.filterResults = function () {
-      const keyword = document.getElementById("searchInput").value.toLowerCase();
-      const filtered = allData.filter(item => {
-        return Object.values(item).some(val =>
-          (val || "").toLowerCase().includes(keyword)
-        );
-      });
-      displayResults(filtered);
-    }
+    els.search.addEventListener("input", applySearch);
 
     loadData();
   </script>
-  <style>
-    html { font-size: 18px; }
-    body { font-family: sans-serif; padding: 20px; max-width: 900px; margin: auto; }
-    input { width: 100%; padding: 10px; font-size: 1rem; margin-bottom: 15px; }
-    table { width: 100%; border-collapse: collapse; font-size: 1rem; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; word-break: break-word; }
-    thead { background-color: #f2f2f2; }
-  </style>
-</head>
-<body>
-  <h2>成員查詢頁面</h2>
-  <input type="text" id="searchInput" placeholder="請輸入關鍵字進行搜尋..." oninput="filterResults()">
-  <table>
-    <thead>
-      <tr><th>稱呼</th><th>遊戲名</th><th>PSN</th><th>ID</th><th>備註</th></tr>
-    </thead>
-    <tbody id="result"></tbody>
-  </table>
 </body>
 </html>

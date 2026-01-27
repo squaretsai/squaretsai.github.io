@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MHW Skills OCR 翻譯（穩定版/不判別Lv）</title>
+  <title>MHW Skills OCR（只翻技能名）</title>
   <style>
     body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", sans-serif; margin: 16px; }
     .card { border: 1px solid #ddd; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
@@ -20,27 +20,26 @@
     img { max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #eee; }
     .two { display: grid; grid-template-columns: 1fr; gap: 12px; }
     @media (min-width: 900px){ .two{ grid-template-columns: 1fr 1fr; } }
-    details { margin-top: 10px; }
-    textarea { width: 100%; min-height: 160px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
   </style>
 
   <!-- SheetJS: 讀 Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <!-- Tesseract.js: 瀏覽器 OCR -->
+  <!-- Tesseract.js -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 
 <body>
-  <h2>技能截圖自動翻譯（英/日 → 繁中，不判別Lv｜穩定版）</h2>
+  <h2>技能截圖自動翻譯（不判 Lv，只翻技能名）</h2>
 
   <div class="card">
     <div class="row">
-      <button id="btnLoadDict">重新載入 翻譯.xlsx</button>
+      <button id="btnLoadDict">重新載入翻譯.xlsx</button>
       <span class="pill" id="dictState">尚未載入對照表</span>
     </div>
     <div class="muted">
-      需求：<b>index.html</b> 與 <b>翻譯.xlsx</b> 放在同一層（同資料夾/同路徑）。<br>
-      這版不靠 bbox 分行，直接用 OCR 的整段文字切行，避免「辨識 0」。
+      同資料夾放 <b>翻譯.xlsx</b>（欄位：英文 / 中文 / 日文）。<br>
+      GitHub Pages 可直接跑（無後端）。OCR 在你瀏覽器本機執行。
     </div>
   </div>
 
@@ -48,29 +47,36 @@
     <div>
       <h3>1) 上傳截圖</h3>
       <input id="imgInput" type="file" accept="image/*" />
-      <div class="muted">建議：用原始解析度截圖、不要壓縮。</div>
+      <div class="muted">建議：原始解析度截圖、不要壓縮；越清楚越準。</div>
       <div style="margin-top:10px;">
         <img id="preview" alt="preview" />
       </div>
     </div>
 
     <div>
-      <h3>2) 執行 OCR + 翻譯</h3>
+      <h3>2) OCR + 翻譯</h3>
       <div class="row">
         <button id="btnRun" disabled>開始辨識</button>
         <label class="muted">
           OCR 語言：
           <select id="langSel">
-            <option value="eng+jpn" selected>英文 + 日文</option>
-            <option value="eng">只英文</option>
+            <option value="eng" selected>只英文（建議）</option>
+            <option value="eng+jpn">英文 + 日文</option>
             <option value="jpn">只日文</option>
+          </select>
+        </label>
+        <label class="muted">
+          影像預處理：
+          <select id="preSel">
+            <option value="on" selected>開（建議）</option>
+            <option value="off">關</option>
           </select>
         </label>
       </div>
 
       <div class="muted">
-        這版 <b>不解析Lv</b>，只抓技能名稱並翻譯。<br>
-        若結果仍很少，請看下方「原始 OCR 文字」，通常一眼就知道 OCR 讀到什麼。
+        這版不看 Lv，因此你這種「只有格子沒有 Lv 文字」的截圖也能做。<br>
+        若仍很多亂碼行，通常是小格子/圖示造成；已用過濾與模糊比對降低影響。
       </div>
 
       <div class="card" style="margin-top:10px;">
@@ -86,11 +92,9 @@
       <button id="btnDownload" disabled>下載結果(JSON)</button>
     </div>
     <div id="result"></div>
-
-    <details>
-      <summary class="muted">顯示原始 OCR 文字（除錯用）</summary>
-      <textarea id="ocrRaw" readonly placeholder="這裡會顯示 OCR 原文..."></textarea>
-    </details>
+    <div class="muted" style="margin-top:10px;">
+      <div class="mono" id="debug"></div>
+    </div>
   </div>
 
 <script>
@@ -102,8 +106,9 @@
 
   // ====== 狀態 ======
   let dictLoaded = false;
-  const EN2ZH = new Map(); // lower-case english -> zh
-  const JA2ZH = new Map(); // japanese exact -> zh
+  let EN2ZH = new Map();       // 英文(小寫) -> 中文
+  let JA2ZH = new Map();       // 日文(原樣) -> 中文
+  let EN_KEYS = [];            // 英文 keys array (for fuzzy)
   let lastResult = [];
 
   const $ = (id) => document.getElementById(id);
@@ -116,15 +121,15 @@
     $("btnRun").disabled = !(ok && $("imgInput").files.length);
   }
 
-  // ====== 讀取 Excel ======
+  // ====== 讀取 Excel 對照表 ======
   async function loadDictFromXlsx(){
-    setStatus("狀態：下載並讀取 翻譯.xlsx ...");
-    EN2ZH.clear(); JA2ZH.clear();
+    setStatus("狀態：下載並讀取翻譯.xlsx ...");
+    EN2ZH.clear(); JA2ZH.clear(); EN_KEYS = [];
 
     const resp = await fetch(DICT_XLSX, { cache: "no-store" });
     if(!resp.ok){
       setDictState(false);
-      setStatus("錯誤：找不到 翻譯.xlsx。請確認它跟 index.html 同一層，且 GitHub Pages 已部署到正確分支/資料夾。");
+      setStatus("錯誤：找不到 翻譯.xlsx。請確認 index.html 與 翻譯.xlsx 在同一資料夾，且 GitHub Pages 有部署成功。");
       return;
     }
 
@@ -139,14 +144,19 @@
       const zh = String(r[COL_ZH] ?? "").trim();
       const ja = String(r[COL_JA] ?? "").trim();
       if(!zh) continue;
-      if(en) EN2ZH.set(en.toLowerCase(), zh);
+
+      if(en){
+        const k = en.toLowerCase();
+        EN2ZH.set(k, zh);
+        EN_KEYS.push(k);
+      }
       if(ja) JA2ZH.set(ja, zh);
       okCount++;
     }
 
     if(okCount === 0){
       setDictState(false);
-      setStatus(`錯誤：Excel 讀得到，但資料筆數是 0。請確認欄位名要完全等於「${COL_EN}/${COL_ZH}/${COL_JA}」。`);
+      setStatus(`錯誤：讀到了 Excel，但沒抓到有效資料。請確認欄位名稱是否為「${COL_EN}/${COL_ZH}/${COL_JA}」。`);
       return;
     }
 
@@ -154,65 +164,196 @@
     setStatus(`狀態：對照表載入完成（${okCount} 筆）`);
   }
 
-  // ====== 翻譯（不判別Lv） ======
-  function commonPrefixLen(a,b){
-    const n = Math.min(a.length,b.length);
-    let i=0; for(; i<n; i++){ if(a[i] !== b[i]) break; }
-    return i;
+  // ====== 影像預處理（降低小格子/背景干擾） ======
+  function preprocessToCanvas(img){
+    const canvas = document.createElement("canvas");
+    const w = img.naturalWidth, h = img.naturalHeight;
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+
+    // 轉灰階 + 簡單閾值化（讓字更像黑白）
+    const im = ctx.getImageData(0,0,w,h);
+    const d = im.data;
+    for(let i=0;i<d.length;i+=4){
+      const r=d[i], g=d[i+1], b=d[i+2];
+      let gray = (r*0.299 + g*0.587 + b*0.114);
+      // 提高對比（偏激一點）
+      gray = (gray - 128) * 1.4 + 128;
+      // 閾值
+      const v = gray > 155 ? 255 : 0;
+      d[i]=d[i+1]=d[i+2]=v;
+      d[i+3]=255;
+    }
+    ctx.putImageData(im,0,0);
+    return canvas;
   }
 
-  function cleanLine(s){
-    // 盡量把雜訊剃掉（但不過度）
-    return String(s || "")
-      .replace(/\r/g, "")
-      .replace(/[|]/g, "")
-      .replace(/L\s*(?:v|V)\s*\d{1,2}/g, "") // 如果同一行帶 Lv 也剃掉
+  // ====== 文字清洗 / 過濾 ======
+  function normalizeLine(s){
+    // 去掉常見雜訊符號、前置括號數字、加號等
+    return s
+      .replace(/[®©™]/g, "")
+      .replace(/^[\s\(\)\[\]\{\}\+\-]*\d+\)?\s*/g, "")  // "(3) " "3) " "+ "
+      .replace(/[|]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
   }
 
-  function translateSkill(name){
-    if(!name) return { zh: "", hit: false };
+  function isLikelySkillLine(s){
+    // 技能英文通常至少 5~6 字元，且含英文字母
+    if(!s) return false;
+    if(s.length < 5) return false;
 
-    if(JA2ZH.has(name)) return { zh: JA2ZH.get(name), hit: true };
+    const low = s.toLowerCase();
+    if(low.includes("active skills")) return false;
+    if(low.includes("equipment skills")) return false;
 
-    const low = name.toLowerCase();
-    if(EN2ZH.has(low)) return { zh: EN2ZH.get(low), hit: true };
+    // 至少要有 1 個英文字母
+    if(!/[a-z]/i.test(s)) return false;
 
-    // 簡易 fuzzy：共同前綴 + 長度差（門檻低一點，避免一律未對到）
-    if(low.length >= 5 && EN2ZH.size){
-      let best = null, bestScore = -1;
-      for(const k of EN2ZH.keys()){
-        const prefix = commonPrefixLen(low, k);
-        const score = prefix / Math.max(low.length, k.length) - Math.abs(low.length - k.length)*0.02;
-        if(score > bestScore){ bestScore = score; best = k; }
+    // 過濾掉「幾乎都是亂碼/單字母」的行
+    // 例如 "TT 3", "® ws", "aL) wi"
+    const letters = (s.match(/[a-z]/gi) || []).length;
+    if(letters < 4) return false;
+
+    return true;
+  }
+
+  // ====== 模糊比對（Levenshtein） ======
+  function levenshtein(a, b){
+    a = a.toLowerCase(); b = b.toLowerCase();
+    const m=a.length, n=b.length;
+    const dp = new Array(n+1);
+    for(let j=0;j<=n;j++) dp[j]=j;
+    for(let i=1;i<=m;i++){
+      let prev = dp[0];
+      dp[0]=i;
+      for(let j=1;j<=n;j++){
+        const tmp = dp[j];
+        const cost = (a[i-1]===b[j-1]) ? 0 : 1;
+        dp[j] = Math.min(
+          dp[j] + 1,
+          dp[j-1] + 1,
+          prev + cost
+        );
+        prev = tmp;
       }
-      if(best && bestScore > 0.30){
-        return { zh: EN2ZH.get(best), hit: true, fuzzy: best };
+    }
+    return dp[n];
+  }
+
+  function bestEnglishMatch(raw){
+    const low = raw.toLowerCase();
+    if(EN2ZH.has(low)) return { key: low, zh: EN2ZH.get(low), score: 1.0, fuzzy: "" };
+
+    // 只對「看起來像英文技能」做模糊
+    if(!EN_KEYS.length) return null;
+
+    let bestKey = null;
+    let bestScore = -1;
+
+    // 用 normalized distance 當相似度
+    for(const k of EN_KEYS){
+      const dist = levenshtein(low, k);
+      const maxLen = Math.max(low.length, k.length);
+      const score = 1 - dist / maxLen;
+      if(score > bestScore){
+        bestScore = score;
+        bestKey = k;
       }
     }
 
-    return { zh: "（未找到對照）", hit: false };
+    // 門檻：0.72 算不錯（可視情況調 0.68~0.78）
+    if(bestKey && bestScore >= 0.72){
+      return { key: bestKey, zh: EN2ZH.get(bestKey), score: bestScore, fuzzy: bestKey };
+    }
+    return null;
+  }
+
+  function translateLine(raw){
+    // 日文精確命中
+    if(JA2ZH.has(raw)) return { zh: JA2ZH.get(raw), hit: true, note: "JA exact" };
+
+    // 英文 exact / fuzzy
+    const m = bestEnglishMatch(raw);
+    if(m) return { zh: m.zh, hit: true, note: m.fuzzy ? `fuzzy→ ${m.fuzzy} (${Math.round(m.score*100)}%)` : "EN exact" };
+
+    return { zh: "（未找到對照）", hit: false, note: "" };
+  }
+
+  // ====== OCR 主流程 ======
+  async function runOcrAndTranslate(){
+    const img = $("preview");
+    const lang = $("langSel").value;
+    const pre = $("preSel").value;
+
+    if(!img.src){ setStatus("錯誤：尚未選擇圖片"); return; }
+    if(!dictLoaded){ setStatus("錯誤：尚未載入對照表"); return; }
+
+    setStatus("狀態：OCR 辨識中（第一次可能較久）...");
+    $("btnRun").disabled = true;
+    $("debug").textContent = "";
+
+    const source = (pre === "on") ? preprocessToCanvas(img) : img;
+
+    const { data } = await Tesseract.recognize(source, lang, {
+      logger: (m) => {
+        if(m.status) setStatus(`狀態：${m.status} ${Math.round((m.progress||0)*100)}%`);
+      }
+    });
+
+    // 直接用 OCR 的 text 拆行（這裡比 bbox 聚行更穩、也更簡單）
+    const rawText = (data.text || "").replace(/\r/g,"");
+    const rawLines = rawText.split("\n").map(s=>s.trim()).filter(Boolean);
+
+    // 清洗 + 過濾
+    const cleaned = rawLines.map(normalizeLine).filter(isLikelySkillLine);
+
+    // 去重（避免重複行）
+    const uniq = [];
+    const seen = new Set();
+    for(const s of cleaned){
+      const key = s.toLowerCase();
+      if(seen.has(key)) continue;
+      seen.add(key);
+      uniq.push(s);
+    }
+
+    // 翻譯
+    const out = uniq.map(s => {
+      const t = translateLine(s);
+      return { raw: s, zh: t.zh, hit: t.hit, note: t.note };
+    });
+
+    lastResult = out;
+    renderResult(out);
+
+    $("btnCopy").disabled = out.length === 0;
+    $("btnDownload").disabled = out.length === 0;
+
+    setStatus(`完成：OCR 抓到 ${rawLines.length} 行，過濾後候選 ${out.length} 行`);
+    $("debug").textContent = `【OCR 原始行數】${rawLines.length}\n【過濾後候選】${uniq.length}\n\n（若你想看原始 OCR 文字，我也能幫你加「顯示 rawText」按鈕）`;
+    $("btnRun").disabled = false;
   }
 
   function escapeHtml(s){
-    return String(s ?? "").replace(/[&<>"']/g, c => ({
+    return String(s ?? "").replace(/[&<>"']/g, (c)=>({
       "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
     }[c]));
   }
 
   function renderResult(rows){
     if(!rows.length){
-      $("result").innerHTML = "<div class='muted'>目前沒有結果</div>";
+      $("result").innerHTML = "<div class='muted'>目前沒有結果（可能是 OCR 沒讀到技能字樣，或過濾太嚴格）</div>";
       return;
     }
-
     $("result").innerHTML = `
       <table>
         <thead>
           <tr>
-            <th style="width:42%;">繁中</th>
-            <th style="width:38%;">原文(英/日 OCR)</th>
+            <th style="width:36%;">繁中</th>
+            <th style="width:44%;">原文(英/日 OCR)</th>
             <th style="width:20%;">備註</th>
           </tr>
         </thead>
@@ -223,88 +364,13 @@
               <td>${escapeHtml(r.raw)}</td>
               <td class="muted">
                 ${r.hit ? "OK" : "未對到"}
-                ${r.fuzzy ? `<br>fuzzy→ ${escapeHtml(r.fuzzy)}` : ""}
+                ${r.note ? `<br>${escapeHtml(r.note)}` : ""}
               </td>
             </tr>
           `).join("")}
         </tbody>
       </table>
     `;
-  }
-
-  // ====== OCR 主流程（用 data.text 切行，避免 0） ======
-  async function runOcrAndTranslate(){
-    const img = $("preview");
-    const lang = $("langSel").value;
-
-    if(!img.src){ setStatus("錯誤：尚未選擇圖片"); return; }
-    if(!dictLoaded){ setStatus("錯誤：尚未載入對照表"); return; }
-
-    setStatus("狀態：OCR 辨識中（第一次可能較久）...");
-    $("btnRun").disabled = true;
-    $("ocrRaw").value = "";
-
-    const canvas = document.createElement("canvas");
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    canvas.getContext("2d").drawImage(img, 0, 0);
-
-    const { data } = await Tesseract.recognize(canvas, lang, {
-      logger: (m) => {
-        if(m.status) setStatus(`狀態：${m.status} ${Math.round((m.progress||0)*100)}%`);
-      }
-    });
-
-    const rawText = (data && data.text) ? data.text : "";
-    $("ocrRaw").value = rawText || "(OCR 沒輸出 text)";
-
-    // 若 OCR text 都是空，直接告訴你：問題在 OCR 不是解析
-    if(!rawText || rawText.trim().length === 0){
-      setStatus("完成：OCR text 為空（通常是語言檔載入失敗、或圖片太糊/太小）。請先看『原始 OCR 文字』是否為空。");
-      $("btnRun").disabled = false;
-      renderResult([]);
-      return;
-    }
-
-    // 逐行處理
-    const lines = rawText.split("\n")
-      .map(cleanLine)
-      .filter(s => s.length >= 3);
-
-    // 過濾標題/雜訊
-    const filtered = lines.filter(s => {
-      const low = s.toLowerCase();
-      if(low.includes("active skills")) return false;
-      if(low.includes("equipment skills")) return false;
-      if(low === "lv") return false;
-      if(/^\d+$/.test(low)) return false;
-      return true;
-    });
-
-    // 去重（忽略大小寫）
-    const uniq = [];
-    const seen = new Set();
-    for(const s of filtered){
-      const k = s.toLowerCase();
-      if(!seen.has(k)){
-        seen.add(k);
-        uniq.push(s);
-      }
-    }
-
-    const result = uniq.map(raw => {
-      const t = translateSkill(raw);
-      return { raw, zh: t.zh, hit: t.hit, fuzzy: t.fuzzy || "" };
-    });
-
-    lastResult = result;
-    renderResult(result);
-
-    $("btnCopy").disabled = result.length === 0;
-    $("btnDownload").disabled = result.length === 0;
-
-    setStatus(`完成：辨識到 ${result.length} 個技能（不解析Lv）。`);
-    $("btnRun").disabled = false;
   }
 
   // ====== UI ======
@@ -321,7 +387,7 @@
   $("btnRun").addEventListener("click", runOcrAndTranslate);
 
   $("btnCopy").addEventListener("click", async () => {
-    const text = lastResult.map(r => `${r.zh}\t(${r.raw})`).join("\n");
+    const text = lastResult.map(r => `${r.zh}\t${r.raw}`).join("\n");
     await navigator.clipboard.writeText(text);
     setStatus("已複製到剪貼簿");
   });
@@ -335,6 +401,7 @@
     URL.revokeObjectURL(a.href);
   });
 
+  // 自動載入
   loadDictFromXlsx();
 </script>
 </body>

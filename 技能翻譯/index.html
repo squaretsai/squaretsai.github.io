@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MHW Skills OCR 翻譯（不判別Lv）</title>
+  <title>MHW Skills OCR 翻譯（穩定版/不判別Lv）</title>
   <style>
     body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", sans-serif; margin: 16px; }
     .card { border: 1px solid #ddd; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
@@ -20,6 +20,8 @@
     img { max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #eee; }
     .two { display: grid; grid-template-columns: 1fr; gap: 12px; }
     @media (min-width: 900px){ .two{ grid-template-columns: 1fr 1fr; } }
+    details { margin-top: 10px; }
+    textarea { width: 100%; min-height: 160px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; }
   </style>
 
   <!-- SheetJS: 讀 Excel -->
@@ -29,16 +31,16 @@
 </head>
 
 <body>
-  <h2>技能截圖自動翻譯（英/日 → 繁中，不判別Lv）</h2>
+  <h2>技能截圖自動翻譯（英/日 → 繁中，不判別Lv｜穩定版）</h2>
 
   <div class="card">
     <div class="row">
-      <button id="btnLoadDict">重新載入翻譯.xlsx</button>
+      <button id="btnLoadDict">重新載入 翻譯.xlsx</button>
       <span class="pill" id="dictState">尚未載入對照表</span>
     </div>
     <div class="muted">
-      需求：同資料夾放 <b>翻譯.xlsx</b>（欄位：英文 / 中文 / 日文）。<br>
-      GitHub Pages 可直接跑，不用後端；OCR 在你的瀏覽器本機執行。
+      需求：<b>index.html</b> 與 <b>翻譯.xlsx</b> 放在同一層（同資料夾/同路徑）。<br>
+      這版不靠 bbox 分行，直接用 OCR 的整段文字切行，避免「辨識 0」。
     </div>
   </div>
 
@@ -46,7 +48,7 @@
     <div>
       <h3>1) 上傳截圖</h3>
       <input id="imgInput" type="file" accept="image/*" />
-      <div class="muted">建議：用原始解析度截圖、不要壓縮；文字越清楚 OCR 越準。</div>
+      <div class="muted">建議：用原始解析度截圖、不要壓縮。</div>
       <div style="margin-top:10px;">
         <img id="preview" alt="preview" />
       </div>
@@ -65,10 +67,12 @@
           </select>
         </label>
       </div>
+
       <div class="muted">
-        本版<strong>不解析 Lv</strong>，只抓技能名稱並套用對照表翻譯。<br>
-        若某列找不到翻譯，會顯示「（未找到對照）」並保留原文。
+        這版 <b>不解析Lv</b>，只抓技能名稱並翻譯。<br>
+        若結果仍很少，請看下方「原始 OCR 文字」，通常一眼就知道 OCR 讀到什麼。
       </div>
+
       <div class="card" style="margin-top:10px;">
         <div class="status" id="status">狀態：等待上傳圖片與載入對照表</div>
       </div>
@@ -82,26 +86,29 @@
       <button id="btnDownload" disabled>下載結果(JSON)</button>
     </div>
     <div id="result"></div>
+
+    <details>
+      <summary class="muted">顯示原始 OCR 文字（除錯用）</summary>
+      <textarea id="ocrRaw" readonly placeholder="這裡會顯示 OCR 原文..."></textarea>
+    </details>
   </div>
 
 <script>
   // ====== 設定 ======
-  const DICT_XLSX = "翻譯.xlsx"; // 放在同目錄
+  const DICT_XLSX = "翻譯.xlsx";
   const COL_EN = "英文";
   const COL_ZH = "中文";
   const COL_JA = "日文";
 
   // ====== 狀態 ======
   let dictLoaded = false;
-  let EN2ZH = new Map(); // key: lower-case english
-  let JA2ZH = new Map(); // key: japanese exact
+  const EN2ZH = new Map(); // lower-case english -> zh
+  const JA2ZH = new Map(); // japanese exact -> zh
   let lastResult = [];
 
   const $ = (id) => document.getElementById(id);
 
-  function setStatus(msg){
-    $("status").textContent = msg;
-  }
+  function setStatus(msg){ $("status").textContent = msg; }
   function setDictState(ok){
     dictLoaded = ok;
     $("dictState").textContent = ok ? "已載入對照表" : "尚未載入對照表";
@@ -109,22 +116,21 @@
     $("btnRun").disabled = !(ok && $("imgInput").files.length);
   }
 
-  // ====== 讀取 Excel 對照表 ======
+  // ====== 讀取 Excel ======
   async function loadDictFromXlsx(){
-    setStatus("狀態：下載並讀取翻譯.xlsx ...");
+    setStatus("狀態：下載並讀取 翻譯.xlsx ...");
     EN2ZH.clear(); JA2ZH.clear();
 
     const resp = await fetch(DICT_XLSX, { cache: "no-store" });
     if(!resp.ok){
       setDictState(false);
-      setStatus("錯誤：找不到 翻譯.xlsx。請確認 index.html 與 翻譯.xlsx 在同一資料夾（同一層），且 GitHub Pages 已部署成功。");
+      setStatus("錯誤：找不到 翻譯.xlsx。請確認它跟 index.html 同一層，且 GitHub Pages 已部署到正確分支/資料夾。");
       return;
     }
 
     const buf = await resp.arrayBuffer();
     const wb = XLSX.read(buf, { type: "array" });
-    const sheetName = wb.SheetNames[0];
-    const ws = wb.Sheets[sheetName];
+    const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
     let okCount = 0;
@@ -132,16 +138,15 @@
       const en = String(r[COL_EN] ?? "").trim();
       const zh = String(r[COL_ZH] ?? "").trim();
       const ja = String(r[COL_JA] ?? "").trim();
-      if(zh){
-        if(en) EN2ZH.set(en.toLowerCase(), zh);
-        if(ja) JA2ZH.set(ja, zh);
-        okCount++;
-      }
+      if(!zh) continue;
+      if(en) EN2ZH.set(en.toLowerCase(), zh);
+      if(ja) JA2ZH.set(ja, zh);
+      okCount++;
     }
 
     if(okCount === 0){
       setDictState(false);
-      setStatus(`錯誤：讀到了 Excel，但沒抓到有效資料。請確認欄位名稱是否為「${COL_EN}/${COL_ZH}/${COL_JA}」。`);
+      setStatus(`錯誤：Excel 讀得到，但資料筆數是 0。請確認欄位名要完全等於「${COL_EN}/${COL_ZH}/${COL_JA}」。`);
       return;
     }
 
@@ -149,59 +154,19 @@
     setStatus(`狀態：對照表載入完成（${okCount} 筆）`);
   }
 
-  // ====== OCR + 解析（不抓Lv） ======
-  function toCanvas(img){
-    const canvas = document.createElement("canvas");
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    return canvas;
-  }
-
-  function groupLines(words){
-    const sorted = [...words].sort((a,b)=> (a.y0-b.y0) || (a.x0-b.x0));
-    const lines = [];
-    const yTol = 14;
-
-    for(const w of sorted){
-      let placed = false;
-      for(const ln of lines){
-        if(Math.abs(w.y0 - ln.y) <= yTol){
-          ln.items.push(w);
-          ln.y = (ln.y + w.y0) / 2;
-          placed = true;
-          break;
-        }
-      }
-      if(!placed){
-        lines.push({ y: w.y0, items: [w] });
-      }
-    }
-
-    for(const ln of lines){
-      ln.items.sort((a,b)=>a.x0-b.x0);
-      ln.text = ln.items.map(i=>i.text).join(" ").replace(/\s+/g," ").trim();
-      ln.minX = Math.min(...ln.items.map(i=>i.x0));
-      ln.maxX = Math.max(...ln.items.map(i=>i.x1));
-    }
-    return lines;
-  }
-
+  // ====== 翻譯（不判別Lv） ======
   function commonPrefixLen(a,b){
     const n = Math.min(a.length,b.length);
-    let i=0;
-    for(; i<n; i++){
-      if(a[i] !== b[i]) break;
-    }
+    let i=0; for(; i<n; i++){ if(a[i] !== b[i]) break; }
     return i;
   }
 
-  function cleanSkillName(text){
-    // 就算 OCR 把 Lv 混進同一行，也先清掉（不解析）
-    return text
-      .replace(/L\s*(?:v|V)\s*[0-9]{1,2}/g, "")
+  function cleanLine(s){
+    // 盡量把雜訊剃掉（但不過度）
+    return String(s || "")
+      .replace(/\r/g, "")
       .replace(/[|]/g, "")
+      .replace(/L\s*(?:v|V)\s*\d{1,2}/g, "") // 如果同一行帶 Lv 也剃掉
       .replace(/\s+/g, " ")
       .trim();
   }
@@ -214,16 +179,13 @@
     const low = name.toLowerCase();
     if(EN2ZH.has(low)) return { zh: EN2ZH.get(low), hit: true };
 
-    // 簡易 fuzzy：共同前綴 + 長度差（門檻偏低）
+    // 簡易 fuzzy：共同前綴 + 長度差（門檻低一點，避免一律未對到）
     if(low.length >= 5 && EN2ZH.size){
       let best = null, bestScore = -1;
       for(const k of EN2ZH.keys()){
         const prefix = commonPrefixLen(low, k);
         const score = prefix / Math.max(low.length, k.length) - Math.abs(low.length - k.length)*0.02;
-        if(score > bestScore){
-          bestScore = score;
-          best = k;
-        }
+        if(score > bestScore){ bestScore = score; best = k; }
       }
       if(best && bestScore > 0.30){
         return { zh: EN2ZH.get(best), hit: true, fuzzy: best };
@@ -233,79 +195,8 @@
     return { zh: "（未找到對照）", hit: false };
   }
 
-  async function runOcrAndTranslate(){
-    const img = $("preview");
-    const lang = $("langSel").value;
-
-    if(!img.src){ setStatus("錯誤：尚未選擇圖片"); return; }
-    if(!dictLoaded){ setStatus("錯誤：尚未載入對照表"); return; }
-
-    setStatus("狀態：OCR 辨識中（第一次可能較久）...");
-    $("btnRun").disabled = true;
-
-    const canvas = toCanvas(img);
-    const { data } = await Tesseract.recognize(canvas, lang, {
-      logger: (m) => {
-        if(m.status) setStatus(`狀態：${m.status} ${Math.round((m.progress||0)*100)}%`);
-      }
-    });
-
-    const words = (data.words || [])
-      .map(w => ({
-        text: (w.text || "").trim(),
-        x0: w.bbox?.x0 ?? 0,
-        y0: w.bbox?.y0 ?? 0,
-        x1: w.bbox?.x1 ?? 0,
-        y1: w.bbox?.y1 ?? 0,
-      }))
-      .filter(w => w.text.length > 0);
-
-    if(words.length === 0){
-      setStatus("完成：但 OCR 沒讀到任何文字。請換更清晰截圖或改語言。");
-      $("btnRun").disabled = false;
-      return;
-    }
-
-    const lines = groupLines(words);
-
-    // 只抓技能名（不抓 Lv）
-    const names = [];
-    for(const ln of lines){
-      let raw = cleanSkillName(ln.text);
-      if(!raw || raw.length < 3) continue;
-      if(/active skills|equipment skills/i.test(raw)) continue;
-      if(/^lv$/i.test(raw)) continue;
-      names.push(raw);
-    }
-
-    // 去重
-    const uniqNames = [];
-    const seen = new Set();
-    for(const n of names){
-      const key = n.toLowerCase();
-      if(!seen.has(key)){
-        seen.add(key);
-        uniqNames.push(n);
-      }
-    }
-
-    const uniq = uniqNames.map(raw => {
-      const t = translateSkill(raw);
-      return { raw, zh: t.zh, hit: t.hit, fuzzy: t.fuzzy || "" };
-    });
-
-    lastResult = uniq;
-    renderResult(uniq);
-
-    $("btnCopy").disabled = uniq.length === 0;
-    $("btnDownload").disabled = uniq.length === 0;
-
-    setStatus(`完成：辨識到 ${uniq.length} 個技能（未解析 Lv）`);
-    $("btnRun").disabled = false;
-  }
-
   function escapeHtml(s){
-    return String(s ?? "").replace(/[&<>"']/g, (c)=>({
+    return String(s ?? "").replace(/[&<>"']/g, c => ({
       "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
     }[c]));
   }
@@ -315,6 +206,7 @@
       $("result").innerHTML = "<div class='muted'>目前沒有結果</div>";
       return;
     }
+
     $("result").innerHTML = `
       <table>
         <thead>
@@ -337,13 +229,85 @@
           `).join("")}
         </tbody>
       </table>
-      <div class="muted" style="margin-top:10px;">
-        提醒：若出現「未對到」，通常是 OCR 誤讀（少字/多字）。你可以換更清晰的截圖、或把 OCR 語言改成只英文/只日文試試。
-      </div>
     `;
   }
 
-  // ====== UI wiring ======
+  // ====== OCR 主流程（用 data.text 切行，避免 0） ======
+  async function runOcrAndTranslate(){
+    const img = $("preview");
+    const lang = $("langSel").value;
+
+    if(!img.src){ setStatus("錯誤：尚未選擇圖片"); return; }
+    if(!dictLoaded){ setStatus("錯誤：尚未載入對照表"); return; }
+
+    setStatus("狀態：OCR 辨識中（第一次可能較久）...");
+    $("btnRun").disabled = true;
+    $("ocrRaw").value = "";
+
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    canvas.getContext("2d").drawImage(img, 0, 0);
+
+    const { data } = await Tesseract.recognize(canvas, lang, {
+      logger: (m) => {
+        if(m.status) setStatus(`狀態：${m.status} ${Math.round((m.progress||0)*100)}%`);
+      }
+    });
+
+    const rawText = (data && data.text) ? data.text : "";
+    $("ocrRaw").value = rawText || "(OCR 沒輸出 text)";
+
+    // 若 OCR text 都是空，直接告訴你：問題在 OCR 不是解析
+    if(!rawText || rawText.trim().length === 0){
+      setStatus("完成：OCR text 為空（通常是語言檔載入失敗、或圖片太糊/太小）。請先看『原始 OCR 文字』是否為空。");
+      $("btnRun").disabled = false;
+      renderResult([]);
+      return;
+    }
+
+    // 逐行處理
+    const lines = rawText.split("\n")
+      .map(cleanLine)
+      .filter(s => s.length >= 3);
+
+    // 過濾標題/雜訊
+    const filtered = lines.filter(s => {
+      const low = s.toLowerCase();
+      if(low.includes("active skills")) return false;
+      if(low.includes("equipment skills")) return false;
+      if(low === "lv") return false;
+      if(/^\d+$/.test(low)) return false;
+      return true;
+    });
+
+    // 去重（忽略大小寫）
+    const uniq = [];
+    const seen = new Set();
+    for(const s of filtered){
+      const k = s.toLowerCase();
+      if(!seen.has(k)){
+        seen.add(k);
+        uniq.push(s);
+      }
+    }
+
+    const result = uniq.map(raw => {
+      const t = translateSkill(raw);
+      return { raw, zh: t.zh, hit: t.hit, fuzzy: t.fuzzy || "" };
+    });
+
+    lastResult = result;
+    renderResult(result);
+
+    $("btnCopy").disabled = result.length === 0;
+    $("btnDownload").disabled = result.length === 0;
+
+    setStatus(`完成：辨識到 ${result.length} 個技能（不解析Lv）。`);
+    $("btnRun").disabled = false;
+  }
+
+  // ====== UI ======
   $("btnLoadDict").addEventListener("click", loadDictFromXlsx);
 
   $("imgInput").addEventListener("change", () => {
@@ -371,7 +335,6 @@
     URL.revokeObjectURL(a.href);
   });
 
-  // 初始自動載入
   loadDictFromXlsx();
 </script>
 </body>

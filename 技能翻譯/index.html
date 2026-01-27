@@ -126,7 +126,6 @@
     const ws = wb.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
-    // 期待欄位：英文 / 中文 / 日文
     let okCount = 0;
     for(const r of rows){
       const en = String(r[COL_EN] ?? "").trim();
@@ -159,12 +158,10 @@
     return canvas;
   }
 
-  // 把 OCR 的 word/line 依 y 座標聚類（同一行）
   function groupLines(words){
-    // words: [{text, x0,y0,x1,y1}]
     const sorted = [...words].sort((a,b)=> (a.y0-b.y0) || (a.x0-b.x0));
     const lines = [];
-    const yTol = 14; // 行高容忍（可調）
+    const yTol = 14;
 
     for(const w of sorted){
       let placed = false;
@@ -180,7 +177,7 @@
         lines.push({ y: w.y0, items: [w] });
       }
     }
-    // 每行按 x 排序，組成文字
+
     for(const ln of lines){
       ln.items.sort((a,b)=>a.x0-b.x0);
       ln.text = ln.items.map(i=>i.text).join(" ").replace(/\s+/g," ").trim();
@@ -191,49 +188,18 @@
   }
 
   function extractLv(text){
-    // 抓 "Lv 5" / "Lv5" / "LV 3" 等
-    const m = text.match(/\bL(?:v|V)\s*([0-9]{1,2})\b/);
+    // 放寬：容忍 "L v 5" / "LV5" / 後面接雜訊
+    const m = text.match(/L\s*(?:v|V)\s*([0-9]{1,2})/);
     return m ? m[1] : "";
   }
 
   function cleanSkillName(text){
-    // 去掉 Lv、數字等，留下技能名（OCR 可能把 Lv 放一起）
+    // 去掉 Lv…（放寬，不用 \b）
     return text
-      .replace(/\bL(?:v|V)\s*[0-9]{1,2}\b/g, "")
+      .replace(/L\s*(?:v|V)\s*[0-9]{1,2}/g, "")
       .replace(/[|]/g, "")
       .replace(/\s+/g, " ")
       .trim();
-  }
-
-  function translateSkill(name){
-    if(!name) return { zh: "", hit: false };
-
-    // 1) 直接日文 key
-    if(JA2ZH.has(name)) return { zh: JA2ZH.get(name), hit: true };
-
-    // 2) 英文 lower key
-    const low = name.toLowerCase();
-    if(EN2ZH.has(low)) return { zh: EN2ZH.get(low), hit: true };
-
-    // 3) 嘗試 fuzzy：避免 OCR 少一個字母（英文最常）
-    //    簡單做法：挑最相近的英文 key（只在長度>4時嘗試）
-    if(low.length >= 5){
-      let best = null, bestScore = 0;
-      for(const k of EN2ZH.keys()){
-        // 粗略相似度：共同前綴 + 長度差
-        const prefix = commonPrefixLen(low, k);
-        const score = prefix / Math.max(low.length, k.length) - Math.abs(low.length - k.length)*0.02;
-        if(score > bestScore){
-          bestScore = score;
-          best = k;
-        }
-      }
-      if(best && bestScore > 0.45){
-        return { zh: EN2ZH.get(best), hit: true, fuzzy: best };
-      }
-    }
-
-    return { zh: "（未找到對照）", hit: false };
   }
 
   function commonPrefixLen(a,b){
@@ -243,6 +209,33 @@
       if(a[i] !== b[i]) break;
     }
     return i;
+  }
+
+  function translateSkill(name){
+    if(!name) return { zh: "", hit: false };
+
+    if(JA2ZH.has(name)) return { zh: JA2ZH.get(name), hit: true };
+
+    const low = name.toLowerCase();
+    if(EN2ZH.has(low)) return { zh: EN2ZH.get(low), hit: true };
+
+    // 簡易 fuzzy：共同前綴 + 長度差（門檻降低）
+    if(low.length >= 5 && EN2ZH.size){
+      let best = null, bestScore = -1;
+      for(const k of EN2ZH.keys()){
+        const prefix = commonPrefixLen(low, k);
+        const score = prefix / Math.max(low.length, k.length) - Math.abs(low.length - k.length)*0.02;
+        if(score > bestScore){
+          bestScore = score;
+          best = k;
+        }
+      }
+      if(best && bestScore > 0.30){
+        return { zh: EN2ZH.get(best), hit: true, fuzzy: best };
+      }
+    }
+
+    return { zh: "（未找到對照）", hit: false };
   }
 
   async function runOcrAndTranslate(){
@@ -262,7 +255,6 @@
       }
     });
 
-    // 抓出 words，含 bbox，方便分行
     const words = (data.words || [])
       .map(w => ({
         text: (w.text || "").trim(),
@@ -279,33 +271,44 @@
       return;
     }
 
-    // 分行
     const lines = groupLines(words);
 
-    // 只保留看起來像技能清單的行：通常會包含 Lv 或者很像技能名
-    // 這裡用「有 Lv」的優先；沒有 Lv 的行忽略（避免把上方標題抓進來）
-    const skillLines = lines
-      .map(ln => {
-        const lv = extractLv(ln.text);
-        return { ...ln, lv };
-      })
-      .filter(ln => ln.lv); // 只收有 Lv 的行（符合你截圖格式）
+    // 解析策略：
+    // A) 同行：同一行同時有「技能名 + Lv」
+    // B) 相鄰：上一行技能名、下一行 Lv
+    const skillPairs = [];
 
-    // 每行：技能名 = 去掉 Lv 後的文字
-    const parsed = skillLines.map(ln => {
+    // A) 同行模式
+    for(const ln of lines){
+      const lv = extractLv(ln.text);
+      if(!lv) continue;
+
       const raw = cleanSkillName(ln.text);
-      // 有些 OCR 會把 "Lv" 讀成 "Lⅴ" 或怪字，這裡再補救：右側通常是 Lv，raw 可能包含多餘字，先保留原文
-      const t = translateSkill(raw);
-      return {
-        raw: raw,
-        lv: ln.lv,
-        zh: t.zh,
-        hit: t.hit,
-        fuzzy: t.fuzzy || ""
-      };
+      if(!raw || raw.length < 3) continue;
+
+      if(/active skills|equipment skills/i.test(raw)) continue;
+
+      skillPairs.push({ raw, lv });
+    }
+
+    // B) 相鄰行模式（上名下Lv）
+    for(let i=0; i<lines.length-1; i++){
+      const lvNext = extractLv(lines[i+1].text);
+      if(!lvNext) continue;
+
+      const raw = cleanSkillName(lines[i].text);
+      if(!raw || raw.length < 3) continue;
+
+      if(/active skills|equipment skills/i.test(raw)) continue;
+
+      skillPairs.push({ raw, lv: lvNext });
+    }
+
+    const parsed = skillPairs.map(p => {
+      const t = translateSkill(p.raw);
+      return { raw: p.raw, lv: p.lv, zh: t.zh, hit: t.hit, fuzzy: t.fuzzy || "" };
     });
 
-    // 去掉重複（OCR 可能讀兩次）
     const uniq = [];
     const seen = new Set();
     for(const r of parsed){
@@ -326,12 +329,18 @@
     $("btnRun").disabled = false;
   }
 
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, (c)=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+    }[c]));
+  }
+
   function renderResult(rows){
     if(!rows.length){
       $("result").innerHTML = "<div class='muted'>目前沒有結果</div>";
       return;
     }
-    const html = `
+    $("result").innerHTML = `
       <table>
         <thead>
           <tr>
@@ -359,13 +368,6 @@
         提醒：若出現「未對到」，通常是 OCR 誤讀（少字/多字）。你可以換更清晰的截圖、或把 OCR 語言改成只英文/只日文試試。
       </div>
     `;
-    $("result").innerHTML = html;
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "").replace(/[&<>"']/g, (c)=>({
-      "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
-    }[c]));
   }
 
   // ====== UI wiring ======
@@ -374,9 +376,8 @@
   $("imgInput").addEventListener("change", () => {
     const f = $("imgInput").files[0];
     if(!f) return;
-    const url = URL.createObjectURL(f);
-    $("preview").src = url;
-    $("btnRun").disabled = !(dictLoaded);
+    $("preview").src = URL.createObjectURL(f);
+    $("btnRun").disabled = !dictLoaded;
     setStatus("狀態：圖片已載入，等待執行辨識");
   });
 
@@ -397,7 +398,7 @@
     URL.revokeObjectURL(a.href);
   });
 
-  // ====== 初始自動載入 ======
+  // 初始自動載入
   loadDictFromXlsx();
 </script>
 </body>

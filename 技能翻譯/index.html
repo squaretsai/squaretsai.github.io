@@ -76,7 +76,7 @@
 
       <div class="muted">
         這版不看 Lv，因此你這種「只有格子沒有 Lv 文字」的截圖也能做。<br>
-        若仍很多亂碼行，通常是小格子/圖示造成；已用過濾與模糊比對降低影響。
+        只會顯示「成功對到對照表」的技能；沒對到的會直接隱藏。
       </div>
 
       <div class="card" style="margin-top:10px;">
@@ -106,9 +106,24 @@
 
   // ====== 狀態 ======
   let dictLoaded = false;
-  let EN2ZH = new Map();       // 英文(小寫) -> 中文
-  let JA2ZH = new Map();       // 日文(原樣) -> 中文
-  let EN_KEYS = [];            // 英文 keys array (for fuzzy)
+
+  // 英文(小寫) -> 中文
+  let EN2ZH = new Map();
+
+  // 日文(原樣) -> 中文
+  let JA2ZH = new Map();
+
+  // 中文 -> 英文(原樣)（用來顯示「對照表中的英文原文」）
+  // 若同一中文對應多個英文，先保留第一個
+  let ZH2EN = new Map();
+
+  // 英文 keys array (for fuzzy)
+  let EN_KEYS = [];
+
+  // 讓 fuzzy 命中時也能拿到「原始英文」顯示
+  // 英文(小寫) -> 英文(原樣)
+  let ENLOW2ENRAW = new Map();
+
   let lastResult = [];
 
   const $ = (id) => document.getElementById(id);
@@ -124,7 +139,7 @@
   // ====== 讀取 Excel 對照表 ======
   async function loadDictFromXlsx(){
     setStatus("狀態：下載並讀取翻譯.xlsx ...");
-    EN2ZH.clear(); JA2ZH.clear(); EN_KEYS = [];
+    EN2ZH.clear(); JA2ZH.clear(); ZH2EN.clear(); EN_KEYS = []; ENLOW2ENRAW.clear();
 
     const resp = await fetch(DICT_XLSX, { cache: "no-store" });
     if(!resp.ok){
@@ -140,17 +155,27 @@
 
     let okCount = 0;
     for(const r of rows){
-      const en = String(r[COL_EN] ?? "").trim();
+      const enRaw = String(r[COL_EN] ?? "").trim();
       const zh = String(r[COL_ZH] ?? "").trim();
       const ja = String(r[COL_JA] ?? "").trim();
       if(!zh) continue;
 
-      if(en){
-        const k = en.toLowerCase();
-        EN2ZH.set(k, zh);
-        EN_KEYS.push(k);
+      if(enRaw){
+        const enLow = enRaw.toLowerCase();
+        EN2ZH.set(enLow, zh);
+        EN_KEYS.push(enLow);
+        ENLOW2ENRAW.set(enLow, enRaw);
+
+        // 讓顯示用「中文旁邊的英文」從對照表拿（優先 exact 英文）
+        if(!ZH2EN.has(zh)) ZH2EN.set(zh, enRaw);
       }
-      if(ja) JA2ZH.set(ja, zh);
+
+      if(ja){
+        JA2ZH.set(ja, zh);
+        // 若中文還沒有英文，至少讓它可以顯示（如果只有日文那列）
+        if(!ZH2EN.has(zh) && enRaw) ZH2EN.set(zh, enRaw);
+      }
+
       okCount++;
     }
 
@@ -172,15 +197,12 @@
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0);
 
-    // 轉灰階 + 簡單閾值化（讓字更像黑白）
     const im = ctx.getImageData(0,0,w,h);
     const d = im.data;
     for(let i=0;i<d.length;i+=4){
       const r=d[i], g=d[i+1], b=d[i+2];
       let gray = (r*0.299 + g*0.587 + b*0.114);
-      // 提高對比（偏激一點）
       gray = (gray - 128) * 1.4 + 128;
-      // 閾值
       const v = gray > 155 ? 255 : 0;
       d[i]=d[i+1]=d[i+2]=v;
       d[i+3]=255;
@@ -191,17 +213,15 @@
 
   // ====== 文字清洗 / 過濾 ======
   function normalizeLine(s){
-    // 去掉常見雜訊符號、前置括號數字、加號等
     return s
       .replace(/[®©™]/g, "")
-      .replace(/^[\s\(\)\[\]\{\}\+\-]*\d+\)?\s*/g, "")  // "(3) " "3) " "+ "
+      .replace(/^[\s\(\)\[\]\{\}\+\-]*\d+\)?\s*/g, "")
       .replace(/[|]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
   }
 
   function isLikelySkillLine(s){
-    // 技能英文通常至少 5~6 字元，且含英文字母
     if(!s) return false;
     if(s.length < 5) return false;
 
@@ -209,11 +229,8 @@
     if(low.includes("active skills")) return false;
     if(low.includes("equipment skills")) return false;
 
-    // 至少要有 1 個英文字母
     if(!/[a-z]/i.test(s)) return false;
 
-    // 過濾掉「幾乎都是亂碼/單字母」的行
-    // 例如 "TT 3", "® ws", "aL) wi"
     const letters = (s.match(/[a-z]/gi) || []).length;
     if(letters < 4) return false;
 
@@ -245,15 +262,17 @@
 
   function bestEnglishMatch(raw){
     const low = raw.toLowerCase();
-    if(EN2ZH.has(low)) return { key: low, zh: EN2ZH.get(low), score: 1.0, fuzzy: "" };
+    if(EN2ZH.has(low)){
+      const zh = EN2ZH.get(low);
+      const enRaw = ENLOW2ENRAW.get(low) || raw;
+      return { enLow: low, enRaw, zh, score: 1.0, fuzzy: "" };
+    }
 
-    // 只對「看起來像英文技能」做模糊
     if(!EN_KEYS.length) return null;
 
     let bestKey = null;
     let bestScore = -1;
 
-    // 用 normalized distance 當相似度
     for(const k of EN_KEYS){
       const dist = levenshtein(low, k);
       const maxLen = Math.max(low.length, k.length);
@@ -264,22 +283,38 @@
       }
     }
 
-    // 門檻：0.72 算不錯（可視情況調 0.68~0.78）
+    // 門檻：0.72（可調）
     if(bestKey && bestScore >= 0.72){
-      return { key: bestKey, zh: EN2ZH.get(bestKey), score: bestScore, fuzzy: bestKey };
+      const zh = EN2ZH.get(bestKey);
+      const enRaw = ENLOW2ENRAW.get(bestKey) || bestKey;
+      return { enLow: bestKey, enRaw, zh, score: bestScore, fuzzy: bestKey };
     }
     return null;
   }
 
+  // 這裡改成：只回傳「命中對照表」的結果；沒命中就回 null
   function translateLine(raw){
     // 日文精確命中
-    if(JA2ZH.has(raw)) return { zh: JA2ZH.get(raw), hit: true, note: "JA exact" };
+    if(JA2ZH.has(raw)){
+      const zh = JA2ZH.get(raw);
+      const enFromDict = ZH2EN.get(zh) || "";
+      return { hit: true, zh, en: enFromDict, note: "JA exact" };
+    }
 
     // 英文 exact / fuzzy
     const m = bestEnglishMatch(raw);
-    if(m) return { zh: m.zh, hit: true, note: m.fuzzy ? `fuzzy→ ${m.fuzzy} (${Math.round(m.score*100)}%)` : "EN exact" };
+    if(m){
+      // 需求：顯示「對照表中的英文原文」
+      // → 用 m.enRaw（就是 Excel 那格英文），而不是 OCR raw
+      return {
+        hit: true,
+        zh: m.zh,
+        en: m.enRaw,
+        note: m.fuzzy ? `fuzzy (${Math.round(m.score*100)}%)` : "EN exact"
+      };
+    }
 
-    return { zh: "（未找到對照）", hit: false, note: "" };
+    return null; // 未辨識/未命中 -> 不顯示
   }
 
   // ====== OCR 主流程 ======
@@ -303,14 +338,12 @@
       }
     });
 
-    // 直接用 OCR 的 text 拆行（這裡比 bbox 聚行更穩、也更簡單）
     const rawText = (data.text || "").replace(/\r/g,"");
     const rawLines = rawText.split("\n").map(s=>s.trim()).filter(Boolean);
 
-    // 清洗 + 過濾
     const cleaned = rawLines.map(normalizeLine).filter(isLikelySkillLine);
 
-    // 去重（避免重複行）
+    // 去重（以 OCR 行去重）
     const uniq = [];
     const seen = new Set();
     for(const s of cleaned){
@@ -320,20 +353,41 @@
       uniq.push(s);
     }
 
-    // 翻譯
-    const out = uniq.map(s => {
+    // 翻譯（只保留命中的）
+    const out = [];
+    for(const s of uniq){
       const t = translateLine(s);
-      return { raw: s, zh: t.zh, hit: t.hit, note: t.note };
-    });
+      if(!t) continue; // 需求 1：未辨識/未命中 -> 不顯示
+      out.push({
+        zh: t.zh,
+        en: t.en || "",   // 需求 2：顯示對照表英文
+        note: t.note || ""
+      });
+    }
 
-    lastResult = out;
-    renderResult(out);
+    // 以（中文+英文）再去重（避免不同 OCR 行都對到同一技能）
+    const final = [];
+    const seen2 = new Set();
+    for(const r of out){
+      const k = `${r.zh}__${r.en}`.toLowerCase();
+      if(seen2.has(k)) continue;
+      seen2.add(k);
+      final.push(r);
+    }
 
-    $("btnCopy").disabled = out.length === 0;
-    $("btnDownload").disabled = out.length === 0;
+    lastResult = final;
+    renderResult(final);
 
-    setStatus(`完成：OCR 抓到 ${rawLines.length} 行，過濾後候選 ${out.length} 行`);
-    $("debug").textContent = `【OCR 原始行數】${rawLines.length}\n【過濾後候選】${uniq.length}\n\n（若你想看原始 OCR 文字，我也能幫你加「顯示 rawText」按鈕）`;
+    $("btnCopy").disabled = final.length === 0;
+    $("btnDownload").disabled = final.length === 0;
+
+    setStatus(`完成：OCR 抓到 ${rawLines.length} 行，候選 ${uniq.length} 行，命中 ${final.length} 項`);
+    $("debug").textContent =
+      `【OCR 原始行數】${rawLines.length}\n` +
+      `【過濾後候選】${uniq.length}\n` +
+      `【命中對照表】${final.length}\n` +
+      `（未命中者已依你的需求隱藏）`;
+
     $("btnRun").disabled = false;
   }
 
@@ -345,27 +399,24 @@
 
   function renderResult(rows){
     if(!rows.length){
-      $("result").innerHTML = "<div class='muted'>目前沒有結果（可能是 OCR 沒讀到技能字樣，或過濾太嚴格）</div>";
+      $("result").innerHTML = "<div class='muted'>沒有命中任何技能（可能 OCR 沒讀到技能字樣，或過濾太嚴格 / 門檻太高）</div>";
       return;
     }
+
+    // 需求：顯示「中文 + 對照表英文原文」
     $("result").innerHTML = `
       <table>
         <thead>
           <tr>
-            <th style="width:36%;">繁中</th>
-            <th style="width:44%;">原文(英/日 OCR)</th>
-            <th style="width:20%;">備註</th>
+            <th style="width:50%;">繁中</th>
+            <th style="width:50%;">英文（對照表）</th>
           </tr>
         </thead>
         <tbody>
           ${rows.map(r => `
             <tr>
               <td><b>${escapeHtml(r.zh)}</b></td>
-              <td>${escapeHtml(r.raw)}</td>
-              <td class="muted">
-                ${r.hit ? "OK" : "未對到"}
-                ${r.note ? `<br>${escapeHtml(r.note)}` : ""}
-              </td>
+              <td>${escapeHtml(r.en)}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -387,7 +438,8 @@
   $("btnRun").addEventListener("click", runOcrAndTranslate);
 
   $("btnCopy").addEventListener("click", async () => {
-    const text = lastResult.map(r => `${r.zh}\t${r.raw}`).join("\n");
+    // 只輸出：中文 + 英文（對照表）
+    const text = lastResult.map(r => `${r.zh}\t${r.en}`).join("\n");
     await navigator.clipboard.writeText(text);
     setStatus("已複製到剪貼簿");
   });

@@ -61,7 +61,7 @@ body {
   outline: none;
   background: #fff;
   color: #111827;
-  font-size: 16px; /* iPhone 不會放大 */
+  font-size: 16px;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -151,11 +151,19 @@ body {
   text-align: center;
 }
 
+.type-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 60px;
+  min-width: 48px;
   min-height: 32px;
   padding: 6px 10px;
   border-radius: 999px;
@@ -163,6 +171,14 @@ body {
   font-size: 14px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.type-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  vertical-align: middle;
+  flex: 0 0 auto;
 }
 
 .power { background: #d32f2f; }
@@ -177,6 +193,32 @@ body {
   padding: 18px 14px;
   text-align: center;
   color: #64748b;
+}
+
+@media (max-width: 430px) {
+  .data-table thead th {
+    font-size: 11px;
+  }
+
+  .state {
+    font-size: 14px;
+  }
+
+  .badge {
+    min-width: 42px;
+    min-height: 30px;
+    padding: 5px 8px;
+    font-size: 13px;
+  }
+
+  .type-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .type-wrap {
+    gap: 4px;
+  }
 }
 
 @media (min-width: 700px) {

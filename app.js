@@ -4,7 +4,7 @@ const list = document.getElementById("list");
 const search = document.getElementById("search");
 const clearBtn = document.getElementById("clearBtn");
 
-fetch("data.json")
+fetch("data.json?v=3")
   .then(res => res.json())
   .then(json => {
     data = json;
@@ -47,18 +47,18 @@ function buildRows(mon) {
   const usageMap = normalizeMap(mon["使用招式"]);
   const counterMap = normalizeMap(mon["對應招式"]);
 
-  const orderedStates = [];
+  const states = [];
   (mon["使用招式"] || []).forEach(item => {
-    if (!orderedStates.includes(item["狀態"])) orderedStates.push(item["狀態"]);
+    if (!states.includes(item["狀態"])) states.push(item["狀態"]);
   });
   (mon["對應招式"] || []).forEach(item => {
-    if (!orderedStates.includes(item["狀態"])) orderedStates.push(item["狀態"]);
+    if (!states.includes(item["狀態"])) states.push(item["狀態"]);
   });
 
-  return orderedStates.map(state => ({
+  return states.map(state => ({
     state,
-    usage: usageMap[state] || "",
-    counter: counterMap[state] || ""
+    usage: usageMap[state] || "-",
+    counter: counterMap[state] || "-"
   }));
 }
 
@@ -75,25 +75,30 @@ function render(arr) {
     card.className = "card";
 
     const rows = buildRows(mon);
+    const rowsHtml = rows.map(r => `
+      <tr>
+        <td class="state">${r.state}</td>
+        <td class="center"><span class="${badgeClass(r.usage)}">${r.usage}</span></td>
+        <td class="center"><span class="${badgeClass(r.counter)}">${r.counter}</span></td>
+      </tr>
+    `).join("");
 
     card.innerHTML = `
       <div class="card-head">
-        <div class="monster-name">${mon["魔物名稱"] || ""}</div>
+        <h2 class="monster-name">${mon["魔物名稱"] || ""}</h2>
         <div class="monster-species">${mon["種族"] || ""}</div>
       </div>
       <div class="table-wrap">
-        <div class="table-head">
-          <div>狀態</div>
-          <div>使用招式</div>
-          <div>對應招式</div>
-        </div>
-        ${rows.map(r => `
-          <div class="row">
-            <div class="state">${r.state}</div>
-            <div><span class="${badgeClass(r.usage)}">${r.usage || "-"}</span></div>
-            <div><span class="${badgeClass(r.counter)}">${r.counter || "-"}</span></div>
-          </div>
-        `).join("")}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 40%;">狀態</th>
+              <th style="width: 30%;">使用招式</th>
+              <th style="width: 30%;">對應招式</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
       </div>
     `;
     list.appendChild(card);

@@ -1,7 +1,7 @@
 const state = {
   monsters: [],
   filtered: [],
-  selectedName: "",
+  mode: "all",
   deferredPrompt: null
 };
 
@@ -9,60 +9,22 @@ const searchInput = document.getElementById("searchInput");
 const clearBtn = document.getElementById("clearBtn");
 const resultsEl = document.getElementById("results");
 const resultMeta = document.getElementById("resultMeta");
-const emptyState = document.getElementById("emptyState");
-const detailCard = document.getElementById("detailCard");
-const detailSpecies = document.getElementById("detailSpecies");
-const detailName = document.getElementById("detailName");
-const usageList = document.getElementById("usageList");
-const counterList = document.getElementById("counterList");
-const recentChips = document.getElementById("recentChips");
 const speciesChips = document.getElementById("speciesChips");
 const installBtn = document.getElementById("installBtn");
+const template = document.getElementById("monsterTemplate");
 
-const RECENT_KEY = "mhs3_recent_searches";
-const MAX_RECENT = 8;
-
-function getRecentSearches() {
-  try {
-    return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
-  } catch {
-    return [];
-  }
+function badgeClass(type){
+  if (type === "力量") return "badge power";
+  if (type === "速度") return "badge speed";
+  if (type === "技巧") return "badge tech";
+  if (type === "特殊") return "badge special";
+  return "badge unknown";
 }
 
-function saveRecentSearch(text) {
-  const value = text.trim();
-  if (!value) return;
-  const current = getRecentSearches().filter(item => item !== value);
-  current.unshift(value);
-  localStorage.setItem(RECENT_KEY, JSON.stringify(current.slice(0, MAX_RECENT)));
-  renderRecentChips();
-}
-
-function renderRecentChips() {
-  const items = getRecentSearches();
-  recentChips.innerHTML = "";
-  if (!items.length) {
-    recentChips.innerHTML = '<span class="chips-title">尚無紀錄</span>';
-    return;
-  }
-  items.forEach(text => {
-    const btn = document.createElement("button");
-    btn.className = "chip";
-    btn.type = "button";
-    btn.textContent = text;
-    btn.addEventListener("click", () => {
-      searchInput.value = text;
-      runSearch();
-    });
-    recentChips.appendChild(btn);
-  });
-}
-
-function renderSpeciesChips() {
-  const speciesSet = [...new Set(state.monsters.map(item => item["種族"]))];
+function renderSpeciesChips(){
+  const list = [...new Set(state.monsters.map(item => item["種族"]))];
   speciesChips.innerHTML = "";
-  speciesSet.forEach(species => {
+  list.forEach(species => {
     const btn = document.createElement("button");
     btn.className = "chip";
     btn.type = "button";
@@ -75,103 +37,102 @@ function renderSpeciesChips() {
   });
 }
 
-function badgeClass(type) {
-  return `badge badge-${type}`;
+function createEntry(item){
+  const row = document.createElement("div");
+  row.className = "entry-item";
+  row.innerHTML = `
+    <div class="entry-state">${item["狀態"]}</div>
+    <span class="${badgeClass(item["猜拳"])}">${item["猜拳"]}</span>
+  `;
+  return row;
 }
 
-function renderEntryList(target, entries) {
-  target.innerHTML = "";
-  if (!entries.length) {
-    target.innerHTML = '<div class="entry-item"><span class="entry-state">無資料</span></div>';
-    return;
-  }
+function renderMonsterCard(monster){
+  const node = template.content.firstElementChild.cloneNode(true);
+  node.querySelector(".monster-species").textContent = monster["種族"];
+  node.querySelector(".monster-name").textContent = monster["魔物名稱"];
 
-  entries.forEach(entry => {
-    const wrap = document.createElement("div");
-    wrap.className = "entry-item";
-    wrap.innerHTML = `
-      <span class="entry-state">${entry["狀態"]}</span>
-      <span class="${badgeClass(entry["猜拳"])}">${entry["猜拳"]}</span>
-    `;
-    target.appendChild(wrap);
+  const usageSection = node.querySelector(".usage-section");
+  const counterSection = node.querySelector(".counter-section");
+  const usageList = node.querySelector(".usage-list");
+  const counterList = node.querySelector(".counter-list");
+
+  monster["使用招式"].forEach(item => usageList.appendChild(createEntry(item)));
+  monster["對應招式"].forEach(item => counterList.appendChild(createEntry(item)));
+
+  if (state.mode === "usage") counterSection.style.display = "none";
+  if (state.mode === "counter") usageSection.style.display = "none";
+
+  const head = node.querySelector(".monster-head");
+  head.addEventListener("click", () => {
+    node.classList.toggle("open");
   });
-}
 
-function renderDetail(monster) {
-  if (!monster) {
-    detailCard.classList.add("hidden");
-    emptyState.classList.remove("hidden");
-    return;
+  // Auto-open when filtered to few results
+  if (state.filtered.length <= 8) {
+    node.classList.add("open");
   }
 
-  emptyState.classList.add("hidden");
-  detailCard.classList.remove("hidden");
-  detailSpecies.textContent = monster["種族"];
-  detailName.textContent = monster["魔物名稱"];
-  renderEntryList(usageList, monster["使用招式"]);
-  renderEntryList(counterList, monster["對應招式"]);
+  return node;
 }
 
-function renderResults() {
+function renderResults(){
   resultsEl.innerHTML = "";
+  resultMeta.textContent = `共 ${state.filtered.length} 筆魔物`;
 
   if (!state.filtered.length) {
-    resultMeta.textContent = "找不到符合的魔物。";
-    renderDetail(null);
+    const empty = document.createElement("div");
+    empty.className = "monster-card open";
+    empty.innerHTML = `
+      <div class="monster-head">
+        <div>
+          <div class="monster-species">沒有結果</div>
+          <h2 class="monster-name">找不到符合的魔物</h2>
+        </div>
+      </div>
+      <div class="monster-body" style="display:block;padding:0 16px 16px;">
+        <div class="mode-section">
+          請換別的關鍵字，例如：火龍、雷狼、古龍種。
+        </div>
+      </div>
+    `;
+    resultsEl.appendChild(empty);
     return;
   }
 
-  resultMeta.textContent = `找到 ${state.filtered.length} 筆魔物資料`;
   state.filtered.forEach(monster => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "result-item" + (monster["魔物名稱"] === state.selectedName ? " active" : "");
-    btn.innerHTML = `
-      <span class="result-name">${monster["魔物名稱"]}</span>
-      <span class="result-species">${monster["種族"]}</span>
-    `;
-    btn.addEventListener("click", () => {
-      state.selectedName = monster["魔物名稱"];
-      renderResults();
-      renderDetail(monster);
-      saveRecentSearch(monster["魔物名稱"]);
-    });
-    resultsEl.appendChild(btn);
-  });
-
-  const selected = state.filtered.find(item => item["魔物名稱"] === state.selectedName) || state.filtered[0];
-  state.selectedName = selected["魔物名稱"];
-  renderDetail(selected);
-
-  [...resultsEl.children].forEach(btn => {
-    if (btn.querySelector(".result-name")?.textContent === selected["魔物名稱"]) {
-      btn.classList.add("active");
-    } else {
-      btn.classList.remove("active");
-    }
+    resultsEl.appendChild(renderMonsterCard(monster));
   });
 }
 
-function runSearch() {
+function scoreMatch(item, keyword){
+  const name = item["魔物名稱"];
+  const species = item["種族"];
+  if (name === keyword) return 100;
+  if (name.startsWith(keyword)) return 80;
+  if (name.includes(keyword)) return 60;
+  if (species === keyword) return 50;
+  if (species.includes(keyword)) return 30;
+  return 0;
+}
+
+function runSearch(){
   const keyword = searchInput.value.trim();
   if (!keyword) {
     state.filtered = state.monsters;
   } else {
-    const lower = keyword.toLowerCase();
-    state.filtered = state.monsters.filter(item =>
-      item["魔物名稱"].toLowerCase().includes(lower) ||
-      item["種族"].toLowerCase().includes(lower)
-    );
+    state.filtered = state.monsters
+      .filter(item => item["魔物名稱"].includes(keyword) || item["種族"].includes(keyword))
+      .sort((a, b) => scoreMatch(b, keyword) - scoreMatch(a, keyword) || a["魔物名稱"].localeCompare(b["魔物名稱"], "zh-Hant"));
   }
   renderResults();
 }
 
-async function init() {
+async function init(){
   const res = await fetch("./data.json");
   state.monsters = await res.json();
   state.filtered = state.monsters;
   renderSpeciesChips();
-  renderRecentChips();
   renderResults();
 }
 
@@ -180,6 +141,15 @@ clearBtn.addEventListener("click", () => {
   searchInput.value = "";
   runSearch();
   searchInput.focus();
+});
+
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(x => x.classList.remove("active"));
+    btn.classList.add("active");
+    state.mode = btn.dataset.mode;
+    renderResults();
+  });
 });
 
 window.addEventListener("beforeinstallprompt", (e) => {

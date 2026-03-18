@@ -2,76 +2,19 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>物語3 猜拳查詢</title>
-  <meta name="theme-color" content="#16324f">
-  <meta name="description" content="魔物獵人物語3 猜拳查詢工具，支援手機即時搜尋、加入主畫面、離線使用。">
-  <link rel="manifest" href="./manifest.json">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">Monster Hunter Stories 3</p>
-        <h1>物語3 猜拳查詢</h1>
-      </div>
-      <button id="installBtn" class="install-btn hidden" type="button">安裝到主畫面</button>
-    </header>
 
-    <main class="layout">
-      <section class="search-panel card">
-        <label class="search-label" for="searchInput">輸入魔物名稱或種族</label>
-        <div class="search-wrap">
-          <input id="searchInput" type="search" placeholder="例如：火龍、雷狼、古龍種" autocomplete="off">
-          <button id="clearBtn" type="button" class="ghost-btn">清除</button>
-        </div>
+<header class="header">
+  <h1>物語3 查詢</h1>
+  <input id="search" placeholder="輸入魔物名稱..." />
+</header>
 
-        <div class="chips-row">
-          <span class="chips-title">最近查詢</span>
-          <div id="recentChips" class="chips"></div>
-        </div>
+<main id="list"></main>
 
-        <div class="chips-row">
-          <span class="chips-title">快速篩選</span>
-          <div id="speciesChips" class="chips"></div>
-        </div>
-
-        <p id="resultMeta" class="result-meta">載入中…</p>
-        <div id="results" class="results"></div>
-      </section>
-
-      <section class="detail-panel">
-        <div id="emptyState" class="card empty-state">
-          <h2>開始搜尋</h2>
-          <p>輸入關鍵字後，下方會立刻列出符合的魔物。點選任一結果即可查看完整行動表。</p>
-        </div>
-
-        <article id="detailCard" class="card detail-card hidden">
-          <div class="detail-header">
-            <div>
-              <p id="detailSpecies" class="detail-species"></p>
-              <h2 id="detailName"></h2>
-            </div>
-          </div>
-
-          <div class="detail-grid">
-            <section class="subcard">
-              <h3>使用招式</h3>
-              <div id="usageList" class="entry-list"></div>
-            </section>
-
-            <section class="subcard">
-              <h3>對應招式</h3>
-              <div id="counterList" class="entry-list"></div>
-            </section>
-          </div>
-        </article>
-      </section>
-    </main>
-  </div>
-
-  <script src="./app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

@@ -2,19 +2,26 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>物語3 猜拳查詢</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="app">
+    <header class="header">
+      <div class="title-wrap">
+        <h1>物語3 查詢</h1>
+        <p>同列顯示使用招式與對應招式</p>
+      </div>
+      <div class="search-wrap">
+        <input id="search" placeholder="輸入魔物名稱或種族..." />
+        <button id="clearBtn" type="button">清除</button>
+      </div>
+    </header>
 
-<header class="header">
-  <h1>物語3 查詢</h1>
-  <input id="search" placeholder="輸入魔物名稱..." />
-</header>
+    <main id="list" class="list"></main>
+  </div>
 
-<main id="list"></main>
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

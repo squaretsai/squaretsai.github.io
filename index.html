@@ -2,82 +2,75 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>物語3 猜拳查詢</title>
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#16324f">
   <meta name="description" content="魔物獵人物語3 猜拳查詢工具，支援手機即時搜尋、加入主畫面、離線使用。">
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <div class="app">
-    <header class="app-header">
-      <div class="header-top">
-        <div>
-          <p class="micro">Monster Hunter Stories 3</p>
-          <h1>物語3 猜拳查詢</h1>
-        </div>
-        <button id="installBtn" class="install-btn hidden" type="button">安裝</button>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Monster Hunter Stories 3</p>
+        <h1>物語3 猜拳查詢</h1>
       </div>
-
-      <div class="search-box">
-        <input id="searchInput" type="search" placeholder="輸入魔物名稱或種族，例如：火龍、雷狼、古龍種" autocomplete="off">
-        <button id="clearBtn" type="button" class="icon-btn" aria-label="清除">✕</button>
-      </div>
-
-      <div class="toolbar">
-        <button class="filter-btn active" data-mode="all">全部</button>
-        <button class="filter-btn" data-mode="usage">只看使用招式</button>
-        <button class="filter-btn" data-mode="counter">只看對應招式</button>
-      </div>
-
-      <div class="chip-section">
-        <div class="section-label">快速篩選</div>
-        <div id="speciesChips" class="chip-row"></div>
-      </div>
+      <button id="installBtn" class="install-btn hidden" type="button">安裝到主畫面</button>
     </header>
 
-    <main class="main">
-      <section class="summary-card">
-        <div>
-          <div class="summary-title">搜尋結果</div>
-          <div id="resultMeta" class="summary-value">載入中…</div>
+    <main class="layout">
+      <section class="search-panel card">
+        <label class="search-label" for="searchInput">輸入魔物名稱或種族</label>
+        <div class="search-wrap">
+          <input id="searchInput" type="search" placeholder="例如：火龍、雷狼、古龍種" autocomplete="off">
+          <button id="clearBtn" type="button" class="ghost-btn">清除</button>
         </div>
-        <div class="legend">
-          <span class="legend-item power">力量</span>
-          <span class="legend-item speed">速度</span>
-          <span class="legend-item tech">技巧</span>
+
+        <div class="chips-row">
+          <span class="chips-title">最近查詢</span>
+          <div id="recentChips" class="chips"></div>
         </div>
+
+        <div class="chips-row">
+          <span class="chips-title">快速篩選</span>
+          <div id="speciesChips" class="chips"></div>
+        </div>
+
+        <p id="resultMeta" class="result-meta">載入中…</p>
+        <div id="results" class="results"></div>
       </section>
 
-      <section id="results" class="results"></section>
+      <section class="detail-panel">
+        <div id="emptyState" class="card empty-state">
+          <h2>開始搜尋</h2>
+          <p>輸入關鍵字後，下方會立刻列出符合的魔物。點選任一結果即可查看完整行動表。</p>
+        </div>
+
+        <article id="detailCard" class="card detail-card hidden">
+          <div class="detail-header">
+            <div>
+              <p id="detailSpecies" class="detail-species"></p>
+              <h2 id="detailName"></h2>
+            </div>
+          </div>
+
+          <div class="detail-grid">
+            <section class="subcard">
+              <h3>使用招式</h3>
+              <div id="usageList" class="entry-list"></div>
+            </section>
+
+            <section class="subcard">
+              <h3>對應招式</h3>
+              <div id="counterList" class="entry-list"></div>
+            </section>
+          </div>
+        </article>
+      </section>
     </main>
   </div>
-
-  <template id="monsterTemplate">
-    <article class="monster-card">
-      <button class="monster-head" type="button">
-        <div>
-          <div class="monster-species"></div>
-          <h2 class="monster-name"></h2>
-        </div>
-        <div class="chevron">▾</div>
-      </button>
-
-      <div class="monster-body">
-        <div class="mode-section usage-section">
-          <div class="mode-title">使用招式</div>
-          <div class="entry-list usage-list"></div>
-        </div>
-
-        <div class="mode-section counter-section">
-          <div class="mode-title">對應招式</div>
-          <div class="entry-list counter-list"></div>
-        </div>
-      </div>
-    </article>
-  </template>
 
   <script src="./app.js"></script>
 </body>

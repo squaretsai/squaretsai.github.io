@@ -1,0 +1,938 @@
+﻿id,identifier,name_zh,name_en,type_zh,power,accuracy,priority,damage_class
+1,pound,拍擊,Pound,一般,40,100.0,0,physical
+2,karate-chop,空手劈,Karate Chop,格鬥,50,100.0,0,physical
+3,double-slap,連環巴掌,Double Slap,一般,15,85.0,0,physical
+4,comet-punch,連續拳,Comet Punch,一般,18,85.0,0,physical
+5,mega-punch,百萬噸重拳,Mega Punch,一般,80,85.0,0,physical
+6,pay-day,聚寶功,Pay Day,一般,40,100.0,0,physical
+7,fire-punch,火焰拳,Fire Punch,火,75,100.0,0,physical
+8,ice-punch,冰凍拳,Ice Punch,冰,75,100.0,0,physical
+9,thunder-punch,雷電拳,Thunder Punch,電,75,100.0,0,physical
+10,scratch,抓,Scratch,一般,40,100.0,0,physical
+11,vice-grip,夾住,Vise Grip,一般,55,100.0,0,physical
+12,guillotine,斷頭鉗,Guillotine,一般,0,30.0,0,physical
+13,razor-wind,旋風刀,Razor Wind,一般,80,100.0,0,special
+14,swords-dance,劍舞,Swords Dance,一般,0,,0,status
+15,cut,居合斬,Cut,一般,50,95.0,0,physical
+16,gust,起風,Gust,飛行,40,100.0,0,special
+17,wing-attack,翅膀攻擊,Wing Attack,飛行,60,100.0,0,physical
+18,whirlwind,吹飛,Whirlwind,一般,0,,-6,status
+19,fly,飛翔,Fly,飛行,90,95.0,0,physical
+20,bind,綁緊,Bind,一般,15,85.0,0,physical
+21,slam,摔打,Slam,一般,80,75.0,0,physical
+22,vine-whip,藤鞭,Vine Whip,草,45,100.0,0,physical
+23,stomp,踩踏,Stomp,一般,65,100.0,0,physical
+24,double-kick,二連踢,Double Kick,格鬥,30,100.0,0,physical
+25,mega-kick,百萬噸重踢,Mega Kick,一般,120,75.0,0,physical
+26,jump-kick,飛踢,Jump Kick,格鬥,100,95.0,0,physical
+27,rolling-kick,迴旋踢,Rolling Kick,格鬥,60,85.0,0,physical
+28,sand-attack,潑沙,Sand Attack,地面,0,100.0,0,status
+29,headbutt,頭錘,Headbutt,一般,70,100.0,0,physical
+30,horn-attack,角撞,Horn Attack,一般,65,100.0,0,physical
+31,fury-attack,亂擊,Fury Attack,一般,15,85.0,0,physical
+32,horn-drill,角鑽,Horn Drill,一般,0,30.0,0,physical
+33,tackle,撞擊,Tackle,一般,40,100.0,0,physical
+34,body-slam,泰山壓頂,Body Slam,一般,85,100.0,0,physical
+35,wrap,緊束,Wrap,一般,15,90.0,0,physical
+36,take-down,猛撞,Take Down,一般,90,85.0,0,physical
+37,thrash,大鬧一番,Thrash,一般,120,100.0,0,physical
+38,double-edge,捨身衝撞,Double-Edge,一般,120,100.0,0,physical
+39,tail-whip,搖尾巴,Tail Whip,一般,0,100.0,0,status
+40,poison-sting,毒針,Poison Sting,毒,15,100.0,0,physical
+41,twineedle,雙針,Twineedle,蟲,25,100.0,0,physical
+42,pin-missile,飛彈針,Pin Missile,蟲,25,95.0,0,physical
+43,leer,瞪眼,Leer,一般,0,100.0,0,status
+44,bite,咬住,Bite,惡,60,100.0,0,physical
+45,growl,叫聲,Growl,一般,0,100.0,0,status
+46,roar,吼叫,Roar,一般,0,,-6,status
+47,sing,唱歌,Sing,一般,0,55.0,0,status
+48,supersonic,超音波,Supersonic,一般,0,55.0,0,status
+49,sonic-boom,音爆,Sonic Boom,一般,0,90.0,0,special
+50,disable,定身法,Disable,一般,0,100.0,0,status
+51,acid,溶解液,Acid,毒,40,100.0,0,special
+52,ember,火花,Ember,火,40,100.0,0,special
+53,flamethrower,噴射火焰,Flamethrower,火,90,100.0,0,special
+54,mist,白霧,Mist,冰,0,,0,status
+55,water-gun,水槍,Water Gun,水,40,100.0,0,special
+56,hydro-pump,水炮,Hydro Pump,水,110,80.0,0,special
+57,surf,衝浪,Surf,水,90,100.0,0,special
+58,ice-beam,冰凍光束,Ice Beam,冰,90,100.0,0,special
+59,blizzard,暴風雪,Blizzard,冰,110,70.0,0,special
+60,psybeam,幻象光線,Psybeam,超能力,65,100.0,0,special
+61,bubble-beam,泡沫光線,Bubble Beam,水,65,100.0,0,special
+62,aurora-beam,極光束,Aurora Beam,冰,65,100.0,0,special
+63,hyper-beam,破壞光線,Hyper Beam,一般,150,90.0,0,special
+64,peck,啄,Peck,飛行,35,100.0,0,physical
+65,drill-peck,啄鑽,Drill Peck,飛行,80,100.0,0,physical
+66,submission,地獄翻滾,Submission,格鬥,80,80.0,0,physical
+67,low-kick,踢倒,Low Kick,格鬥,0,100.0,0,physical
+68,counter,雙倍奉還,Counter,格鬥,0,100.0,-5,physical
+69,seismic-toss,地球上投,Seismic Toss,格鬥,0,100.0,0,physical
+70,strength,怪力,Strength,一般,80,100.0,0,physical
+71,absorb,吸取,Absorb,草,20,100.0,0,special
+72,mega-drain,超級吸取,Mega Drain,草,40,100.0,0,special
+73,leech-seed,寄生種子,Leech Seed,草,0,90.0,0,status
+74,growth,生長,Growth,一般,0,,0,status
+75,razor-leaf,飛葉快刀,Razor Leaf,草,55,95.0,0,physical
+76,solar-beam,日光束,Solar Beam,草,120,100.0,0,special
+77,poison-powder,毒粉,Poison Powder,毒,0,75.0,0,status
+78,stun-spore,麻痺粉,Stun Spore,草,0,75.0,0,status
+79,sleep-powder,催眠粉,Sleep Powder,草,0,75.0,0,status
+80,petal-dance,花瓣舞,Petal Dance,草,120,100.0,0,special
+81,string-shot,吐絲,String Shot,蟲,0,95.0,0,status
+82,dragon-rage,龍之怒,Dragon Rage,龍,0,100.0,0,special
+83,fire-spin,火焰旋渦,Fire Spin,火,35,85.0,0,special
+84,thunder-shock,電擊,Thunder Shock,電,40,100.0,0,special
+85,thunderbolt,十萬伏特,Thunderbolt,電,90,100.0,0,special
+86,thunder-wave,電磁波,Thunder Wave,電,0,90.0,0,status
+87,thunder,打雷,Thunder,電,110,70.0,0,special
+88,rock-throw,落石,Rock Throw,岩石,50,90.0,0,physical
+89,earthquake,地震,Earthquake,地面,100,100.0,0,physical
+90,fissure,地裂,Fissure,地面,0,30.0,0,physical
+91,dig,挖洞,Dig,地面,80,100.0,0,physical
+92,toxic,劇毒,Toxic,毒,0,90.0,0,status
+93,confusion,念力,Confusion,超能力,50,100.0,0,special
+94,psychic,精神強念,Psychic,超能力,90,100.0,0,special
+95,hypnosis,催眠術,Hypnosis,超能力,0,60.0,0,status
+96,meditate,瑜伽姿勢,Meditate,超能力,0,,0,status
+97,agility,高速移動,Agility,超能力,0,,0,status
+98,quick-attack,電光一閃,Quick Attack,一般,40,100.0,1,physical
+99,rage,憤怒,Rage,一般,20,100.0,0,physical
+100,teleport,瞬間移動,Teleport,超能力,0,,-6,status
+101,night-shade,黑夜魔影,Night Shade,幽靈,0,100.0,0,special
+102,mimic,模仿,Mimic,一般,0,,0,status
+103,screech,刺耳聲,Screech,一般,0,85.0,0,status
+104,double-team,影子分身,Double Team,一般,0,,0,status
+105,recover,自我再生,Recover,一般,0,,0,status
+106,harden,變硬,Harden,一般,0,,0,status
+107,minimize,變小,Minimize,一般,0,,0,status
+108,smokescreen,煙幕,Smokescreen,一般,0,100.0,0,status
+109,confuse-ray,奇異之光,Confuse Ray,幽靈,0,100.0,0,status
+110,withdraw,縮入殼中,Withdraw,水,0,,0,status
+111,defense-curl,變圓,Defense Curl,一般,0,,0,status
+112,barrier,屏障,Barrier,超能力,0,,0,status
+113,light-screen,光牆,Light Screen,超能力,0,,0,status
+114,haze,黑霧,Haze,冰,0,,0,status
+115,reflect,反射壁,Reflect,超能力,0,,0,status
+116,focus-energy,聚氣,Focus Energy,一般,0,,0,status
+117,bide,忍耐,Bide,一般,0,,1,physical
+118,metronome,揮指,Metronome,一般,0,,0,status
+119,mirror-move,鸚鵡學舌,Mirror Move,飛行,0,,0,status
+120,self-destruct,自爆,Self-Destruct,一般,200,100.0,0,physical
+121,egg-bomb,炸蛋,Egg Bomb,一般,100,75.0,0,physical
+122,lick,舌舔,Lick,幽靈,30,100.0,0,physical
+123,smog,濁霧,Smog,毒,30,70.0,0,special
+124,sludge,污泥攻擊,Sludge,毒,65,100.0,0,special
+125,bone-club,骨棒,Bone Club,地面,65,85.0,0,physical
+126,fire-blast,大字爆炎,Fire Blast,火,110,85.0,0,special
+127,waterfall,攀瀑,Waterfall,水,80,100.0,0,physical
+128,clamp,貝殼夾擊,Clamp,水,35,85.0,0,physical
+129,swift,高速星星,Swift,一般,60,,0,special
+130,skull-bash,火箭頭錘,Skull Bash,一般,130,100.0,0,physical
+131,spike-cannon,尖刺加農炮,Spike Cannon,一般,20,100.0,0,physical
+132,constrict,纏繞,Constrict,一般,10,100.0,0,physical
+133,amnesia,瞬間失憶,Amnesia,超能力,0,,0,status
+134,kinesis,折彎湯匙,Kinesis,超能力,0,80.0,0,status
+135,soft-boiled,生蛋,Soft-Boiled,一般,0,,0,status
+136,high-jump-kick,飛膝踢,High Jump Kick,格鬥,130,90.0,0,physical
+137,glare,大蛇瞪眼,Glare,一般,0,100.0,0,status
+138,dream-eater,食夢,Dream Eater,超能力,100,100.0,0,special
+139,poison-gas,毒瓦斯,Poison Gas,毒,0,90.0,0,status
+140,barrage,投球,Barrage,一般,15,85.0,0,physical
+141,leech-life,吸血,Leech Life,蟲,80,100.0,0,physical
+142,lovely-kiss,惡魔之吻,Lovely Kiss,一般,0,75.0,0,status
+143,sky-attack,神鳥猛擊,Sky Attack,飛行,140,90.0,0,physical
+144,transform,變身,Transform,一般,0,,0,status
+145,bubble,泡沫,Bubble,水,40,100.0,0,special
+146,dizzy-punch,迷昏拳,Dizzy Punch,一般,70,100.0,0,physical
+147,spore,蘑菇孢子,Spore,草,0,100.0,0,status
+148,flash,閃光,Flash,一般,0,100.0,0,status
+149,psywave,精神波,Psywave,超能力,0,100.0,0,special
+150,splash,躍起,Splash,一般,0,,0,status
+151,acid-armor,溶化,Acid Armor,毒,0,,0,status
+152,crabhammer,蟹鉗錘,Crabhammer,水,100,90.0,0,physical
+153,explosion,大爆炸,Explosion,一般,250,100.0,0,physical
+154,fury-swipes,亂抓,Fury Swipes,一般,18,80.0,0,physical
+155,bonemerang,骨頭回力鏢,Bonemerang,地面,50,90.0,0,physical
+156,rest,睡覺,Rest,超能力,0,,0,status
+157,rock-slide,岩崩,Rock Slide,岩石,75,90.0,0,physical
+158,hyper-fang,必殺門牙,Hyper Fang,一般,80,90.0,0,physical
+159,sharpen,稜角化,Sharpen,一般,0,,0,status
+160,conversion,紋理,Conversion,一般,0,,0,status
+161,tri-attack,三重攻擊,Tri Attack,一般,80,100.0,0,special
+162,super-fang,憤怒門牙,Super Fang,一般,0,90.0,0,physical
+163,slash,劈開,Slash,一般,70,100.0,0,physical
+164,substitute,替身,Substitute,一般,0,,0,status
+165,struggle,掙扎,Struggle,一般,50,,0,physical
+166,sketch,寫生,Sketch,一般,0,,0,status
+167,triple-kick,三連踢,Triple Kick,格鬥,10,90.0,0,physical
+168,thief,小偷,Thief,惡,60,100.0,0,physical
+169,spider-web,蛛網,Spider Web,蟲,0,,0,status
+170,mind-reader,心之眼,Mind Reader,一般,0,,0,status
+171,nightmare,惡夢,Nightmare,幽靈,0,100.0,0,status
+172,flame-wheel,火焰輪,Flame Wheel,火,60,100.0,0,physical
+173,snore,打鼾,Snore,一般,50,100.0,0,special
+174,curse,詛咒,Curse,幽靈,0,,0,status
+175,flail,抓狂,Flail,一般,0,100.0,0,physical
+176,conversion-2,紋理２,Conversion 2,一般,0,,0,status
+177,aeroblast,氣旋攻擊,Aeroblast,飛行,100,95.0,0,special
+178,cotton-spore,棉孢子,Cotton Spore,草,0,100.0,0,status
+179,reversal,起死回生,Reversal,格鬥,0,100.0,0,physical
+180,spite,怨恨,Spite,幽靈,0,100.0,0,status
+181,powder-snow,細雪,Powder Snow,冰,40,100.0,0,special
+182,protect,守住,Protect,一般,0,,4,status
+183,mach-punch,音速拳,Mach Punch,格鬥,40,100.0,1,physical
+184,scary-face,鬼面,Scary Face,一般,0,100.0,0,status
+185,feint-attack,出奇一擊,Feint Attack,惡,60,,0,physical
+186,sweet-kiss,天使之吻,Sweet Kiss,妖精,0,75.0,0,status
+187,belly-drum,腹鼓,Belly Drum,一般,0,,0,status
+188,sludge-bomb,污泥炸彈,Sludge Bomb,毒,90,100.0,0,special
+189,mud-slap,擲泥,Mud-Slap,地面,20,100.0,0,special
+190,octazooka,章魚桶炮,Octazooka,水,65,85.0,0,special
+191,spikes,撒菱,Spikes,地面,0,,0,status
+192,zap-cannon,電磁炮,Zap Cannon,電,120,50.0,0,special
+193,foresight,識破,Foresight,一般,0,,0,status
+194,destiny-bond,同命,Destiny Bond,幽靈,0,,0,status
+195,perish-song,滅亡之歌,Perish Song,一般,0,,0,status
+196,icy-wind,冰凍之風,Icy Wind,冰,55,95.0,0,special
+197,detect,看穿,Detect,格鬥,0,,4,status
+198,bone-rush,骨棒亂打,Bone Rush,地面,25,90.0,0,physical
+199,lock-on,鎖定,Lock-On,一般,0,,0,status
+200,outrage,逆鱗,Outrage,龍,120,100.0,0,physical
+201,sandstorm,沙暴,Sandstorm,岩石,0,,0,status
+202,giga-drain,終極吸取,Giga Drain,草,75,100.0,0,special
+203,endure,挺住,Endure,一般,0,,4,status
+204,charm,撒嬌,Charm,妖精,0,100.0,0,status
+205,rollout,滾動,Rollout,岩石,30,90.0,0,physical
+206,false-swipe,點到為止,False Swipe,一般,40,100.0,0,physical
+207,swagger,虛張聲勢,Swagger,一般,0,85.0,0,status
+208,milk-drink,喝牛奶,Milk Drink,一般,0,,0,status
+209,spark,電光,Spark,電,65,100.0,0,physical
+210,fury-cutter,連斬,Fury Cutter,蟲,40,95.0,0,physical
+211,steel-wing,鋼翼,Steel Wing,鋼,70,90.0,0,physical
+212,mean-look,黑色目光,Mean Look,一般,0,,0,status
+213,attract,迷人,Attract,一般,0,100.0,0,status
+214,sleep-talk,夢話,Sleep Talk,一般,0,,0,status
+215,heal-bell,治癒鈴聲,Heal Bell,一般,0,,0,status
+216,return,報恩,Return,一般,0,100.0,0,physical
+217,present,禮物,Present,一般,0,90.0,0,physical
+218,frustration,遷怒,Frustration,一般,0,100.0,0,physical
+219,safeguard,神秘守護,Safeguard,一般,0,,0,status
+220,pain-split,分擔痛楚,Pain Split,一般,0,,0,status
+221,sacred-fire,神聖之火,Sacred Fire,火,100,95.0,0,physical
+222,magnitude,震級,Magnitude,地面,0,100.0,0,physical
+223,dynamic-punch,爆裂拳,Dynamic Punch,格鬥,100,50.0,0,physical
+224,megahorn,超級角擊,Megahorn,蟲,120,85.0,0,physical
+225,dragon-breath,龍息,Dragon Breath,龍,60,100.0,0,special
+226,baton-pass,接棒,Baton Pass,一般,0,,0,status
+227,encore,再來一次,Encore,一般,0,100.0,0,status
+228,pursuit,追打,Pursuit,惡,40,100.0,0,physical
+229,rapid-spin,高速旋轉,Rapid Spin,一般,50,100.0,0,physical
+230,sweet-scent,甜甜香氣,Sweet Scent,一般,0,100.0,0,status
+231,iron-tail,鐵尾,Iron Tail,鋼,100,75.0,0,physical
+232,metal-claw,金屬爪,Metal Claw,鋼,50,95.0,0,physical
+233,vital-throw,借力摔,Vital Throw,格鬥,70,,-1,physical
+234,morning-sun,晨光,Morning Sun,一般,0,,0,status
+235,synthesis,光合作用,Synthesis,草,0,,0,status
+236,moonlight,月光,Moonlight,妖精,0,,0,status
+237,hidden-power,覺醒力量,Hidden Power,一般,60,100.0,0,special
+238,cross-chop,十字劈,Cross Chop,格鬥,100,80.0,0,physical
+239,twister,龍捲風,Twister,龍,40,100.0,0,special
+240,rain-dance,求雨,Rain Dance,水,0,,0,status
+241,sunny-day,大晴天,Sunny Day,火,0,,0,status
+242,crunch,咬碎,Crunch,惡,80,100.0,0,physical
+243,mirror-coat,鏡面反射,Mirror Coat,超能力,0,100.0,-5,special
+244,psych-up,自我暗示,Psych Up,一般,0,,0,status
+245,extreme-speed,神速,Extreme Speed,一般,80,100.0,2,physical
+246,ancient-power,原始之力,Ancient Power,岩石,60,100.0,0,special
+247,shadow-ball,暗影球,Shadow Ball,幽靈,80,100.0,0,special
+248,future-sight,預知未來,Future Sight,超能力,120,100.0,0,special
+249,rock-smash,碎岩,Rock Smash,格鬥,40,100.0,0,physical
+250,whirlpool,潮旋,Whirlpool,水,35,85.0,0,special
+251,beat-up,圍攻,Beat Up,惡,0,100.0,0,physical
+252,fake-out,擊掌奇襲,Fake Out,一般,40,100.0,3,physical
+253,uproar,吵鬧,Uproar,一般,90,100.0,0,special
+254,stockpile,蓄力,Stockpile,一般,0,,0,status
+255,spit-up,噴出,Spit Up,一般,0,100.0,0,special
+256,swallow,吞下,Swallow,一般,0,,0,status
+257,heat-wave,熱風,Heat Wave,火,95,90.0,0,special
+258,hail,冰雹,Hail,冰,0,,0,status
+259,torment,無理取鬧,Torment,惡,0,100.0,0,status
+260,flatter,吹捧,Flatter,惡,0,100.0,0,status
+261,will-o-wisp,鬼火,Will-O-Wisp,火,0,85.0,0,status
+262,memento,臨別禮物,Memento,惡,0,100.0,0,status
+263,facade,硬撐,Facade,一般,70,100.0,0,physical
+264,focus-punch,真氣拳,Focus Punch,格鬥,150,100.0,-3,physical
+265,smelling-salts,清醒,Smelling Salts,一般,70,100.0,0,physical
+266,follow-me,看我嘛,Follow Me,一般,0,,2,status
+267,nature-power,自然之力,Nature Power,一般,0,,0,status
+268,charge,充電,Charge,電,0,,0,status
+269,taunt,挑釁,Taunt,惡,0,100.0,0,status
+270,helping-hand,幫助,Helping Hand,一般,0,,5,status
+271,trick,戲法,Trick,超能力,0,100.0,0,status
+272,role-play,扮演,Role Play,超能力,0,,0,status
+273,wish,祈願,Wish,一般,0,,0,status
+274,assist,借助,Assist,一般,0,,0,status
+275,ingrain,扎根,Ingrain,草,0,,0,status
+276,superpower,蠻力,Superpower,格鬥,120,100.0,0,physical
+277,magic-coat,魔法反射,Magic Coat,超能力,0,,4,status
+278,recycle,回收利用,Recycle,一般,0,,0,status
+279,revenge,報復,Revenge,格鬥,60,100.0,-4,physical
+280,brick-break,劈瓦,Brick Break,格鬥,75,100.0,0,physical
+281,yawn,哈欠,Yawn,一般,0,,0,status
+282,knock-off,拍落,Knock Off,惡,65,100.0,0,physical
+283,endeavor,蠻幹,Endeavor,一般,0,100.0,0,physical
+284,eruption,噴火,Eruption,火,150,100.0,0,special
+285,skill-swap,特性互換,Skill Swap,超能力,0,,0,status
+286,imprison,封印,Imprison,超能力,0,,0,status
+287,refresh,煥然一新,Refresh,一般,0,,0,status
+288,grudge,怨念,Grudge,幽靈,0,,0,status
+289,snatch,搶奪,Snatch,惡,0,,4,status
+290,secret-power,秘密之力,Secret Power,一般,70,100.0,0,physical
+291,dive,潛水,Dive,水,80,100.0,0,physical
+292,arm-thrust,猛推,Arm Thrust,格鬥,15,100.0,0,physical
+293,camouflage,保護色,Camouflage,一般,0,,0,status
+294,tail-glow,螢火,Tail Glow,蟲,0,,0,status
+295,luster-purge,潔淨光芒,Luster Purge,超能力,95,100.0,0,special
+296,mist-ball,薄霧球,Mist Ball,超能力,95,100.0,0,special
+297,feather-dance,羽毛舞,Feather Dance,飛行,0,100.0,0,status
+298,teeter-dance,搖晃舞,Teeter Dance,一般,0,100.0,0,status
+299,blaze-kick,火焰踢,Blaze Kick,火,85,90.0,0,physical
+300,mud-sport,玩泥巴,Mud Sport,地面,0,,0,status
+301,ice-ball,冰球,Ice Ball,冰,30,90.0,0,physical
+302,needle-arm,尖刺臂,Needle Arm,草,60,100.0,0,physical
+303,slack-off,偷懶,Slack Off,一般,0,,0,status
+304,hyper-voice,巨聲,Hyper Voice,一般,90,100.0,0,special
+305,poison-fang,劇毒牙,Poison Fang,毒,50,100.0,0,physical
+306,crush-claw,撕裂爪,Crush Claw,一般,75,95.0,0,physical
+307,blast-burn,爆炸烈焰,Blast Burn,火,150,90.0,0,special
+308,hydro-cannon,加農水炮,Hydro Cannon,水,150,90.0,0,special
+309,meteor-mash,彗星拳,Meteor Mash,鋼,90,90.0,0,physical
+310,astonish,驚嚇,Astonish,幽靈,30,100.0,0,physical
+311,weather-ball,氣象球,Weather Ball,一般,50,100.0,0,special
+312,aromatherapy,芳香治療,Aromatherapy,草,0,,0,status
+313,fake-tears,假哭,Fake Tears,惡,0,100.0,0,status
+314,air-cutter,空氣利刃,Air Cutter,飛行,60,95.0,0,special
+315,overheat,過熱,Overheat,火,130,90.0,0,special
+316,odor-sleuth,氣味偵測,Odor Sleuth,一般,0,,0,status
+317,rock-tomb,岩石封鎖,Rock Tomb,岩石,60,95.0,0,physical
+318,silver-wind,銀色旋風,Silver Wind,蟲,60,100.0,0,special
+319,metal-sound,金屬音,Metal Sound,鋼,0,85.0,0,status
+320,grass-whistle,草笛,Grass Whistle,草,0,55.0,0,status
+321,tickle,搔癢,Tickle,一般,0,100.0,0,status
+322,cosmic-power,宇宙力量,Cosmic Power,超能力,0,,0,status
+323,water-spout,噴水,Water Spout,水,150,100.0,0,special
+324,signal-beam,信號光束,Signal Beam,蟲,75,100.0,0,special
+325,shadow-punch,暗影拳,Shadow Punch,幽靈,60,,0,physical
+326,extrasensory,神通力,Extrasensory,超能力,80,100.0,0,special
+327,sky-uppercut,衝天拳,Sky Uppercut,格鬥,85,90.0,0,physical
+328,sand-tomb,流沙地獄,Sand Tomb,地面,35,85.0,0,physical
+329,sheer-cold,絕對零度,Sheer Cold,冰,0,30.0,0,special
+330,muddy-water,濁流,Muddy Water,水,90,85.0,0,special
+331,bullet-seed,種子機關槍,Bullet Seed,草,25,100.0,0,physical
+332,aerial-ace,燕返,Aerial Ace,飛行,60,,0,physical
+333,icicle-spear,冰錐,Icicle Spear,冰,25,100.0,0,physical
+334,iron-defense,鐵壁,Iron Defense,鋼,0,,0,status
+335,block,擋路,Block,一般,0,,0,status
+336,howl,長嚎,Howl,一般,0,,0,status
+337,dragon-claw,龍爪,Dragon Claw,龍,80,100.0,0,physical
+338,frenzy-plant,瘋狂植物,Frenzy Plant,草,150,90.0,0,special
+339,bulk-up,健美,Bulk Up,格鬥,0,,0,status
+340,bounce,彈跳,Bounce,飛行,85,85.0,0,physical
+341,mud-shot,泥巴射擊,Mud Shot,地面,55,95.0,0,special
+342,poison-tail,毒尾,Poison Tail,毒,50,100.0,0,physical
+343,covet,渴望,Covet,一般,60,100.0,0,physical
+344,volt-tackle,伏特攻擊,Volt Tackle,電,120,100.0,0,physical
+345,magical-leaf,魔法葉,Magical Leaf,草,60,,0,special
+346,water-sport,玩水,Water Sport,水,0,,0,status
+347,calm-mind,冥想,Calm Mind,超能力,0,,0,status
+348,leaf-blade,葉刃,Leaf Blade,草,90,100.0,0,physical
+349,dragon-dance,龍之舞,Dragon Dance,龍,0,,0,status
+350,rock-blast,岩石爆擊,Rock Blast,岩石,25,90.0,0,physical
+351,shock-wave,電擊波,Shock Wave,電,60,,0,special
+352,water-pulse,水之波動,Water Pulse,水,60,100.0,0,special
+353,doom-desire,破滅之願,Doom Desire,鋼,140,100.0,0,special
+354,psycho-boost,精神突進,Psycho Boost,超能力,140,90.0,0,special
+355,roost,羽棲,Roost,飛行,0,,0,status
+356,gravity,重力,Gravity,超能力,0,,0,status
+357,miracle-eye,奇跡之眼,Miracle Eye,超能力,0,,0,status
+358,wake-up-slap,喚醒巴掌,Wake-Up Slap,格鬥,70,100.0,0,physical
+359,hammer-arm,臂錘,Hammer Arm,格鬥,100,90.0,0,physical
+360,gyro-ball,陀螺球,Gyro Ball,鋼,0,100.0,0,physical
+361,healing-wish,治癒之願,Healing Wish,超能力,0,,0,status
+362,brine,鹽水,Brine,水,65,100.0,0,special
+363,natural-gift,自然之恩,Natural Gift,一般,0,100.0,0,physical
+364,feint,佯攻,Feint,一般,30,100.0,2,physical
+365,pluck,啄食,Pluck,飛行,60,100.0,0,physical
+366,tailwind,順風,Tailwind,飛行,0,,0,status
+367,acupressure,點穴,Acupressure,一般,0,,0,status
+368,metal-burst,金屬爆炸,Metal Burst,鋼,0,100.0,0,physical
+369,u-turn,急速折返,U-turn,蟲,70,100.0,0,physical
+370,close-combat,近身戰,Close Combat,格鬥,120,100.0,0,physical
+371,payback,以牙還牙,Payback,惡,50,100.0,0,physical
+372,assurance,惡意追擊,Assurance,惡,60,100.0,0,physical
+373,embargo,查封,Embargo,惡,0,100.0,0,status
+374,fling,投擲,Fling,惡,0,100.0,0,physical
+375,psycho-shift,精神轉移,Psycho Shift,超能力,0,100.0,0,status
+376,trump-card,王牌,Trump Card,一般,0,,0,special
+377,heal-block,回復封鎖,Heal Block,超能力,0,100.0,0,status
+378,wring-out,絞緊,Wring Out,一般,0,100.0,0,special
+379,power-trick,力量戲法,Power Trick,超能力,0,,0,status
+380,gastro-acid,胃液,Gastro Acid,毒,0,100.0,0,status
+381,lucky-chant,幸運咒語,Lucky Chant,一般,0,,0,status
+382,me-first,搶先一步,Me First,一般,0,,0,status
+383,copycat,仿效,Copycat,一般,0,,0,status
+384,power-swap,力量互換,Power Swap,超能力,0,,0,status
+385,guard-swap,防守互換,Guard Swap,超能力,0,,0,status
+386,punishment,懲罰,Punishment,惡,0,100.0,0,physical
+387,last-resort,珍藏,Last Resort,一般,140,100.0,0,physical
+388,worry-seed,煩惱種子,Worry Seed,草,0,100.0,0,status
+389,sucker-punch,突襲,Sucker Punch,惡,70,100.0,1,physical
+390,toxic-spikes,毒菱,Toxic Spikes,毒,0,,0,status
+391,heart-swap,心靈互換,Heart Swap,超能力,0,,0,status
+392,aqua-ring,水流環,Aqua Ring,水,0,,0,status
+393,magnet-rise,電磁飄浮,Magnet Rise,電,0,,0,status
+394,flare-blitz,閃焰衝鋒,Flare Blitz,火,120,100.0,0,physical
+395,force-palm,發勁,Force Palm,格鬥,60,100.0,0,physical
+396,aura-sphere,波導彈,Aura Sphere,格鬥,80,,0,special
+397,rock-polish,岩石打磨,Rock Polish,岩石,0,,0,status
+398,poison-jab,毒擊,Poison Jab,毒,80,100.0,0,physical
+399,dark-pulse,惡之波動,Dark Pulse,惡,80,100.0,0,special
+400,night-slash,暗襲要害,Night Slash,惡,70,100.0,0,physical
+401,aqua-tail,水流尾,Aqua Tail,水,90,90.0,0,physical
+402,seed-bomb,種子炸彈,Seed Bomb,草,80,100.0,0,physical
+403,air-slash,空氣斬,Air Slash,飛行,75,95.0,0,special
+404,x-scissor,十字剪,X-Scissor,蟲,80,100.0,0,physical
+405,bug-buzz,蟲鳴,Bug Buzz,蟲,90,100.0,0,special
+406,dragon-pulse,龍之波動,Dragon Pulse,龍,85,100.0,0,special
+407,dragon-rush,龍之俯衝,Dragon Rush,龍,100,75.0,0,physical
+408,power-gem,力量寶石,Power Gem,岩石,80,100.0,0,special
+409,drain-punch,吸取拳,Drain Punch,格鬥,75,100.0,0,physical
+410,vacuum-wave,真空波,Vacuum Wave,格鬥,40,100.0,1,special
+411,focus-blast,真氣彈,Focus Blast,格鬥,120,70.0,0,special
+412,energy-ball,能量球,Energy Ball,草,90,100.0,0,special
+413,brave-bird,勇鳥猛攻,Brave Bird,飛行,120,100.0,0,physical
+414,earth-power,大地之力,Earth Power,地面,90,100.0,0,special
+415,switcheroo,掉包,Switcheroo,惡,0,100.0,0,status
+416,giga-impact,終極衝擊,Giga Impact,一般,150,90.0,0,physical
+417,nasty-plot,詭計,Nasty Plot,惡,0,,0,status
+418,bullet-punch,子彈拳,Bullet Punch,鋼,40,100.0,1,physical
+419,avalanche,雪崩,Avalanche,冰,60,100.0,-4,physical
+420,ice-shard,冰礫,Ice Shard,冰,40,100.0,1,physical
+421,shadow-claw,暗影爪,Shadow Claw,幽靈,70,100.0,0,physical
+422,thunder-fang,雷電牙,Thunder Fang,電,65,95.0,0,physical
+423,ice-fang,冰凍牙,Ice Fang,冰,65,95.0,0,physical
+424,fire-fang,火焰牙,Fire Fang,火,65,95.0,0,physical
+425,shadow-sneak,影子偷襲,Shadow Sneak,幽靈,40,100.0,1,physical
+426,mud-bomb,泥巴炸彈,Mud Bomb,地面,65,85.0,0,special
+427,psycho-cut,精神利刃,Psycho Cut,超能力,70,100.0,0,physical
+428,zen-headbutt,意念頭錘,Zen Headbutt,超能力,80,90.0,0,physical
+429,mirror-shot,鏡光射擊,Mirror Shot,鋼,65,85.0,0,special
+430,flash-cannon,加農光炮,Flash Cannon,鋼,80,100.0,0,special
+431,rock-climb,攀岩,Rock Climb,一般,90,85.0,0,physical
+432,defog,清除濃霧,Defog,飛行,0,,0,status
+433,trick-room,戲法空間,Trick Room,超能力,0,,-7,status
+434,draco-meteor,流星群,Draco Meteor,龍,130,90.0,0,special
+435,discharge,放電,Discharge,電,80,100.0,0,special
+436,lava-plume,噴煙,Lava Plume,火,80,100.0,0,special
+437,leaf-storm,飛葉風暴,Leaf Storm,草,130,90.0,0,special
+438,power-whip,強力鞭打,Power Whip,草,120,85.0,0,physical
+439,rock-wrecker,岩石炮,Rock Wrecker,岩石,150,90.0,0,physical
+440,cross-poison,十字毒刃,Cross Poison,毒,70,100.0,0,physical
+441,gunk-shot,垃圾射擊,Gunk Shot,毒,120,80.0,0,physical
+442,iron-head,鐵頭,Iron Head,鋼,80,100.0,0,physical
+443,magnet-bomb,磁鐵炸彈,Magnet Bomb,鋼,60,,0,physical
+444,stone-edge,尖石攻擊,Stone Edge,岩石,100,80.0,0,physical
+445,captivate,誘惑,Captivate,一般,0,100.0,0,status
+446,stealth-rock,隱形岩,Stealth Rock,岩石,0,,0,status
+447,grass-knot,打草結,Grass Knot,草,0,100.0,0,special
+448,chatter,喋喋不休,Chatter,飛行,65,100.0,0,special
+449,judgment,制裁光礫,Judgment,一般,100,100.0,0,special
+450,bug-bite,蟲咬,Bug Bite,蟲,60,100.0,0,physical
+451,charge-beam,充電光束,Charge Beam,電,50,90.0,0,special
+452,wood-hammer,木槌,Wood Hammer,草,120,100.0,0,physical
+453,aqua-jet,水流噴射,Aqua Jet,水,40,100.0,1,physical
+454,attack-order,攻擊指令,Attack Order,蟲,90,100.0,0,physical
+455,defend-order,防禦指令,Defend Order,蟲,0,,0,status
+456,heal-order,回復指令,Heal Order,蟲,0,,0,status
+457,head-smash,雙刃頭錘,Head Smash,岩石,150,80.0,0,physical
+458,double-hit,二連擊,Double Hit,一般,35,90.0,0,physical
+459,roar-of-time,時光咆哮,Roar of Time,龍,150,90.0,0,special
+460,spacial-rend,亞空裂斬,Spacial Rend,龍,100,95.0,0,special
+461,lunar-dance,新月舞,Lunar Dance,超能力,0,,0,status
+462,crush-grip,捏碎,Crush Grip,一般,0,100.0,0,physical
+463,magma-storm,熔岩風暴,Magma Storm,火,100,75.0,0,special
+464,dark-void,暗黑洞,Dark Void,惡,0,50.0,0,status
+465,seed-flare,種子閃光,Seed Flare,草,120,85.0,0,special
+466,ominous-wind,奇異之風,Ominous Wind,幽靈,60,100.0,0,special
+467,shadow-force,暗影潛襲,Shadow Force,幽靈,120,100.0,0,physical
+468,hone-claws,磨爪,Hone Claws,惡,0,,0,status
+469,wide-guard,廣域防守,Wide Guard,岩石,0,,3,status
+470,guard-split,防守平分,Guard Split,超能力,0,,0,status
+471,power-split,力量平分,Power Split,超能力,0,,0,status
+472,wonder-room,奇妙空間,Wonder Room,超能力,0,,0,status
+473,psyshock,精神衝擊,Psyshock,超能力,80,100.0,0,special
+474,venoshock,毒液衝擊,Venoshock,毒,65,100.0,0,special
+475,autotomize,身體輕量化,Autotomize,鋼,0,,0,status
+476,rage-powder,憤怒粉,Rage Powder,蟲,0,,2,status
+477,telekinesis,意念移物,Telekinesis,超能力,0,,0,status
+478,magic-room,魔法空間,Magic Room,超能力,0,,0,status
+479,smack-down,擊落,Smack Down,岩石,50,100.0,0,physical
+480,storm-throw,山嵐摔,Storm Throw,格鬥,60,100.0,0,physical
+481,flame-burst,烈焰濺射,Flame Burst,火,70,100.0,0,special
+482,sludge-wave,污泥波,Sludge Wave,毒,95,100.0,0,special
+483,quiver-dance,蝶舞,Quiver Dance,蟲,0,,0,status
+484,heavy-slam,重磅衝撞,Heavy Slam,鋼,0,100.0,0,physical
+485,synchronoise,同步干擾,Synchronoise,超能力,120,100.0,0,special
+486,electro-ball,電球,Electro Ball,電,0,100.0,0,special
+487,soak,浸水,Soak,水,0,100.0,0,status
+488,flame-charge,蓄能焰襲,Flame Charge,火,50,100.0,0,physical
+489,coil,盤蜷,Coil,毒,0,,0,status
+490,low-sweep,下盤踢,Low Sweep,格鬥,65,100.0,0,physical
+491,acid-spray,酸液炸彈,Acid Spray,毒,40,100.0,0,special
+492,foul-play,欺詐,Foul Play,惡,95,100.0,0,physical
+493,simple-beam,單純光束,Simple Beam,一般,0,100.0,0,status
+494,entrainment,找夥伴,Entrainment,一般,0,100.0,0,status
+495,after-you,您先請,After You,一般,0,,0,status
+496,round,輪唱,Round,一般,60,100.0,0,special
+497,echoed-voice,回聲,Echoed Voice,一般,40,100.0,0,special
+498,chip-away,逐步擊破,Chip Away,一般,70,100.0,0,physical
+499,clear-smog,清除之煙,Clear Smog,毒,50,,0,special
+500,stored-power,輔助力量,Stored Power,超能力,20,100.0,0,special
+501,quick-guard,快速防守,Quick Guard,格鬥,0,,3,status
+502,ally-switch,交換場地,Ally Switch,超能力,0,,2,status
+503,scald,熱水,Scald,水,80,100.0,0,special
+504,shell-smash,破殼,Shell Smash,一般,0,,0,status
+505,heal-pulse,治癒波動,Heal Pulse,超能力,0,,0,status
+506,hex,禍不單行,Hex,幽靈,65,100.0,0,special
+507,sky-drop,自由落體,Sky Drop,飛行,60,100.0,0,physical
+508,shift-gear,換檔,Shift Gear,鋼,0,,0,status
+509,circle-throw,巴投,Circle Throw,格鬥,60,90.0,-6,physical
+510,incinerate,燒盡,Incinerate,火,60,100.0,0,special
+511,quash,延後,Quash,惡,0,100.0,0,status
+512,acrobatics,雜技,Acrobatics,飛行,55,100.0,0,physical
+513,reflect-type,鏡面屬性,Reflect Type,一般,0,,0,status
+514,retaliate,報仇,Retaliate,一般,70,100.0,0,physical
+515,final-gambit,搏命,Final Gambit,格鬥,0,100.0,0,special
+516,bestow,傳遞禮物,Bestow,一般,0,,0,status
+517,inferno,煉獄,Inferno,火,100,50.0,0,special
+518,water-pledge,水之誓約,Water Pledge,水,80,100.0,0,special
+519,fire-pledge,火之誓約,Fire Pledge,火,80,100.0,0,special
+520,grass-pledge,草之誓約,Grass Pledge,草,80,100.0,0,special
+521,volt-switch,伏特替換,Volt Switch,電,70,100.0,0,special
+522,struggle-bug,蟲之抵抗,Struggle Bug,蟲,50,100.0,0,special
+523,bulldoze,重踏,Bulldoze,地面,60,100.0,0,physical
+524,frost-breath,冰息,Frost Breath,冰,60,90.0,0,special
+525,dragon-tail,龍尾,Dragon Tail,龍,60,90.0,-6,physical
+526,work-up,自我激勵,Work Up,一般,0,,0,status
+527,electroweb,電網,Electroweb,電,55,95.0,0,special
+528,wild-charge,瘋狂伏特,Wild Charge,電,90,100.0,0,physical
+529,drill-run,直衝鑽,Drill Run,地面,80,95.0,0,physical
+530,dual-chop,二連劈,Dual Chop,龍,40,90.0,0,physical
+531,heart-stamp,愛心印章,Heart Stamp,超能力,60,100.0,0,physical
+532,horn-leech,木角,Horn Leech,草,75,100.0,0,physical
+533,sacred-sword,聖劍,Sacred Sword,格鬥,90,100.0,0,physical
+534,razor-shell,貝殼刃,Razor Shell,水,75,95.0,0,physical
+535,heat-crash,高溫重壓,Heat Crash,火,0,100.0,0,physical
+536,leaf-tornado,青草攪拌器,Leaf Tornado,草,65,90.0,0,special
+537,steamroller,瘋狂滾壓,Steamroller,蟲,65,100.0,0,physical
+538,cotton-guard,棉花防守,Cotton Guard,草,0,,0,status
+539,night-daze,暗黑爆破,Night Daze,惡,85,95.0,0,special
+540,psystrike,精神擊破,Psystrike,超能力,100,100.0,0,special
+541,tail-slap,掃尾拍打,Tail Slap,一般,25,85.0,0,physical
+542,hurricane,暴風,Hurricane,飛行,110,70.0,0,special
+543,head-charge,爆炸頭突擊,Head Charge,一般,120,100.0,0,physical
+544,gear-grind,齒輪飛盤,Gear Grind,鋼,50,85.0,0,physical
+545,searing-shot,火焰彈,Searing Shot,火,100,100.0,0,special
+546,techno-blast,高科技光炮,Techno Blast,一般,120,100.0,0,special
+547,relic-song,古老之歌,Relic Song,一般,75,100.0,0,special
+548,secret-sword,神秘之劍,Secret Sword,格鬥,85,100.0,0,special
+549,glaciate,冰封世界,Glaciate,冰,65,95.0,0,special
+550,bolt-strike,雷擊,Bolt Strike,電,130,85.0,0,physical
+551,blue-flare,青焰,Blue Flare,火,130,85.0,0,special
+552,fiery-dance,火之舞,Fiery Dance,火,80,100.0,0,special
+553,freeze-shock,冰凍伏特,Freeze Shock,冰,140,90.0,0,physical
+554,ice-burn,極寒冷焰,Ice Burn,冰,140,90.0,0,special
+555,snarl,大聲咆哮,Snarl,惡,55,95.0,0,special
+556,icicle-crash,冰柱墜擊,Icicle Crash,冰,85,90.0,0,physical
+557,v-create,Ｖ熱焰,V-create,火,180,95.0,0,physical
+558,fusion-flare,交錯火焰,Fusion Flare,火,100,100.0,0,special
+559,fusion-bolt,交錯閃電,Fusion Bolt,電,100,100.0,0,physical
+560,flying-press,飛身重壓,Flying Press,格鬥,100,95.0,0,physical
+561,mat-block,掀榻榻米,Mat Block,格鬥,0,,0,status
+562,belch,打嗝,Belch,毒,120,90.0,0,special
+563,rototiller,耕地,Rototiller,地面,0,,0,status
+564,sticky-web,黏黏網,Sticky Web,蟲,0,,0,status
+565,fell-stinger,致命針刺,Fell Stinger,蟲,50,100.0,0,physical
+566,phantom-force,潛靈奇襲,Phantom Force,幽靈,90,100.0,0,physical
+567,trick-or-treat,萬聖夜,Trick-or-Treat,幽靈,0,100.0,0,status
+568,noble-roar,戰吼,Noble Roar,一般,0,100.0,0,status
+569,ion-deluge,等離子浴,Ion Deluge,電,0,,1,status
+570,parabolic-charge,拋物面充電,Parabolic Charge,電,65,100.0,0,special
+571,forests-curse,森林詛咒,Forest’s Curse,草,0,100.0,0,status
+572,petal-blizzard,落英繽紛,Petal Blizzard,草,90,100.0,0,physical
+573,freeze-dry,冷凍乾燥,Freeze-Dry,冰,70,100.0,0,special
+574,disarming-voice,魅惑之聲,Disarming Voice,妖精,40,,0,special
+575,parting-shot,拋下狠話,Parting Shot,惡,0,100.0,0,status
+576,topsy-turvy,顛倒,Topsy-Turvy,惡,0,,0,status
+577,draining-kiss,吸取之吻,Draining Kiss,妖精,50,100.0,0,special
+578,crafty-shield,戲法防守,Crafty Shield,妖精,0,,3,status
+579,flower-shield,鮮花防守,Flower Shield,妖精,0,,0,status
+580,grassy-terrain,青草場地,Grassy Terrain,草,0,,0,status
+581,misty-terrain,薄霧場地,Misty Terrain,妖精,0,,0,status
+582,electrify,輸電,Electrify,電,0,,0,status
+583,play-rough,嬉鬧,Play Rough,妖精,90,90.0,0,physical
+584,fairy-wind,妖精之風,Fairy Wind,妖精,40,100.0,0,special
+585,moonblast,月亮之力,Moonblast,妖精,95,100.0,0,special
+586,boomburst,爆音波,Boomburst,一般,140,100.0,0,special
+587,fairy-lock,妖精之鎖,Fairy Lock,妖精,0,,0,status
+588,kings-shield,王者盾牌,King’s Shield,鋼,0,,4,status
+589,play-nice,和睦相處,Play Nice,一般,0,,0,status
+590,confide,密語,Confide,一般,0,,0,status
+591,diamond-storm,鑽石風暴,Diamond Storm,岩石,100,95.0,0,physical
+592,steam-eruption,蒸汽爆炸,Steam Eruption,水,110,95.0,0,special
+593,hyperspace-hole,異次元洞,Hyperspace Hole,超能力,80,,0,special
+594,water-shuriken,飛水手裡劍,Water Shuriken,水,15,100.0,1,special
+595,mystical-fire,魔法火焰,Mystical Fire,火,75,100.0,0,special
+596,spiky-shield,尖刺防守,Spiky Shield,草,0,,4,status
+597,aromatic-mist,芳香薄霧,Aromatic Mist,妖精,0,,0,status
+598,eerie-impulse,怪異電波,Eerie Impulse,電,0,100.0,0,status
+599,venom-drench,毒液陷阱,Venom Drench,毒,0,100.0,0,status
+600,powder,粉塵,Powder,蟲,0,100.0,1,status
+601,geomancy,大地掌控,Geomancy,妖精,0,,0,status
+602,magnetic-flux,磁場操控,Magnetic Flux,電,0,,0,status
+603,happy-hour,歡樂時光,Happy Hour,一般,0,,0,status
+604,electric-terrain,電氣場地,Electric Terrain,電,0,,0,status
+605,dazzling-gleam,魔法閃耀,Dazzling Gleam,妖精,80,100.0,0,special
+606,celebrate,慶祝,Celebrate,一般,0,,0,status
+607,hold-hands,牽手,Hold Hands,一般,0,,0,status
+608,baby-doll-eyes,圓瞳,Baby-Doll Eyes,妖精,0,100.0,1,status
+609,nuzzle,蹭蹭臉頰,Nuzzle,電,20,100.0,0,physical
+610,hold-back,手下留情,Hold Back,一般,40,100.0,0,physical
+611,infestation,死纏爛打,Infestation,蟲,20,100.0,0,special
+612,power-up-punch,增強拳,Power-Up Punch,格鬥,40,100.0,0,physical
+613,oblivion-wing,死亡之翼,Oblivion Wing,飛行,80,100.0,0,special
+614,thousand-arrows,千箭齊發,Thousand Arrows,地面,90,100.0,0,physical
+615,thousand-waves,千波激盪,Thousand Waves,地面,90,100.0,0,physical
+616,lands-wrath,大地神力,Land’s Wrath,地面,90,100.0,0,physical
+617,light-of-ruin,破滅之光,Light of Ruin,妖精,140,90.0,0,special
+618,origin-pulse,根源波動,Origin Pulse,水,110,85.0,0,special
+619,precipice-blades,斷崖之劍,Precipice Blades,地面,120,85.0,0,physical
+620,dragon-ascent,畫龍點睛,Dragon Ascent,飛行,120,100.0,0,physical
+621,hyperspace-fury,異次元猛攻,Hyperspace Fury,惡,100,,0,physical
+622,breakneck-blitz--physical,究極無敵大衝撞,Breakneck Blitz,一般,0,,0,physical
+623,breakneck-blitz--special,究極無敵大衝撞,Breakneck Blitz,一般,0,,0,special
+624,all-out-pummeling--physical,全力無雙激烈拳,All-Out Pummeling,格鬥,0,,0,physical
+625,all-out-pummeling--special,全力無雙激烈拳,All-Out Pummeling,格鬥,0,,0,special
+626,supersonic-skystrike--physical,極速俯衝轟烈撞,Supersonic Skystrike,飛行,0,,0,physical
+627,supersonic-skystrike--special,極速俯衝轟烈撞,Supersonic Skystrike,飛行,0,,0,special
+628,acid-downpour--physical,強酸劇毒滅絕雨,Acid Downpour,毒,0,,0,physical
+629,acid-downpour--special,強酸劇毒滅絕雨,Acid Downpour,毒,0,,0,special
+630,tectonic-rage--physical,地隆嘯天大終結,Tectonic Rage,地面,0,,0,physical
+631,tectonic-rage--special,地隆嘯天大終結,Tectonic Rage,地面,0,,0,special
+632,continental-crush--physical,毀天滅地巨岩墜,Continental Crush,岩石,0,,0,physical
+633,continental-crush--special,毀天滅地巨岩墜,Continental Crush,岩石,0,,0,special
+634,savage-spin-out--physical,絕對捕食迴旋斬,Savage Spin-Out,蟲,0,,0,physical
+635,savage-spin-out--special,絕對捕食迴旋斬,Savage Spin-Out,蟲,0,,0,special
+636,never-ending-nightmare--physical,無盡暗夜之誘惑,Never-Ending Nightmare,幽靈,0,,0,physical
+637,never-ending-nightmare--special,無盡暗夜之誘惑,Never-Ending Nightmare,幽靈,0,,0,special
+638,corkscrew-crash--physical,超絕螺旋連擊,Corkscrew Crash,鋼,0,,0,physical
+639,corkscrew-crash--special,超絕螺旋連擊,Corkscrew Crash,鋼,0,,0,special
+640,inferno-overdrive--physical,超強極限爆焰彈,Inferno Overdrive,火,0,,0,physical
+641,inferno-overdrive--special,超強極限爆焰彈,Inferno Overdrive,火,0,,0,special
+642,hydro-vortex--physical,超級水流大漩渦,Hydro Vortex,水,0,,0,physical
+643,hydro-vortex--special,超級水流大漩渦,Hydro Vortex,水,0,,0,special
+644,bloom-doom--physical,絢爛繽紛花怒放,Bloom Doom,草,0,,0,physical
+645,bloom-doom--special,絢爛繽紛花怒放,Bloom Doom,草,0,,0,special
+646,gigavolt-havoc--physical,終極伏特狂雷閃,Gigavolt Havoc,電,0,,0,physical
+647,gigavolt-havoc--special,終極伏特狂雷閃,Gigavolt Havoc,電,0,,0,special
+648,shattered-psyche--physical,至高精神破壞波,Shattered Psyche,超能力,0,,0,physical
+649,shattered-psyche--special,至高精神破壞波,Shattered Psyche,超能力,0,,0,special
+650,subzero-slammer--physical,激狂大地萬里冰,Subzero Slammer,冰,0,,0,physical
+651,subzero-slammer--special,激狂大地萬里冰,Subzero Slammer,冰,0,,0,special
+652,devastating-drake--physical,究極巨龍震天地,Devastating Drake,龍,0,,0,physical
+653,devastating-drake--special,究極巨龍震天地,Devastating Drake,龍,0,,0,special
+654,black-hole-eclipse--physical,黑洞吞噬萬物滅,Black Hole Eclipse,惡,0,,0,physical
+655,black-hole-eclipse--special,黑洞吞噬萬物滅,Black Hole Eclipse,惡,0,,0,special
+656,twinkle-tackle--physical,可愛星星飛天撞,Twinkle Tackle,妖精,0,,0,physical
+657,twinkle-tackle--special,可愛星星飛天撞,Twinkle Tackle,妖精,0,,0,special
+658,catastropika,皮卡皮卡必殺擊,Catastropika,電,210,,0,physical
+659,shore-up,集沙,Shore Up,地面,0,,0,status
+660,first-impression,迎頭一擊,First Impression,蟲,90,100.0,2,physical
+661,baneful-bunker,碉堡,Baneful Bunker,毒,0,,4,status
+662,spirit-shackle,縫影,Spirit Shackle,幽靈,80,100.0,0,physical
+663,darkest-lariat,ＤＤ金勾臂,Darkest Lariat,惡,85,100.0,0,physical
+664,sparkling-aria,泡影的詠歎調,Sparkling Aria,水,90,100.0,0,special
+665,ice-hammer,冰錘,Ice Hammer,冰,100,90.0,0,physical
+666,floral-healing,花療,Floral Healing,妖精,0,,0,status
+667,high-horsepower,十萬馬力,High Horsepower,地面,95,95.0,0,physical
+668,strength-sap,吸取力量,Strength Sap,草,0,100.0,0,status
+669,solar-blade,日光刃,Solar Blade,草,125,100.0,0,physical
+670,leafage,樹葉,Leafage,草,40,100.0,0,physical
+671,spotlight,聚光燈,Spotlight,一般,0,,3,status
+672,toxic-thread,毒絲,Toxic Thread,毒,0,100.0,0,status
+673,laser-focus,磨礪,Laser Focus,一般,0,,0,status
+674,gear-up,輔助齒輪,Gear Up,鋼,0,,0,status
+675,throat-chop,地獄突刺,Throat Chop,惡,80,100.0,0,physical
+676,pollen-puff,花粉團,Pollen Puff,蟲,90,100.0,0,special
+677,anchor-shot,擲錨,Anchor Shot,鋼,80,100.0,0,physical
+678,psychic-terrain,精神場地,Psychic Terrain,超能力,0,,0,status
+679,lunge,猛撲,Lunge,蟲,80,100.0,0,physical
+680,fire-lash,火焰鞭,Fire Lash,火,80,100.0,0,physical
+681,power-trip,囂張,Power Trip,惡,20,100.0,0,physical
+682,burn-up,燃盡,Burn Up,火,130,100.0,0,special
+683,speed-swap,速度互換,Speed Swap,超能力,0,,0,status
+684,smart-strike,修長之角,Smart Strike,鋼,70,,0,physical
+685,purify,淨化,Purify,毒,0,,0,status
+686,revelation-dance,覺醒之舞,Revelation Dance,一般,90,100.0,0,special
+687,core-enforcer,核心懲罰者,Core Enforcer,龍,100,100.0,0,special
+688,trop-kick,熱帶踢,Trop Kick,草,70,100.0,0,physical
+689,instruct,號令,Instruct,超能力,0,,0,status
+690,beak-blast,鳥嘴加農炮,Beak Blast,飛行,100,100.0,-3,physical
+691,clanging-scales,鱗片噪音,Clanging Scales,龍,110,100.0,0,special
+692,dragon-hammer,龍錘,Dragon Hammer,龍,90,100.0,0,physical
+693,brutal-swing,狂舞揮打,Brutal Swing,惡,60,100.0,0,physical
+694,aurora-veil,極光幕,Aurora Veil,冰,0,,0,status
+695,sinister-arrow-raid,遮天蔽日暗影箭,Sinister Arrow Raid,幽靈,180,,0,physical
+696,malicious-moonsault,極惡飛躍粉碎擊,Malicious Moonsault,惡,180,,0,physical
+697,oceanic-operetta,海神莊嚴交響樂,Oceanic Operetta,水,195,,0,special
+698,guardian-of-alola,巨人衛士・阿羅拉,Guardian of Alola,妖精,0,,0,special
+699,soul-stealing-7-star-strike,七星奪魂腿,Soul-Stealing 7-Star Strike,幽靈,195,,0,physical
+700,stoked-sparksurfer,駕雷馭電戲衝浪,Stoked Sparksurfer,電,175,,0,special
+701,pulverizing-pancake,認真起來大爆擊,Pulverizing Pancake,一般,210,,0,physical
+702,extreme-evoboost,九彩昇華齊聚頂,Extreme Evoboost,一般,0,,0,status
+703,genesis-supernova,起源超新星大爆炸,Genesis Supernova,超能力,185,,0,special
+704,shell-trap,陷阱甲殼,Shell Trap,火,150,100.0,-3,special
+705,fleur-cannon,花朵加農炮,Fleur Cannon,妖精,130,90.0,0,special
+706,psychic-fangs,精神之牙,Psychic Fangs,超能力,85,100.0,0,physical
+707,stomping-tantrum,跺腳,Stomping Tantrum,地面,75,100.0,0,physical
+708,shadow-bone,暗影之骨,Shadow Bone,幽靈,85,100.0,0,physical
+709,accelerock,衝岩,Accelerock,岩石,40,100.0,1,physical
+710,liquidation,水流裂破,Liquidation,水,85,100.0,0,physical
+711,prismatic-laser,稜鏡鐳射,Prismatic Laser,超能力,160,100.0,0,special
+712,spectral-thief,暗影偷盜,Spectral Thief,幽靈,90,100.0,0,physical
+713,sunsteel-strike,流星閃衝,Sunsteel Strike,鋼,100,100.0,0,physical
+714,moongeist-beam,暗影之光,Moongeist Beam,幽靈,100,100.0,0,special
+715,tearful-look,淚眼汪汪,Tearful Look,一般,0,,0,status
+716,zing-zap,麻麻刺刺,Zing Zap,電,80,100.0,0,physical
+717,natures-madness,自然之怒,Nature’s Madness,妖精,0,90.0,0,special
+718,multi-attack,多屬性攻擊,Multi-Attack,一般,120,100.0,0,physical
+719,10-000-000-volt-thunderbolt,千萬伏特,"10,000,000 Volt Thunderbolt",電,195,,0,special
+720,mind-blown,驚爆大頭,Mind Blown,火,150,100.0,0,special
+721,plasma-fists,等離子閃電拳,Plasma Fists,電,100,100.0,0,physical
+722,photon-geyser,光子噴湧,Photon Geyser,超能力,100,100.0,0,special
+723,light-that-burns-the-sky,焚天滅世熾光爆,Light That Burns the Sky,超能力,200,,0,special
+724,searing-sunraze-smash,日光迴旋下蒼穹,Searing Sunraze Smash,鋼,200,,0,physical
+725,menacing-moonraze-maelstrom,月華飛濺落靈霄,Menacing Moonraze Maelstrom,幽靈,200,,0,special
+726,lets-snuggle-forever,親密無間大亂揍,Let’s Snuggle Forever,妖精,190,,0,physical
+727,splintered-stormshards,狼嘯石牙颶風暴,Splintered Stormshards,岩石,190,,0,physical
+728,clangorous-soulblaze,熾魂熱舞烈音爆,Clangorous Soulblaze,龍,185,,0,special
+729,zippy-zap,電電加速,Zippy Zap,電,80,100.0,2,physical
+730,splishy-splash,滔滔衝浪,Splishy Splash,水,90,100.0,0,special
+731,floaty-fall,飄飄墜落,Floaty Fall,飛行,90,95.0,0,physical
+732,pika-papow,閃閃雷光,Pika Papow,電,0,,0,special
+733,bouncy-bubble,活活氣泡,Bouncy Bubble,水,60,100.0,0,special
+734,buzzy-buzz,麻麻電擊,Buzzy Buzz,電,60,100.0,0,special
+735,sizzly-slide,熊熊火爆,Sizzly Slide,火,60,100.0,0,physical
+736,glitzy-glow,嘩嘩氣場,Glitzy Glow,超能力,80,95.0,0,special
+737,baddy-bad,壞壞領域,Baddy Bad,惡,80,95.0,0,special
+738,sappy-seed,茁茁轟炸,Sappy Seed,草,100,90.0,0,physical
+739,freezy-frost,冰冰霜凍,Freezy Frost,冰,100,90.0,0,special
+740,sparkly-swirl,亮亮風暴,Sparkly Swirl,妖精,120,85.0,0,special
+741,veevee-volley,砰砰擊破,Veevee Volley,一般,0,,0,physical
+742,double-iron-bash,鋼拳雙擊,Double Iron Bash,鋼,60,100.0,0,physical
+743,max-guard,極巨防壁,Max Guard,一般,0,,4,status
+744,dynamax-cannon,極巨炮,Dynamax Cannon,龍,100,100.0,0,special
+745,snipe-shot,狙擊,Snipe Shot,水,80,100.0,0,special
+746,jaw-lock,緊咬不放,Jaw Lock,惡,80,100.0,0,physical
+747,stuff-cheeks,大快朵頤,Stuff Cheeks,一般,0,,0,status
+748,no-retreat,背水一戰,No Retreat,格鬥,0,,0,status
+749,tar-shot,瀝青射擊,Tar Shot,岩石,0,100.0,0,status
+750,magic-powder,魔法粉,Magic Powder,超能力,0,100.0,0,status
+751,dragon-darts,龍箭,Dragon Darts,龍,50,100.0,0,physical
+752,teatime,茶會,Teatime,一般,0,,0,status
+753,octolock,蛸固,Octolock,格鬥,0,100.0,0,status
+754,bolt-beak,電喙,Bolt Beak,電,85,100.0,0,physical
+755,fishious-rend,鰓咬,Fishious Rend,水,85,100.0,0,physical
+756,court-change,換場,Court Change,一般,0,100.0,0,status
+757,max-flare,極巨火爆,Max Flare,火,100,,0,physical
+758,max-flutterby,極巨蟲蠱,Max Flutterby,蟲,10,,0,physical
+759,max-lightning,極巨閃電,Max Lightning,電,10,,0,physical
+760,max-strike,極巨攻擊,Max Strike,一般,10,,0,physical
+761,max-knuckle,極巨拳鬥,Max Knuckle,格鬥,10,,0,physical
+762,max-phantasm,極巨幽魂,Max Phantasm,幽靈,10,,0,physical
+763,max-hailstorm,極巨寒冰,Max Hailstorm,冰,10,,0,physical
+764,max-ooze,極巨酸毒,Max Ooze,毒,10,,0,physical
+765,max-geyser,極巨水流,Max Geyser,水,10,,0,physical
+766,max-airstream,極巨飛衝,Max Airstream,飛行,10,,0,physical
+767,max-starfall,極巨妖精,Max Starfall,妖精,10,,0,physical
+768,max-wyrmwind,極巨龍騎,Max Wyrmwind,龍,10,,0,physical
+769,max-mindstorm,極巨超能,Max Mindstorm,超能力,10,,0,physical
+770,max-rockfall,極巨岩石,Max Rockfall,岩石,10,,0,physical
+771,max-quake,極巨大地,Max Quake,地面,10,,0,physical
+772,max-darkness,極巨惡霸,Max Darkness,惡,10,,0,physical
+773,max-overgrowth,極巨草原,Max Overgrowth,草,10,,0,physical
+774,max-steelspike,極巨鋼鐵,Max Steelspike,鋼,10,,0,physical
+775,clangorous-soul,魂舞烈音爆,Clangorous Soul,龍,0,100.0,0,status
+776,body-press,撲擊,Body Press,格鬥,80,100.0,0,physical
+777,decorate,裝飾,Decorate,妖精,0,,0,status
+778,drum-beating,鼓擊,Drum Beating,草,80,100.0,0,physical
+779,snap-trap,捕獸夾,Snap Trap,草,35,100.0,0,physical
+780,pyro-ball,火焰球,Pyro Ball,火,120,90.0,0,physical
+781,behemoth-blade,巨獸斬,Behemoth Blade,鋼,100,100.0,0,physical
+782,behemoth-bash,巨獸彈,Behemoth Bash,鋼,100,100.0,0,physical
+783,aura-wheel,氣場輪,Aura Wheel,電,110,100.0,0,physical
+784,breaking-swipe,廣域破壞,Breaking Swipe,龍,60,100.0,0,physical
+785,branch-poke,木枝突刺,Branch Poke,草,40,100.0,0,physical
+786,overdrive,破音,Overdrive,電,80,100.0,0,special
+787,apple-acid,蘋果酸,Apple Acid,草,80,100.0,0,special
+788,grav-apple,萬有引力,Grav Apple,草,80,100.0,0,physical
+789,spirit-break,靈魂衝擊,Spirit Break,妖精,75,100.0,0,physical
+790,strange-steam,神奇蒸汽,Strange Steam,妖精,90,95.0,0,special
+791,life-dew,生命水滴,Life Dew,水,0,,0,status
+792,obstruct,攔堵,Obstruct,惡,0,100.0,4,status
+793,false-surrender,假跪真撞,False Surrender,惡,80,,0,physical
+794,meteor-assault,流星突擊,Meteor Assault,格鬥,150,100.0,0,physical
+795,eternabeam,無極光束,Eternabeam,龍,160,90.0,0,special
+796,steel-beam,鐵蹄光線,Steel Beam,鋼,140,95.0,0,special
+797,expanding-force,廣域戰力,Expanding Force,超能力,80,100.0,0,special
+798,steel-roller,鐵滾輪,Steel Roller,鋼,130,100.0,0,physical
+799,scale-shot,鱗射,Scale Shot,龍,25,90.0,0,physical
+800,meteor-beam,流星光束,Meteor Beam,岩石,120,90.0,0,special
+801,shell-side-arm,臂貝武器,Shell Side Arm,毒,90,100.0,0,special
+802,misty-explosion,薄霧炸裂,Misty Explosion,妖精,100,100.0,0,special
+803,grassy-glide,青草滑梯,Grassy Glide,草,55,100.0,0,physical
+804,rising-voltage,電力上升,Rising Voltage,電,70,100.0,0,special
+805,terrain-pulse,大地波動,Terrain Pulse,一般,50,100.0,0,special
+806,skitter-smack,爬擊,Skitter Smack,蟲,70,90.0,0,physical
+807,burning-jealousy,妒火,Burning Jealousy,火,70,100.0,0,special
+808,lash-out,洩憤,Lash Out,惡,75,100.0,0,physical
+809,poltergeist,靈騷,Poltergeist,幽靈,110,90.0,0,physical
+810,corrosive-gas,腐蝕氣體,Corrosive Gas,毒,0,100.0,0,status
+811,coaching,指導,Coaching,格鬥,0,,0,status
+812,flip-turn,快速折返,Flip Turn,水,60,100.0,0,physical
+813,triple-axel,三旋擊,Triple Axel,冰,20,90.0,0,physical
+814,dual-wingbeat,雙翼,Dual Wingbeat,飛行,40,90.0,0,physical
+815,scorching-sands,熱沙大地,Scorching Sands,地面,70,100.0,0,special
+816,jungle-healing,叢林治療,Jungle Healing,草,0,,0,status
+817,wicked-blow,暗冥強擊,Wicked Blow,惡,75,100.0,0,physical
+818,surging-strikes,水流連打,Surging Strikes,水,25,100.0,0,physical
+819,thunder-cage,雷電囚籠,Thunder Cage,電,80,90.0,0,special
+820,dragon-energy,巨龍威能,Dragon Energy,龍,150,100.0,0,special
+821,freezing-glare,冰冷視線,Freezing Glare,超能力,90,100.0,0,special
+822,fiery-wrath,怒火中燒,Fiery Wrath,惡,90,100.0,0,special
+823,thunderous-kick,雷鳴蹴擊,Thunderous Kick,格鬥,90,100.0,0,physical
+824,glacial-lance,雪矛,Glacial Lance,冰,120,100.0,0,physical
+825,astral-barrage,星碎,Astral Barrage,幽靈,120,100.0,0,special
+826,eerie-spell,詭異咒語,Eerie Spell,超能力,80,100.0,0,special
+827,dire-claw,克命爪,Dire Claw,毒,80,100.0,0,physical
+828,psyshield-bash,屏障猛攻,Psyshield Bash,超能力,70,90.0,0,physical
+829,power-shift,力量转换,Power Shift,一般,0,,0,status
+830,stone-axe,岩斧,Stone Axe,岩石,65,90.0,0,physical
+831,springtide-storm,阳春风暴,Springtide Storm,妖精,100,80.0,0,special
+832,mystical-power,神秘之力,Mystical Power,超能力,70,90.0,0,special
+833,raging-fury,大愤慨,Raging Fury,火,120,100.0,0,physical
+834,wave-crash,波动冲,Wave Crash,水,120,100.0,0,physical
+835,chloroblast,叶绿爆震,Chloroblast,草,150,95.0,0,special
+836,mountain-gale,冰山风,Mountain Gale,冰,100,85.0,0,physical
+837,victory-dance,胜利之舞,Victory Dance,格鬥,0,,0,status
+838,headlong-rush,突飞猛扑,Headlong Rush,地面,120,100.0,0,physical
+839,barb-barrage,毒千针,Barb Barrage,毒,60,100.0,0,physical
+840,esper-wing,气场之翼,Esper Wing,超能力,80,100.0,0,special
+841,bitter-malice,冤冤相报,Bitter Malice,幽靈,75,100.0,0,special
+842,shelter,闭关,Shelter,鋼,0,,0,status
+843,triple-arrows,三连箭,Triple Arrows,格鬥,90,100.0,0,physical
+844,infernal-parade,群魔乱舞,Infernal Parade,幽靈,60,100.0,0,special
+845,ceaseless-edge,秘剑・千重涛,Ceaseless Edge,惡,65,90.0,0,physical
+846,bleakwind-storm,枯叶风暴,Bleakwind Storm,飛行,100,80.0,0,special
+847,wildbolt-storm,鸣雷风暴,Wildbolt Storm,電,100,80.0,0,special
+848,sandsear-storm,热沙风暴,Sandsear Storm,地面,100,80.0,0,special
+849,lunar-blessing,新月祈祷,Lunar Blessing,超能力,0,,0,status
+850,take-heart,勇气填充,Take Heart,超能力,0,,0,status
+851,tera-blast,太晶爆发,Tera Blast,一般,80,100.0,0,special
+852,silk-trap,线阱,Silk Trap,蟲,0,,4,status
+853,axe-kick,下压踢,Axe Kick,格鬥,120,90.0,0,physical
+854,last-respects,扫墓,Last Respects,幽靈,50,100.0,0,physical
+855,lumina-crash,琉光冲激,Lumina Crash,超能力,80,100.0,0,special
+856,order-up,上菜,Order Up,龍,80,100.0,0,physical
+857,jet-punch,喷射拳,Jet Punch,水,60,100.0,1,physical
+858,spicy-extract,辣椒精华,Spicy Extract,草,0,,0,status
+859,spin-out,疾速转轮,Spin Out,鋼,100,100.0,0,physical
+860,population-bomb,鼠数儿,Population Bomb,一般,20,90.0,0,physical
+861,ice-spinner,冰旋,Ice Spinner,冰,80,100.0,0,physical
+862,glaive-rush,巨剑突击,Glaive Rush,龍,120,100.0,0,physical
+863,revival-blessing,复生祈祷,Revival Blessing,一般,0,,0,status
+864,salt-cure,盐腌,Salt Cure,岩石,40,100.0,0,physical
+865,triple-dive,三连钻,Triple Dive,水,30,95.0,0,physical
+866,mortal-spin,晶光转转,Mortal Spin,毒,30,100.0,0,physical
+867,doodle,描绘,Doodle,一般,0,100.0,0,status
+868,fillet-away,甩肉,Fillet Away,一般,0,,0,status
+869,kowtow-cleave,仆刀,Kowtow Cleave,惡,85,,0,physical
+870,flower-trick,千变万花,Flower Trick,草,70,,0,physical
+871,torch-song,闪焰高歌,Torch Song,火,80,100.0,0,special
+872,aqua-step,流水旋舞,Aqua Step,水,80,100.0,0,physical
+873,raging-bull,怒牛,Raging Bull,一般,90,100.0,0,physical
+874,make-it-rain,淘金潮,Make It Rain,鋼,120,100.0,0,special
+875,psyblade,精神劍,Psyblade,超能力,80,100.0,0,physical
+876,hydro-steam,水蒸氣,Hydro Steam,水,80,100.0,0,special
+877,ruination,大灾难,Ruination,惡,1,90.0,0,special
+878,collision-course,全开猛撞,Collision Course,格鬥,100,100.0,0,physical
+879,electro-drift,闪电猛冲,Electro Drift,電,100,100.0,0,special
+880,shed-tail,断尾,Shed Tail,一般,0,,0,status
+881,chilly-reception,冷笑话,Chilly Reception,冰,0,,0,status
+882,tidy-up,大扫除,Tidy Up,一般,0,,0,status
+883,snowscape,雪景,Snowscape,冰,0,,0,status
+884,pounce,虫扑,Pounce,蟲,50,100.0,0,physical
+885,trailblaze,起草,Trailblaze,草,50,100.0,0,physical
+886,chilling-water,泼冷水,Chilling Water,水,50,100.0,0,special
+887,hyper-drill,强力钻,Hyper Drill,一般,100,100.0,0,physical
+888,twin-beam,双光束,Twin Beam,超能力,40,100.0,0,special
+889,rage-fist,愤怒之拳,Rage Fist,幽靈,50,100.0,0,physical
+890,armor-cannon,铠农炮,Armor Cannon,火,120,100.0,0,special
+891,bitter-blade,悔念剑,Bitter Blade,火,90,100.0,0,physical
+892,double-shock,电光双击,Double Shock,電,120,100.0,0,physical
+893,gigaton-hammer,巨力锤,Gigaton Hammer,鋼,160,100.0,0,physical
+894,comeuppance,复仇,Comeuppance,惡,1,100.0,0,physical
+895,aqua-cutter,水波刀,Aqua Cutter,水,70,100.0,0,physical
+896,blazing-torque,灼热暴冲,Blazing Torque,火,80,100.0,0,physical
+897,wicked-torque,黑暗暴冲,Wicked Torque,惡,80,100.0,0,physical
+898,noxious-torque,剧毒暴冲,Noxious Torque,毒,100,100.0,0,physical
+899,combat-torque,格斗暴冲,Combat Torque,格鬥,100,100.0,0,physical
+900,magical-torque,魔法暴冲,Magical Torque,妖精,100,100.0,0,physical
+901,blood-moon,blood-moon,Blood Moon,一般,140,100.0,0,special
+902,matcha-gotcha,matcha-gotcha,Matcha Gotcha,草,80,90.0,0,special
+903,syrup-bomb,syrup-bomb,Syrup Bomb,草,60,85.0,0,special
+904,ivy-cudgel,ivy-cudgel,Ivy Cudgel,草,100,100.0,0,physical
+905,electro-shot,電光束,Electro Shot,電,130,100.0,0,special
+906,tera-starstorm,晶光星群,Tera Starstorm,一般,120,100.0,0,special
+907,fickle-beam,隨機光,Fickle Beam,龍,80,100.0,0,special
+908,burning-bulwark,火焰守護,Burning Bulwark,火,0,0.0,4,status
+909,thunderclap,迅雷,Thunderclap,電,70,100.0,1,special
+910,mighty-cleave,強刃攻擊,Mighty Cleave,岩石,95,100.0,0,physical
+911,tachyon-cutter,迅子利刃,Tachyon Cutter,鋼,50,0.0,0,special
+912,hard-press,硬壓,Hard Press,鋼,0,100.0,0,physical
+913,dragon-cheer,龍聲鼓舞,Dragon Cheer,龍,0,0.0,0,status
+914,alluring-voice,魅誘之聲,Alluring Voice,妖精,80,100.0,0,special
+915,temper-flare,豁出去,Temper Flare,火,75,100.0,0,physical
+916,supercell-slam,閃電強襲,Supercell Slam,電,100,95.0,0,physical
+917,psychic-noise,精神噪音,Psychic Noise,超能力,75,100.0,0,special
+918,upper-hand,快手還擊,Upper Hand,格鬥,65,100.0,3,physical
+919,malignant-chain,邪毒鎖鏈,Malignant Chain,毒,100,100.0,0,special
+10001,shadow-rush,shadow-rush,Shadow Rush,暗,55,100.0,0,physical
+10002,shadow-blast,shadow-blast,Shadow Blast,暗,80,100.0,0,physical
+10003,shadow-blitz,shadow-blitz,Shadow Blitz,暗,40,100.0,0,physical
+10004,shadow-bolt,shadow-bolt,Shadow Bolt,暗,75,100.0,0,special
+10005,shadow-break,shadow-break,Shadow Break,暗,75,100.0,0,physical
+10006,shadow-chill,shadow-chill,Shadow Chill,暗,75,100.0,0,special
+10007,shadow-end,shadow-end,Shadow End,暗,120,60.0,0,physical
+10008,shadow-fire,shadow-fire,Shadow Fire,暗,75,100.0,0,special
+10009,shadow-rave,shadow-rave,Shadow Rave,暗,70,100.0,0,special
+10010,shadow-storm,shadow-storm,Shadow Storm,暗,95,100.0,0,special
+10011,shadow-wave,shadow-wave,Shadow Wave,暗,50,100.0,0,special
+10012,shadow-down,shadow-down,Shadow Down,暗,0,100.0,0,status
+10013,shadow-half,shadow-half,Shadow Half,暗,0,100.0,0,special
+10014,shadow-hold,shadow-hold,Shadow Hold,暗,0,,0,status
+10015,shadow-mist,shadow-mist,Shadow Mist,暗,0,100.0,0,status
+10016,shadow-panic,shadow-panic,Shadow Panic,暗,0,90.0,0,status
+10017,shadow-shed,shadow-shed,Shadow Shed,暗,0,,0,status
+10018,shadow-sky,shadow-sky,Shadow Sky,暗,0,,0,status

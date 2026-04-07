@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>寶可夢雙方傷害計算機 CSV 版</title>
+<style>
+  :root {
+    --bg:#f4f7fb; --card:#fff; --line:#d9e3f0; --text:#1f2937; --muted:#64748b;
+    --accent:#2563eb; --accent-soft:#e8f0ff; --good:#0f766e; --bad:#b91c1c;
+    --warn:#b45309; --warn-soft:#fff7ed; --shadow:0 12px 28px rgba(15,23,42,.08);
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    background:linear-gradient(180deg,#f8fbff 0%,var(--bg) 100%); color:var(--text);
+  }
+  .wrap { max-width:1520px; margin:0 auto; padding:18px 14px 32px; }
+  h1 { margin:0 0 8px; font-size:28px; line-height:1.2; }
+  .sub { color:var(--muted); line-height:1.65; font-size:14px; margin-bottom:18px; }
+  .layout {
+    display:grid;
+    grid-template-columns:minmax(330px,1fr) minmax(320px,.95fr) minmax(330px,1fr);
+    gap:16px; align-items:start;
+  }
+  .card {
+    background:var(--card); border:1px solid var(--line); border-radius:22px; box-shadow:var(--shadow); overflow:hidden;
+  }
+  .card-head {
+    padding:14px 16px; background:linear-gradient(90deg,#1e293b 0%,#334155 100%); color:#fff;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .card-head h2 { margin:0; font-size:18px; }
+  .card-body { padding:16px; }
+  .section { margin-top:16px; }
+  .section:first-child { margin-top:0; }
+  .section-title { margin:0 0 10px; font-size:14px; color:var(--muted); font-weight:700; letter-spacing:.02em; }
+  .search-wrap, .move-search-wrap { position:relative; }
+  input[type="text"], input[type="number"], select {
+    width:100%; border:1px solid var(--line); background:#fff; border-radius:14px; padding:11px 12px;
+    font-size:14px; color:var(--text); outline:none;
+  }
+  input[type="range"] { width:100%; accent-color:var(--accent); }
+  input:focus, select:focus { border-color:var(--accent); box-shadow:0 0 0 4px rgba(37,99,235,.12); }
+  .suggestions, .move-suggestions {
+    display:none; position:absolute; left:0; right:0; top:calc(100% + 8px);
+    background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow);
+    max-height:320px; overflow-y:auto; z-index:40;
+  }
+  .suggestion, .move-suggestion { padding:11px 12px; border-bottom:1px solid #edf2f7; cursor:pointer; }
+  .suggestion:last-child, .move-suggestion:last-child { border-bottom:none; }
+  .suggestion:hover, .move-suggestion:hover { background:#f8fbff; }
+  .s-name { font-weight:700; }
+  .s-meta { font-size:12px; color:var(--muted); margin-top:2px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { display:inline-flex; align-items:center; border-radius:999px; padding:7px 11px; font-size:12px; font-weight:700; color:#fff; }
+  .type-草 { background:#59b14f; } .type-毒 { background:#8e5ac2; } .type-火 { background:#f26b3a; }
+  .type-飛行 { background:#7ea7ff; } .type-格鬥 { background:#c25151; } .type-鋼 { background:#7b8da8; }
+  .type-水 { background:#4f8df7; } .type-電 { background:#d9aa11; color:#1f2937; } .type-超能力 { background:#f35a9b; }
+  .type-惡 { background:#4a3f3f; } .type-龍 { background:#5868d6; } .type-地面 { background:#b68a45; }
+  .type-妖精 { background:#ef8fd6; color:#1f2937; } .type-冰 { background:#74c9da; color:#17324d; }
+  .type-岩石 { background:#a28b56; } .type-蟲 { background:#86a829; } .type-一般 { background:#98939a; } .type-幽靈 { background:#6c5aa3; }
+  .mini-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .field { display:flex; flex-direction:column; gap:6px; }
+  .label { font-size:12px; color:var(--muted); font-weight:700; }
+  .hint { font-size:12px; color:var(--muted); line-height:1.5; }
+  .info-box { background:#f8fbff; border:1px solid var(--line); border-radius:16px; padding:12px; }
+  .notice { background:var(--warn-soft); border:1px solid #fed7aa; color:var(--warn); border-radius:16px; padding:12px; line-height:1.6; font-size:13px; }
+  .status-ok { color:#166534; }
+  .status-bad { color:#991b1b; }
+  .stats-table {
+    width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid var(--line); border-radius:16px; overflow:hidden;
+  }
+  .stats-table th, .stats-table td {
+    border-bottom:1px solid var(--line); border-right:1px solid var(--line); padding:8px 6px; text-align:center; vertical-align:middle;
+    font-size:12px;
+  }
+  .stats-table tr:last-child td { border-bottom:none; }
+  .stats-table th:last-child, .stats-table td:last-child { border-right:none; }
+  .stats-table thead th { background:#f8fbff; color:var(--muted); font-weight:700; }
+  .stats-table .rowhead { text-align:left; font-weight:700; background:#f4f8ff; white-space:nowrap; width:74px; }
+  .final-stat { font-size:16px; font-weight:800; color:#0f172a; }
+  .ev-num {
+    width:52px; max-width:52px; padding:4px 6px; border-radius:10px; font-size:12px; text-align:center;
+    margin:0 auto 4px;
+  }
+  .ev-cell { padding:6px 4px !important; }
+  .ev-total { margin-top:8px; font-size:12px; color:var(--muted); font-weight:700; }
+  .ev-total.over { color:var(--bad); }
+  .move-list { display:grid; gap:12px; }
+  .move-card { border:1px solid var(--line); border-radius:18px; padding:12px; background:#fbfdff; }
+  .move-grid { display:grid; grid-template-columns:1.25fr .8fr .8fr .7fr auto; gap:8px; align-items:end; }
+  .move-meta { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:10px; }
+  button {
+    border:none; background:var(--accent); color:#fff; padding:11px 13px; border-radius:12px; cursor:pointer; font-weight:700; font-size:13px;
+  }
+  button.secondary { background:#fff; color:var(--accent); border:1px solid #bfd0f7; }
+  .result-box { display:grid; gap:12px; }
+  .result-item { border:1px solid var(--line); border-radius:18px; padding:14px; background:#fbfdff; }
+  .result-title { font-weight:800; margin-bottom:6px; }
+  .damage-big { font-size:22px; font-weight:800; color:var(--good); margin-bottom:5px; }
+  .muted { color:var(--muted); font-size:13px; line-height:1.6; }
+  .row-inline { display:flex; gap:8px; flex-wrap:wrap; }
+  .pill { background:var(--accent-soft); color:#1d4ed8; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700; }
+  .formula-list { margin-top:8px; display:grid; gap:6px; }
+  .formula-chip { border:1px solid var(--line); background:#fff; border-radius:12px; padding:8px 10px; font-size:12px; line-height:1.5; }
+  .upload-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .file-label { font-size:12px; color:var(--muted); }
+  @media (max-width:1240px) { .layout { grid-template-columns:1fr; } }
+  @media (max-width:760px) {
+    .move-grid { grid-template-columns:1fr 1fr; }
+    .move-grid > *:nth-child(5) { grid-column:1 / -1; }
+    .move-meta, .upload-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .stats-table { font-size:11px; }
+    h1 { font-size:24px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>寶可夢雙方傷害計算機（CSV 串接版）</h1>
+  <div class="sub">
+    這版不再把資料硬寫死在 HTML 裡，而是直接讀同資料夾中的 CSV 檔。<br>
+    你之後要修正名稱、補漏掉的寶可夢、修改招式數值，只要改 CSV 就好；HTML 只負責讀表與計算。<br>
+    另外本系加成（STAB）已改成明確判定：一般本系 1.5 倍，適應力 2 倍。
+  </div>
+
+  <div class="layout">
+    <section class="card">
+      <div class="card-head"><h2>寶可夢 #1</h2><span class="pill">攻方 / 可算4招</span></div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-title">選擇寶可夢</div>
+          <div class="search-wrap">
+            <input type="text" id="p1Search" placeholder="例如：愛管侍 / 新葉喵 / charizard / 876">
+            <div class="suggestions" id="p1Suggestions"></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">基本資料</div>
+          <div class="info-box"><div class="chips" id="p1Types"></div><div class="muted" id="p1Info">尚未選擇寶可夢。</div></div>
+        </div>
+        <div class="section">
+          <div class="section-title">戰鬥設定</div>
+          <div class="mini-grid">
+            <div class="field"><div class="label">等級</div><input type="number" id="p1Level" min="1" max="100" value="50"></div>
+            <div class="field"><div class="label">性格</div>
+              <select id="p1Nature">
+                <option value="neutral">中性</option>
+                <option value="atk_up_spa_down">攻↑ 特攻↓</option>
+                <option value="atk_up_def_down">攻↑ 防↓</option>
+                <option value="atk_up_spd_down">攻↑ 特防↓</option>
+                <option value="atk_up_spe_down">攻↑ 速↓</option>
+                <option value="spa_up_atk_down">特攻↑ 攻↓</option>
+                <option value="def_up_spa_down">防↑ 特攻↓</option>
+                <option value="spd_up_atk_down">特防↑ 攻↓</option>
+                <option value="spe_up_spa_down">速↑ 特攻↓</option>
+              </select>
+            </div>
+            <div class="field"><div class="label">特性</div><select id="p1Ability"></select></div>
+            <div class="field"><div class="label">道具</div>
+              <select id="p1Item">
+                <option value="none">無</option>
+                <option value="life-orb">生命寶珠</option>
+                <option value="choice-band">講究頭帶</option>
+                <option value="choice-specs">講究眼鏡</option>
+                <option value="expert-belt">達人帶</option>
+                <option value="muscle-band">力量頭帶</option>
+                <option value="wise-glasses">博識眼鏡</option>
+                <option value="assault-vest">突擊背心</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="section"><div class="section-title">能力值</div><div id="p1StatsArea"></div></div>
+        <div class="section"><div class="section-title">招式</div><div class="move-list" id="p1Moves"></div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>場地 / 結果</h2><span class="pill">CSV 驅動</span></div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-title">資料狀態</div>
+          <div class="notice" id="dataStatus">尚未載入 CSV。</div>
+        </div>
+        <div class="section">
+          <div class="section-title">手動載入 CSV（本機開檔時可用）</div>
+          <div class="upload-grid">
+            <div class="field"><div class="file-label">pokemon_master.csv</div><input type="file" id="filePokemon" accept=".csv"></div>
+            <div class="field"><div class="file-label">forms_master.csv</div><input type="file" id="fileForms" accept=".csv"></div>
+            <div class="field"><div class="file-label">moves_master.csv</div><input type="file" id="fileMoves" accept=".csv"></div>
+            <div class="field"><div class="file-label">type_chart_matrix.csv</div><input type="file" id="fileTypeChart" accept=".csv"></div>
+            <div class="field"><div class="file-label">pokemon_overrides.csv（可選）</div><input type="file" id="filePokemonOverrides" accept=".csv"></div>
+            <div class="field"><div class="file-label">moves_overrides.csv（可選）</div><input type="file" id="fileMovesOverrides" accept=".csv"></div>
+          </div>
+          <div class="row-inline" style="margin-top:10px;">
+            <button class="secondary" id="manualLoadBtn">用上面選的 CSV 重新載入</button>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">全域設定</div>
+          <div class="mini-grid">
+            <div class="field"><div class="label">天氣</div><select id="weather"><option value="none">無</option><option value="sun">大晴天</option><option value="rain">下雨</option></select></div>
+            <div class="field"><div class="label">模式</div><select id="battleMode"><option value="single">單打</option><option value="double">雙打</option></select></div>
+            <div class="field"><div class="label">#1 要害</div><select id="p1Crit"><option value="0">否</option><option value="1">是</option></select></div>
+            <div class="field"><div class="label">#2 要害</div><select id="p2Crit"><option value="0">否</option><option value="1">是</option></select></div>
+            <div class="field"><div class="label">#1 灼傷</div><select id="p1Burn"><option value="0">否</option><option value="1">是</option></select></div>
+            <div class="field"><div class="label">#2 灼傷</div><select id="p2Burn"><option value="0">否</option><option value="1">是</option></select></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">快捷操作</div>
+          <div class="row-inline">
+            <button class="secondary" id="calcAllP1">計算 #1 全部招式 → #2</button>
+            <button class="secondary" id="calcAllP2">計算 #2 全部招式 → #1</button>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">結果</div>
+          <div class="result-box" id="results">
+            <div class="result-item"><div class="result-title">還沒有計算結果</div><div class="muted">先載入資料，再選左右兩隻寶可夢，最後按任一招式的「計算」。</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>寶可夢 #2</h2><span class="pill">守方 / 也可反算</span></div>
+      <div class="card-body">
+        <div class="section">
+          <div class="section-title">選擇寶可夢</div>
+          <div class="search-wrap">
+            <input type="text" id="p2Search" placeholder="例如：噴火龍 / 愛管侍 / indeedee / 6">
+            <div class="suggestions" id="p2Suggestions"></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">基本資料</div>
+          <div class="info-box"><div class="chips" id="p2Types"></div><div class="muted" id="p2Info">尚未選擇寶可夢。</div></div>
+        </div>
+        <div class="section">
+          <div class="section-title">戰鬥設定</div>
+          <div class="mini-grid">
+            <div class="field"><div class="label">等級</div><input type="number" id="p2Level" min="1" max="100" value="50"></div>
+            <div class="field"><div class="label">性格</div>
+              <select id="p2Nature">
+                <option value="neutral">中性</option>
+                <option value="atk_up_spa_down">攻↑ 特攻↓</option>
+                <option value="atk_up_def_down">攻↑ 防↓</option>
+                <option value="atk_up_spd_down">攻↑ 特防↓</option>
+                <option value="atk_up_spe_down">攻↑ 速↓</option>
+                <option value="spa_up_atk_down">特攻↑ 攻↓</option>
+                <option value="def_up_spa_down">防↑ 特攻↓</option>
+                <option value="spd_up_atk_down">特防↑ 攻↓</option>
+                <option value="spe_up_spa_down">速↑ 特攻↓</option>
+              </select>
+            </div>
+            <div class="field"><div class="label">特性</div><select id="p2Ability"></select></div>
+            <div class="field"><div class="label">道具</div>
+              <select id="p2Item">
+                <option value="none">無</option>
+                <option value="life-orb">生命寶珠</option>
+                <option value="choice-band">講究頭帶</option>
+                <option value="choice-specs">講究眼鏡</option>
+                <option value="expert-belt">達人帶</option>
+                <option value="muscle-band">力量頭帶</option>
+                <option value="wise-glasses">博識眼鏡</option>
+                <option value="assault-vest">突擊背心</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="section"><div class="section-title">能力值</div><div id="p2StatsArea"></div></div>
+        <div class="section"><div class="section-title">招式</div><div class="move-list" id="p2Moves"></div></div>
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+const STAT_KEYS = [["hp","HP"],["attack","攻擊"],["defense","防禦"],["special_attack","特攻"],["special_defense","特防"],["speed","速度"]];
+const TYPE_LIST = ["一般","火","水","電","草","冰","格鬥","毒","地面","飛行","超能力","蟲","岩石","幽靈","龍","惡","鋼","妖精"];
+const state = { p1:null, p2:null };
+const DB = { pokemon: [], moves: [], typeChart: {} };
+
+function norm(s) {
+  return String(s ?? "").trim().toLowerCase().replace(/[\s\-_（）()\.]+/g,"");
+}
+function escapeHtml(text) {
+  return String(text ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+}
+function displayName(p) {
+  return p.name_zh || p.species_name_zh || p.name_en || p.identifier;
+}
+function allNames(p) {
+  return [p.name_zh,p.species_name_zh,p.name_en,p.species_name_en,p.name_ja,p.species_name_ja,p.identifier,String(p.pokedex_number)].filter(Boolean);
+}
+function csvToRows(text) {
+  const rows = [];
+  let row = [], cell = '', inQuotes = false;
+  text = String(text || '').replace(/^\uFEFF/, '');
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') { cell += '"'; i++; }
+        else { inQuotes = false; }
+      } else {
+        cell += ch;
+      }
+    } else {
+      if (ch === '"') inQuotes = true;
+      else if (ch === ',') { row.push(cell); cell = ''; }
+      else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+      else if (ch === '\r') { }
+      else { cell += ch; }
+    }
+  }
+  row.push(cell);
+  if (row.length > 1 || row[0] !== '') rows.push(row);
+  return rows;
+}
+function parseCSVObjects(text) {
+  const rows = csvToRows(text);
+  if (!rows.length) return [];
+  const headers = rows[0].map(h => String(h || '').trim().replace(/^\uFEFF/, ''));
+  return rows.slice(1).filter(r => r.some(v => String(v || '').trim() !== '')).map(r => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = r[i] ?? '');
+    return obj;
+  });
+}
+function parseBool(value) {
+  return ['true','1','yes','y'].includes(String(value).trim().toLowerCase());
+}
+function parseNum(value, fallback=null) {
+  if (value === null || value === undefined || value === '') return fallback;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+async function fetchText(path) {
+  const res = await fetch(path, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`${path} 載入失敗`);
+  return await res.text();
+}
+async function readFileText(inputId) {
+  const file = document.getElementById(inputId).files[0];
+  if (!file) return '';
+  return await file.text();
+}
+function buildPokemonFromRow(row) {
+  const abilityEntries = [];
+  if (row.ability1_en || row.ability1_zh) abilityEntries.push({ identifier_en: row.ability1_en || '', name_zh: row.ability1_zh || '', name_en: row.ability1_en || '', is_hidden: parseBool(row.ability1_hidden), slot: 1 });
+  if (row.ability2_en || row.ability2_zh) abilityEntries.push({ identifier_en: row.ability2_en || '', name_zh: row.ability2_zh || '', name_en: row.ability2_en || '', is_hidden: parseBool(row.ability2_hidden), slot: 2 });
+  if (row.hidden_ability_en || row.hidden_ability_zh) abilityEntries.push({ identifier_en: row.hidden_ability_en || '', name_zh: row.hidden_ability_zh || '', name_en: row.hidden_ability_en || '', is_hidden: true, slot: 3 });
+  const types = [row.type1_zh, row.type2_zh].filter(Boolean).map((t, idx) => ({ zh: t, slot: idx + 1 }));
+  return {
+    pokemon_id: parseNum(row.pokemon_id, 0),
+    species_id: parseNum(row.species_id, 0),
+    pokedex_number: parseNum(row.pokedex_number, 0),
+    identifier: row.identifier || '',
+    name_zh: row.name_zh || '',
+    name_en: row.name_en || '',
+    name_ja: row.name_ja || '',
+    species_name_zh: row.species_name_zh || '',
+    species_name_en: row.species_name_en || '',
+    species_name_ja: row.species_name_ja || '',
+    genus_zh: row.genus_zh || '',
+    type1_zh: row.type1_zh || '',
+    type2_zh: row.type2_zh || '',
+    types,
+    abilities: abilityEntries,
+    stats: {
+      hp: parseNum(row.hp, 0), attack: parseNum(row.attack, 0), defense: parseNum(row.defense, 0),
+      special_attack: parseNum(row.special_attack, 0), special_defense: parseNum(row.special_defense, 0), speed: parseNum(row.speed, 0)
+    },
+    is_mega: parseBool(row.is_mega),
+    form_identifier: row.form_identifier || '',
+    form_name_zh: row.form_name_zh || '',
+    parent_name_zh: row.parent_name_zh || '',
+    parent_identifier: row.parent_identifier || ''
+  };
+}
+function buildMoveFromRow(row) {
+  return {
+    id: parseNum(row.id, 0), identifier: row.identifier || '', name_zh: row.name_zh || '', name_en: row.name_en || '',
+    type_zh: row.type_zh || '一般', power: parseNum(row.power, 0) || 0, accuracy: parseNum(row.accuracy, 100),
+    priority: parseNum(row.priority, 0) || 0, damage_class: row.damage_class || 'physical'
+  };
+}
+function buildTypeChart(rows) {
+  const chart = {};
+  rows.forEach(row => {
+    const atk = row.attacking_type;
+    if (!atk) return;
+    chart[atk] = {};
+    Object.keys(row).forEach(k => {
+      if (k === 'attacking_type' || row[k] === '') return;
+      chart[atk][k] = parseNum(row[k], 1);
+    });
+  });
+  return chart;
+}
+function mergeByIdentifier(baseRows, overrideRows) {
+  const map = new Map();
+  baseRows.forEach(row => map.set(String(row.identifier || '').trim() || `id:${row.pokemon_id || row.id}`, row));
+  overrideRows.forEach(row => map.set(String(row.identifier || '').trim() || `id:${row.pokemon_id || row.id}`, row));
+  return Array.from(map.values());
+}
+function setDataStatus(html, ok=true) {
+  const el = document.getElementById('dataStatus');
+  el.innerHTML = html;
+  el.className = 'notice ' + (ok ? 'status-ok' : 'status-bad');
+}
+async function loadDefaultCSVs() {
+  const [pokemonText, formsText, movesText, typeChartText, pokemonOverridesText, movesOverridesText] = await Promise.all([
+    fetchText('pokemon_master.csv'),
+    fetchText('forms_master.csv'),
+    fetchText('moves_master.csv'),
+    fetchText('type_chart_matrix.csv'),
+    fetchText('pokemon_overrides.csv').catch(() => ''),
+    fetchText('moves_overrides.csv').catch(() => '')
+  ]);
+  return {
+    pokemonRows: parseCSVObjects(pokemonText),
+    formRows: parseCSVObjects(formsText),
+    moveRows: parseCSVObjects(movesText),
+    typeRows: parseCSVObjects(typeChartText),
+    pokemonOverrideRows: parseCSVObjects(pokemonOverridesText),
+    moveOverrideRows: parseCSVObjects(movesOverridesText),
+    source: 'default'
+  };
+}
+async function loadManualCSVs() {
+  const [pokemonText, formsText, movesText, typeChartText, pokemonOverridesText, movesOverridesText] = await Promise.all([
+    readFileText('filePokemon'), readFileText('fileForms'), readFileText('fileMoves'), readFileText('fileTypeChart'), readFileText('filePokemonOverrides'), readFileText('fileMovesOverrides')
+  ]);
+  if (!pokemonText || !formsText || !movesText || !typeChartText) throw new Error('手動載入至少要選主四個 CSV。');
+  return {
+    pokemonRows: parseCSVObjects(pokemonText),
+    formRows: parseCSVObjects(formsText),
+    moveRows: parseCSVObjects(movesText),
+    typeRows: parseCSVObjects(typeChartText),
+    pokemonOverrideRows: parseCSVObjects(pokemonOverridesText),
+    moveOverrideRows: parseCSVObjects(movesOverridesText),
+    source: 'manual'
+  };
+}
+function applyLoadedData(payload) {
+  const pokemonMerged = mergeByIdentifier([...payload.pokemonRows, ...payload.formRows], payload.pokemonOverrideRows || []);
+  const movesMerged = mergeByIdentifier(payload.moveRows, payload.moveOverrideRows || []);
+  DB.pokemon = pokemonMerged.map(buildPokemonFromRow).sort((a,b) => a.pokedex_number - b.pokedex_number || a.pokemon_id - b.pokemon_id);
+  DB.moves = movesMerged.map(buildMoveFromRow).sort((a,b) => a.id - b.id || a.identifier.localeCompare(b.identifier));
+  DB.typeChart = buildTypeChart(payload.typeRows);
+  setDataStatus(`CSV 載入完成。<br>寶可夢 / 型態：<b>${DB.pokemon.length}</b> 筆｜招式：<b>${DB.moves.length}</b> 筆｜來源：<b>${payload.source === 'default' ? '同資料夾 CSV' : '手動選檔'}</b><br>你之後若要修資料，優先改 <b>pokemon_overrides.csv</b> 與 <b>moves_overrides.csv</b>。`, true);
+  const sample1 = DB.pokemon.find(p => p.name_zh === '新葉喵') || DB.pokemon.find(p => p.name_zh.includes('愛管侍')) || DB.pokemon[0];
+  const sample2 = DB.pokemon.find(p => p.name_zh === '噴火龍') || DB.pokemon[5] || DB.pokemon[0];
+  if (sample1) selectPokemon('p1', sample1);
+  if (sample2) selectPokemon('p2', sample2);
+}
+async function bootstrapData() {
+  try {
+    const payload = await loadDefaultCSVs();
+    applyLoadedData(payload);
+  } catch (err) {
+    setDataStatus(`自動抓同資料夾 CSV 失敗：${escapeHtml(err.message)}<br>如果你是直接開本機 HTML，請改用中間欄的「手動載入 CSV」。`, false);
+  }
+}
+function scorePokemon(p, keyword) {
+  const q = norm(keyword);
+  if (!q) return -1;
+  let score = 0;
+  for (const name of allNames(p)) {
+    const n = norm(name);
+    if (n === q) score = Math.max(score, 1000);
+    else if (n.startsWith(q)) score = Math.max(score, 800);
+    else if (n.includes(q)) score = Math.max(score, 500);
+  }
+  if (norm(String(p.pokedex_number)) === q) score = Math.max(score, 950);
+  return score + (p.form_identifier ? 0 : 10);
+}
+function searchPokemon(keyword) {
+  return DB.pokemon.map(p => ({...p, _score: scorePokemon(p, keyword)}))
+    .filter(p => p._score > 0)
+    .sort((a,b) => b._score - a._score || a.pokedex_number - b.pokedex_number || a.pokemon_id - b.pokemon_id)
+    .slice(0, 80);
+}
+function scoreMove(m, keyword) {
+  const q = norm(keyword);
+  if (!q) return -1;
+  const names = [m.name_zh, m.name_en, m.identifier].filter(Boolean).map(norm);
+  let score = 0;
+  for (const n of names) {
+    if (n === q) score = Math.max(score, 1000);
+    else if (n.startsWith(q)) score = Math.max(score, 700);
+    else if (n.includes(q)) score = Math.max(score, 450);
+  }
+  return score;
+}
+function searchMoves(keyword) {
+  return DB.moves.map(m => ({...m, _score: scoreMove(m, keyword)}))
+    .filter(m => m._score > 0)
+    .sort((a,b) => b._score - a._score || a.id - b.id)
+    .slice(0, 30);
+}
+
+function findExactMove(keyword) {
+  const q = norm(keyword);
+  if (!q) return null;
+  return DB.moves.find(m => [m.name_zh, m.name_en, m.identifier].filter(Boolean).map(norm).includes(q)) || null;
+}
+function renderPokemonSuggestions(inputId, listId, side) {
+  const input = document.getElementById(inputId);
+  const box = document.getElementById(listId);
+  const results = searchPokemon(input.value);
+  box.innerHTML = '';
+  if (!input.value.trim() || !results.length) { box.style.display = 'none'; return; }
+  results.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'suggestion';
+    const types = (p.types || []).map(t => t.zh).join(' / ');
+    const formTag = p.form_name_zh ? ` · ${escapeHtml(p.form_name_zh)}` : '';
+    el.innerHTML = `<div class="s-name">${escapeHtml(displayName(p))}</div><div class="s-meta">#${p.pokedex_number} · ${escapeHtml(types)}${formTag}</div>`;
+    el.onclick = () => selectPokemon(side, p);
+    box.appendChild(el);
+  });
+  box.style.display = 'block';
+}
+function renderMoveSuggestions(side, idx) {
+  const input = document.getElementById(`${side}_move_${idx}_name`);
+  const box = document.getElementById(`${side}_move_${idx}_sug`);
+  const results = searchMoves(input.value);
+  box.innerHTML = '';
+  if (!input.value.trim() || !results.length) { box.style.display = 'none'; return; }
+  results.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'move-suggestion';
+    el.innerHTML = `<div class="s-name">${escapeHtml(m.name_zh)}</div><div class="s-meta">${escapeHtml(m.name_en)} · ${m.type_zh || '一般'} · ${m.damage_class === 'physical' ? '物理' : m.damage_class === 'special' ? '特殊' : '變化'} · 威力 ${m.power || 0}</div>`;
+    el.onclick = () => selectMove(side, idx, m);
+    box.appendChild(el);
+  });
+  box.style.display = 'block';
+}
+function typeBadges(types) { return (types || []).map(t => `<span class="chip type-${t.zh}">${t.zh}</span>`).join(''); }
+function selectPokemon(side, pokemon) {
+  state[side] = JSON.parse(JSON.stringify(pokemon));
+  document.getElementById(side + 'Search').value = displayName(pokemon);
+  document.getElementById(side + 'Suggestions').style.display = 'none';
+  document.getElementById(side + 'Types').innerHTML = typeBadges(pokemon.types);
+  const formText = pokemon.form_name_zh ? ` · ${pokemon.form_name_zh}` : '';
+  document.getElementById(side + 'Info').innerHTML = `#${pokemon.pokedex_number}${formText} · ${escapeHtml(pokemon.name_en || '-') } · ${escapeHtml(pokemon.genus_zh || '-')}`;
+  buildAbilityOptions(side);
+  buildStatsUI(side);
+  buildMovesUI(side);
+}
+function buildAbilityOptions(side) {
+  const p = state[side];
+  const sel = document.getElementById(side + 'Ability');
+  sel.innerHTML = '';
+  (p.abilities || []).forEach((ab, idx) => {
+    const opt = document.createElement('option');
+    opt.value = ab.identifier_en || '';
+    opt.textContent = (ab.name_zh || ab.name_en || '未知特性') + (ab.is_hidden ? '（夢特）' : '');
+    if (idx === 0) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  if (!sel.innerHTML) {
+    const opt = document.createElement('option'); opt.value = 'none'; opt.textContent = '無'; sel.appendChild(opt);
+  }
+}
+function getNatureMap(val) {
+  const maps = {
+    neutral: {}, atk_up_spa_down: { attack: 1.1, special_attack: 0.9 }, atk_up_def_down: { attack: 1.1, defense: 0.9 }, atk_up_spd_down: { attack: 1.1, special_defense: 0.9 }, atk_up_spe_down: { attack: 1.1, speed: 0.9 },
+    spa_up_atk_down: { special_attack: 1.1, attack: 0.9 }, def_up_spa_down: { defense: 1.1, special_attack: 0.9 }, spd_up_atk_down: { special_defense: 1.1, attack: 0.9 }, spe_up_spa_down: { speed: 1.1, special_attack: 0.9 }
+  };
+  return maps[val] || {};
+}
+function calcStat(base, iv, ev, level, isHP, mult=1) {
+  if (isHP) return Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) + level + 10;
+  const raw = Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) + 5;
+  return Math.floor(raw * mult);
+}
+function buildStatsUI(side) {
+  const p = state[side];
+  const host = document.getElementById(side + 'StatsArea');
+  if (!p) { host.innerHTML = ''; return; }
+  const natureVal = document.getElementById(side + 'Nature').value;
+  const level = Number(document.getElementById(side + 'Level').value || 50);
+  const nMap = getNatureMap(natureVal);
+  const head = STAT_KEYS.map(([k,label]) => `<th>${label}</th>`).join('');
+  const baseRow = STAT_KEYS.map(([k]) => `<td>${p.stats[k]}</td>`).join('');
+  const ivRow = STAT_KEYS.map(() => `<td>31</td>`).join('');
+  const finalRow = STAT_KEYS.map(([k]) => {
+    const val = calcStat(p.stats[k], 31, k==='hp' ? 252 : 0, level, k==='hp', nMap[k] || 1);
+    return `<td><div class="final-stat" id="${side}_${k}_final">${val}</div></td>`;
+  }).join('');
+  const evRow = STAT_KEYS.map(([k]) => {
+    const defaultEV = k==='hp' ? 252 : 0;
+    return `<td class="ev-cell"><input class="ev-num" type="number" id="${side}_${k}_ev_num" min="0" max="252" step="4" value="${defaultEV}"><input type="range" id="${side}_${k}_ev" min="0" max="252" step="4" value="${defaultEV}"></td>`;
+  }).join('');
+  host.innerHTML = `<table class="stats-table"><thead><tr><th class="rowhead"></th>${head}</tr></thead><tbody><tr><td class="rowhead">種族值</td>${baseRow}</tr><tr><td class="rowhead">個體值</td>${ivRow}</tr><tr><td class="rowhead">計算值</td>${finalRow}</tr><tr><td class="rowhead">努力值</td>${evRow}</tr></tbody></table><div class="ev-total" id="${side}EvTotal"></div>`;
+  bindEVSync(side);
+  refreshFinalStats(side);
+}
+function bindEVSync(side) {
+  STAT_KEYS.forEach(([k]) => {
+    const slider = document.getElementById(`${side}_${k}_ev`);
+    const num = document.getElementById(`${side}_${k}_ev_num`);
+    const sync = (fromSlider) => {
+      let v = Number(fromSlider ? slider.value : num.value || 0);
+      v = Math.max(0, Math.min(252, Math.round(v / 4) * 4));
+      slider.value = v; num.value = v; enforceEVTotal(side, k); refreshFinalStats(side);
+    };
+    slider.addEventListener('input', () => sync(true));
+    num.addEventListener('input', () => sync(false));
+  });
+}
+function enforceEVTotal(side, changedKey) {
+  const values = {}; let total = 0;
+  STAT_KEYS.forEach(([k]) => { const v = Number(document.getElementById(`${side}_${k}_ev`).value || 0); values[k] = v; total += v; });
+  if (total <= 510) return updateEVTotal(side, total);
+  let overflow = total - 510;
+  const order = STAT_KEYS.map(([k]) => k).filter(k => k !== changedKey);
+  for (const k of order) {
+    if (overflow <= 0) break;
+    let reducible = Math.min(values[k], overflow);
+    reducible = Math.floor(reducible / 4) * 4;
+    values[k] -= reducible; overflow -= reducible;
+  }
+  if (overflow > 0) {
+    values[changedKey] = Math.max(0, values[changedKey] - overflow);
+    values[changedKey] = Math.floor(values[changedKey] / 4) * 4;
+  }
+  let newTotal = 0;
+  STAT_KEYS.forEach(([k]) => { document.getElementById(`${side}_${k}_ev`).value = values[k]; document.getElementById(`${side}_${k}_ev_num`).value = values[k]; newTotal += values[k]; });
+  updateEVTotal(side, newTotal);
+}
+function updateEVTotal(side, total) {
+  const el = document.getElementById(`${side}EvTotal`); el.textContent = `努力值總和：${total} / 510`; el.className = 'ev-total' + (total > 510 ? ' over' : '');
+}
+function refreshFinalStats(side) {
+  const p = state[side]; if (!p) return;
+  const level = Number(document.getElementById(side + 'Level').value || 50);
+  const natureVal = document.getElementById(side + 'Nature').value; const nMap = getNatureMap(natureVal); let total = 0;
+  STAT_KEYS.forEach(([k]) => {
+    const ev = Number(document.getElementById(`${side}_${k}_ev`).value || 0); total += ev;
+    const val = calcStat(p.stats[k], 31, ev, level, k==='hp', nMap[k] || 1);
+    document.getElementById(`${side}_${k}_final`).textContent = val;
+  });
+  updateEVTotal(side, total);
+}
+function buildMoveTemplate(side, idx) {
+  return `<div class="move-card"><div class="move-grid"><div class="field"><div class="label">招式名稱</div><div class="move-search-wrap"><input type="text" id="${side}_move_${idx}_name" placeholder="輸入招式名稱模糊搜尋"><div class="move-suggestions" id="${side}_move_${idx}_sug"></div></div></div><div class="field"><div class="label">屬性</div><select id="${side}_move_${idx}_type">${TYPE_LIST.map(t => `<option value="${t}">${t}</option>`).join('')}</select></div><div class="field"><div class="label">分類</div><select id="${side}_move_${idx}_cat"><option value="physical">物理</option><option value="special">特殊</option><option value="status">變化</option></select></div><div class="field"><div class="label">威力</div><input type="number" id="${side}_move_${idx}_power" min="0" max="300" value="90"></div><button onclick="calcOne('${side}', ${idx})">計算</button></div><div class="move-meta"><div class="field"><div class="label">命中</div><input type="number" id="${side}_move_${idx}_acc" min="0" max="100" value="100"></div><div class="field"><div class="label">優先度</div><input type="number" id="${side}_move_${idx}_pri" min="-7" max="7" value="0"></div><div class="field"><div class="label">接觸</div><select id="${side}_move_${idx}_contact"><option value="0">否</option><option value="1">是</option></select></div><div class="field"><div class="label">額外倍率</div><input type="number" id="${side}_move_${idx}_extra" min="0.1" step="0.05" value="1"></div></div></div>`;
+}
+function buildMovesUI(side) {
+  const host = document.getElementById(side + 'Moves'); host.innerHTML = [0,1,2,3].map(i => buildMoveTemplate(side, i)).join('');
+  [0,1,2,3].forEach(i => {
+    const input = document.getElementById(`${side}_move_${i}_name`);
+    input.addEventListener('input', () => renderMoveSuggestions(side, i));
+    input.addEventListener('focus', () => renderMoveSuggestions(side, i));
+    input.addEventListener('blur', () => {
+      const exact = findExactMove(input.value);
+      if (exact) selectMove(side, i, exact);
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const exact = findExactMove(input.value);
+        if (exact) {
+          selectMove(side, i, exact);
+          e.preventDefault();
+        }
+      }
+    });
+  });
+}
+function selectMove(side, idx, move) {
+  document.getElementById(`${side}_move_${idx}_name`).value = move.name_zh;
+  document.getElementById(`${side}_move_${idx}_type`).value = move.type_zh || '一般';
+  document.getElementById(`${side}_move_${idx}_cat`).value = move.damage_class || 'physical';
+  document.getElementById(`${side}_move_${idx}_power`).value = move.power || 0;
+  document.getElementById(`${side}_move_${idx}_acc`).value = move.accuracy ?? 100;
+  document.getElementById(`${side}_move_${idx}_pri`).value = move.priority ?? 0;
+  document.getElementById(`${side}_move_${idx}_sug`).style.display = 'none';
+}
+function getFinalStat(side, key) { return Number(document.getElementById(`${side}_${key}_final`).textContent || 0); }
+function effectiveness(moveType, defenderTypes) {
+  let mult = 1; const table = DB.typeChart[moveType] || {};
+  defenderTypes.forEach(t => { const m = table[t.zh]; if (typeof m === 'number') mult *= m; });
+  return mult;
+}
+function getStabModifier(attacker, moveType, ability) {
+  const atkTypes = (attacker.types || []).map(t => t.zh);
+  if (!atkTypes.includes(moveType)) return 1;
+  return ability === 'adaptability' ? 2 : 1.5;
+}
+function applyAbilityModifier(side, moveType, category, power, contact) {
+  const ability = document.getElementById(side + 'Ability').value || 'none';
+  let attackMod = 1, powerMod = 1;
+  if (ability === 'huge-power' || ability === 'pure-power') attackMod *= 2;
+  if (ability === 'technician' && power <= 60 && category !== 'status') powerMod *= 1.5;
+  if (ability === 'tough-claws' && contact) powerMod *= 1.3;
+  return { ability, attackMod, powerMod };
+}
+function applyItemModifier(side, category, eff) {
+  const item = document.getElementById(side + 'Item').value || 'none';
+  let attackMod = 1, powerMod = 1;
+  if (item === 'life-orb') powerMod *= 1.3;
+  if (item === 'choice-band' && category === 'physical') attackMod *= 1.5;
+  if (item === 'choice-specs' && category === 'special') attackMod *= 1.5;
+  if (item === 'expert-belt' && eff > 1) powerMod *= 1.2;
+  if (item === 'muscle-band' && category === 'physical') powerMod *= 1.1;
+  if (item === 'wise-glasses' && category === 'special') powerMod *= 1.1;
+  return { item, attackMod, powerMod };
+}
+function targetDefenseItemModifier(side, category) {
+  const item = document.getElementById(side + 'Item').value || 'none';
+  let mod = 1; if (item === 'assault-vest' && category === 'special') mod *= 1.5; return mod;
+}
+function calculateDamage(attSide, defSide, idx) {
+  const atkP = state[attSide], defP = state[defSide]; if (!atkP || !defP) return null;
+  const moveName = document.getElementById(`${attSide}_move_${idx}_name`).value || '招式';
+  const moveType = document.getElementById(`${attSide}_move_${idx}_type`).value;
+  const category = document.getElementById(`${attSide}_move_${idx}_cat`).value;
+  const power = Number(document.getElementById(`${attSide}_move_${idx}_power`).value || 0);
+  const contact = Number(document.getElementById(`${attSide}_move_${idx}_contact`).value || 0) === 1;
+  const extra = Number(document.getElementById(`${attSide}_move_${idx}_extra`).value || 1);
+  if (category === 'status' || power <= 0) {
+    return { attacker:displayName(atkP), defender:displayName(defP), moveName, note:'這招目前被視為變化招式，暫不計算傷害。' };
+  }
+  const level = Number(document.getElementById(attSide + 'Level').value || 50);
+  const atkStatBase = category === 'physical' ? getFinalStat(attSide, 'attack') : getFinalStat(attSide, 'special_attack');
+  let defStatBase = category === 'physical' ? getFinalStat(defSide, 'defense') : getFinalStat(defSide, 'special_defense');
+  const hpDef = getFinalStat(defSide, 'hp');
+  const eff = effectiveness(moveType, defP.types || []);
+  const abMod = applyAbilityModifier(attSide, moveType, category, power, contact);
+  const itemMod = applyItemModifier(attSide, category, eff);
+  const targetDefMod = targetDefenseItemModifier(defSide, category);
+  const atkStat = Math.floor(atkStatBase * abMod.attackMod * itemMod.attackMod);
+  const defStat = Math.floor(defStatBase * targetDefMod);
+  const modifiedPower = Math.floor(power * abMod.powerMod * itemMod.powerMod * extra);
+  let base = Math.floor(Math.floor(Math.floor((2 * level) / 5 + 2) * modifiedPower * atkStat / Math.max(1, defStat)) / 50) + 2;
+  const stab = getStabModifier(atkP, moveType, abMod.ability);
+  let modifier = stab * eff;
+  const weather = document.getElementById('weather').value;
+  let weatherMod = 1;
+  if (weather === 'sun') { if (moveType === '火') weatherMod = 1.5; if (moveType === '水') weatherMod = 0.5; }
+  if (weather === 'rain') { if (moveType === '水') weatherMod = 1.5; if (moveType === '火') weatherMod = 0.5; }
+  modifier *= weatherMod;
+  const crit = Number(document.getElementById(attSide + 'Crit').value || 0) ? 1.5 : 1; modifier *= crit;
+  const burn = Number(document.getElementById(attSide + 'Burn').value || 0);
+  let burnMod = 1; if (burn && category === 'physical') burnMod = 0.5; modifier *= burnMod;
+  const minDamage = Math.floor(base * modifier * 0.85); const maxDamage = Math.floor(base * modifier);
+  const minPct = hpDef ? (minDamage / hpDef * 100).toFixed(1) : '0.0'; const maxPct = hpDef ? (maxDamage / hpDef * 100).toFixed(1) : '0.0';
+  return { attacker: displayName(atkP), defender: displayName(defP), moveName, moveType, category, power, minDamage, maxDamage, minPct, maxPct, stab, hasStab: stab > 1, eff, crit, burnMod, weatherMod, abilityLabel: document.getElementById(attSide + 'Ability').selectedOptions[0]?.textContent || '無', itemLabel: document.getElementById(attSide + 'Item').selectedOptions[0]?.textContent || '無', totalAttackMod: abMod.attackMod * itemMod.attackMod, totalPowerMod: abMod.powerMod * itemMod.powerMod * extra, abilityAttackMod: abMod.attackMod, abilityPowerMod: abMod.powerMod, itemAttackMod: itemMod.attackMod, itemPowerMod: itemMod.powerMod, extraMod: extra, targetDefMod };
+}
+function formatEffectiveness(mult) { if (mult === 0) return '無效'; return mult + ' 倍'; }
+function pushResults(items) {
+  const host = document.getElementById('results');
+  host.innerHTML = items.map(r => {
+    if (r.note) return `<div class="result-item"><div class="result-title">${escapeHtml(r.attacker)} → ${escapeHtml(r.defender)}｜${escapeHtml(r.moveName)}</div><div class="muted">${escapeHtml(r.note)}</div></div>`;
+    return `<div class="result-item"><div class="result-title">${escapeHtml(r.attacker)} → ${escapeHtml(r.defender)}｜${escapeHtml(r.moveName)}</div><div class="damage-big">${r.minDamage} - ${r.maxDamage}（${r.minPct}% - ${r.maxPct}%）</div><div class="muted">屬性：${r.moveType}｜分類：${r.category === 'physical' ? '物理' : '特殊'}｜原始威力：${r.power}<br>相剋：${formatEffectiveness(r.eff)}｜本系加成：${r.hasStab ? '有' : '無'}｜STAB：${r.stab} 倍｜天氣：${r.weatherMod} 倍｜要害：${r.crit} 倍｜灼傷：${r.burnMod} 倍</div><div class="formula-list"><div class="formula-chip">攻方特性：${escapeHtml(r.abilityLabel)}｜攻擊/特攻倍率：${r.abilityAttackMod.toFixed(2)} 倍｜威力倍率：${r.abilityPowerMod.toFixed(2)} 倍</div><div class="formula-chip">攻方道具：${escapeHtml(r.itemLabel)}｜攻擊/特攻倍率：${r.itemAttackMod.toFixed(2)} 倍｜威力倍率：${r.itemPowerMod.toFixed(2)} 倍</div><div class="formula-chip">其他倍率：額外倍率 ${r.extraMod.toFixed(2)} 倍｜總攻擊/特攻倍率 ${r.totalAttackMod.toFixed(2)} 倍｜總威力倍率 ${r.totalPowerMod.toFixed(2)} 倍</div><div class="formula-chip">守方防禦側道具倍率：${r.targetDefMod.toFixed(2)} 倍</div></div></div>`;
+  }).join('');
+}
+function calcOne(side, idx) { const other = side === 'p1' ? 'p2' : 'p1'; const res = calculateDamage(side, other, idx); if (res) pushResults([res]); }
+function calcAll(side) { const other = side === 'p1' ? 'p2' : 'p1'; const out = []; for (let i=0;i<4;i++) { const res = calculateDamage(side, other, i); if (res) out.push(res); } if (out.length) pushResults(out); }
+document.getElementById('calcAllP1').onclick = () => calcAll('p1');
+document.getElementById('calcAllP2').onclick = () => calcAll('p2');
+document.getElementById('manualLoadBtn').onclick = async () => { try { applyLoadedData(await loadManualCSVs()); } catch (err) { setDataStatus(`手動載入失敗：${escapeHtml(err.message)}`, false); } };
+['p1','p2'].forEach(side => {
+  document.getElementById(side + 'Search').addEventListener('input', () => renderPokemonSuggestions(side + 'Search', side + 'Suggestions', side));
+  document.getElementById(side + 'Search').addEventListener('focus', () => renderPokemonSuggestions(side + 'Search', side + 'Suggestions', side));
+  document.getElementById(side + 'Level').addEventListener('input', () => refreshFinalStats(side));
+  document.getElementById(side + 'Nature').addEventListener('change', () => refreshFinalStats(side));
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrap')) { document.getElementById('p1Suggestions').style.display = 'none'; document.getElementById('p2Suggestions').style.display = 'none'; }
+  if (!e.target.closest('.move-search-wrap')) { document.querySelectorAll('.move-suggestions').forEach(el => el.style.display = 'none'); }
+});
+bootstrapData();
+</script>
+</body>
+</html>

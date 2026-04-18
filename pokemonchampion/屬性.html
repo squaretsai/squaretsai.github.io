@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>寶可夢屬性打點分析</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      background: #f7f7f7;
+      min-height: 100vh;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+
+    .block {
+      background: #ffffff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 18px;
+    }
+
+    .block-title {
+      background: #444;
+      color: #fff;
+      text-align: center;
+      font-weight: 700;
+      font-size: 20px;
+      padding: 14px 16px;
+      position: relative;
+      letter-spacing: 1px;
+    }
+
+    .block-title.red {
+      background: #f2485b;
+    }
+
+    .block-body {
+      padding: 12px;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #666;
+      margin: 0 0 12px;
+      text-align: center;
+    }
+
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .type-btn {
+      border: none;
+      border-radius: 10px;
+      min-height: 72px;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px 6px;
+      transition: transform 0.08s ease, box-shadow 0.12s ease, outline 0.12s ease;
+      outline: 0 solid transparent;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.08);
+      user-select: none;
+    }
+
+    .type-btn:active {
+      transform: scale(0.98);
+    }
+
+    .type-btn.selected {
+      outline: 4px solid #111;
+      outline-offset: -4px;
+    }
+
+    .result-wrap {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 18px;
+    }
+
+    .result-title {
+      background: #f2485b;
+      color: #fff;
+      text-align: center;
+      font-weight: 700;
+      font-size: 18px;
+      padding: 12px;
+      letter-spacing: 1px;
+    }
+
+    .result-row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border-top: 1px solid #e9e9e9;
+      background: #fff;
+    }
+
+    .result-row:first-child {
+      border-top: none;
+    }
+
+    .multiplier {
+      font-size: 22px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .multiplier.m4 { color: #2f9d42; }
+    .multiplier.m2 { color: #89a300; }
+    .multiplier.m1 { color: #7a7a7a; }
+    .multiplier.m05, .multiplier.m025 { color: #e67e22; }
+    .multiplier.m0 { color: #7f8c8d; }
+
+    .type-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .type-tag {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 8px;
+      min-width: 56px;
+      text-align: center;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.08);
+    }
+
+    .selected-info {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      min-height: 40px;
+    }
+
+    .selected-empty {
+      color: #888;
+      font-size: 14px;
+      text-align: center;
+      padding: 6px 0;
+    }
+
+    .control-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .reset-btn {
+      border: none;
+      background: #666;
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .section-gap {
+      height: 6px;
+    }
+
+    /* 屬性配色 */
+    .一般 { background: #9FA4A8; }
+    .格鬥 { background: #F28C28; }
+    .飛行 { background: #8BB8E8; }
+    .毒 { background: #9E3ECF; }
+    .地面 { background: #A36226; }
+    .岩石 { background: #B7AE85; }
+    .蟲 { background: #92A91E; }
+    .幽靈 { background: #7B4A86; }
+    .鋼 { background: #6FA6C1; }
+    .火 { background: #EF2B2D; }
+    .水 { background: #4A77E0; }
+    .草 { background: #3FAE34; }
+    .電 { background: #F0C320; color: #fff; }
+    .超能力 { background: #EF3C79; }
+    .冰 { background: #4EC3E6; }
+    .龍 { background: #5A58D6; }
+    .惡 { background: #5D4E47; }
+    .妖精 { background: #E25DDB; }
+
+    @media (max-width: 420px) {
+      .panel {
+        padding: 10px;
+      }
+
+      .type-grid {
+        gap: 7px;
+      }
+
+      .type-btn {
+        min-height: 64px;
+        font-size: 15px;
+      }
+
+      .result-row {
+        grid-template-columns: 62px 1fr;
+        padding: 10px 12px;
+      }
+
+      .multiplier {
+        font-size: 18px;
+      }
+
+      .type-tag {
+        font-size: 13px;
+        padding: 7px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel">
+
+      <!-- 防禦分析 -->
+      <div class="block">
+        <div class="block-title">防禦方</div>
+        <div class="block-body">
+          <p class="hint">請選擇 1～2 個屬性，分析這隻寶可夢怕哪些攻擊屬性</p>
+          <div id="defTypeGrid" class="type-grid"></div>
+
+          <div id="defSelectedInfo" class="selected-info"></div>
+
+          <div class="control-row">
+            <button class="reset-btn" id="defResetBtn">清除選擇</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-wrap">
+        <div class="result-title">攻擊方（對你造成傷害的屬性）</div>
+        <div id="defResult"></div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- 攻擊分析 -->
+      <div class="block">
+        <div class="block-title red">攻擊方</div>
+        <div class="block-body">
+          <p class="hint">請選擇 1 個攻擊屬性，分析你的打點能有效覆蓋哪些防禦屬性</p>
+          <div id="atkTypeGrid" class="type-grid"></div>
+
+          <div id="atkSelectedInfo" class="selected-info"></div>
+
+          <div class="control-row">
+            <button class="reset-btn" id="atkResetBtn">清除選擇</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-wrap">
+        <div class="result-title">防禦方（你打出去的覆蓋面）</div>
+        <div id="atkResult"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const 屬性列表 = [
+      "一般", "格鬥", "飛行",
+      "毒", "地面", "岩石",
+      "蟲", "幽靈", "鋼",
+      "火", "水", "草",
+      "電", "超能力", "冰",
+      "龍", "惡", "妖精"
+    ];
+
+    // 攻擊 -> 防禦
+    const 屬性倍率表 = {
+      "一般":   { "岩石": 0.5, "幽靈": 0, "鋼": 0.5 },
+      "火":     { "草": 2, "冰": 2, "蟲": 2, "鋼": 2, "火": 0.5, "水": 0.5, "岩石": 0.5, "龍": 0.5 },
+      "水":     { "火": 2, "地面": 2, "岩石": 2, "水": 0.5, "草": 0.5, "龍": 0.5 },
+      "電":     { "水": 2, "飛行": 2, "電": 0.5, "草": 0.5, "龍": 0.5, "地面": 0 },
+      "草":     { "水": 2, "地面": 2, "岩石": 2, "火": 0.5, "草": 0.5, "毒": 0.5, "飛行": 0.5, "蟲": 0.5, "龍": 0.5, "鋼": 0.5 },
+      "冰":     { "草": 2, "地面": 2, "飛行": 2, "龍": 2, "火": 0.5, "水": 0.5, "冰": 0.5, "鋼": 0.5 },
+      "格鬥":   { "一般": 2, "冰": 2, "岩石": 2, "惡": 2, "鋼": 2, "毒": 0.5, "飛行": 0.5, "超能力": 0.5, "蟲": 0.5, "妖精": 0.5, "幽靈": 0 },
+      "毒":     { "草": 2, "妖精": 2, "毒": 0.5, "地面": 0.5, "岩石": 0.5, "幽靈": 0.5, "鋼": 0 },
+      "地面":   { "火": 2, "電": 2, "毒": 2, "岩石": 2, "鋼": 2, "草": 0.5, "蟲": 0.5, "飛行": 0 },
+      "飛行":   { "草": 2, "格鬥": 2, "蟲": 2, "電": 0.5, "岩石": 0.5, "鋼": 0.5 },
+      "超能力": { "格鬥": 2, "毒": 2, "超能力": 0.5, "鋼": 0.5, "惡": 0 },
+      "蟲":     { "草": 2, "超能力": 2, "惡": 2, "火": 0.5, "格鬥": 0.5, "毒": 0.5, "飛行": 0.5, "幽靈": 0.5, "鋼": 0.5, "妖精": 0.5 },
+      "岩石":   { "火": 2, "冰": 2, "飛行": 2, "蟲": 2, "格鬥": 0.5, "地面": 0.5, "鋼": 0.5 },
+      "幽靈":   { "超能力": 2, "幽靈": 2, "惡": 0.5, "一般": 0 },
+      "龍":     { "龍": 2, "鋼": 0.5, "妖精": 0 },
+      "惡":     { "超能力": 2, "幽靈": 2, "格鬥": 0.5, "惡": 0.5, "妖精": 0.5 },
+      "鋼":     { "冰": 2, "岩石": 2, "妖精": 2, "火": 0.5, "水": 0.5, "電": 0.5, "鋼": 0.5 },
+      "妖精":   { "格鬥": 2, "龍": 2, "惡": 2, "火": 0.5, "毒": 0.5, "鋼": 0.5 }
+    };
+
+    function 取得倍率(攻擊屬性, 防禦屬性) {
+      return 屬性倍率表[攻擊屬性]?.[防禦屬性] ?? 1;
+    }
+
+    const 防禦已選 = [];
+    let 攻擊已選 = null;
+
+    const defTypeGrid = document.getElementById("defTypeGrid");
+    const atkTypeGrid = document.getElementById("atkTypeGrid");
+    const defResult = document.getElementById("defResult");
+    const atkResult = document.getElementById("atkResult");
+    const defSelectedInfo = document.getElementById("defSelectedInfo");
+    const atkSelectedInfo = document.getElementById("atkSelectedInfo");
+
+    function 建立屬性按鈕(container, mode) {
+      屬性列表.forEach(屬性 => {
+        const btn = document.createElement("button");
+        btn.className = `type-btn ${屬性}`;
+        btn.textContent = 屬性;
+        btn.dataset.type = 屬性;
+
+        btn.addEventListener("click", () => {
+          if (mode === "def") {
+            切換防禦選擇(屬性);
+          } else {
+            設定攻擊選擇(屬性);
+          }
+        });
+
+        container.appendChild(btn);
+      });
+    }
+
+    function 更新防禦選中樣式() {
+      [...defTypeGrid.querySelectorAll(".type-btn")].forEach(btn => {
+        btn.classList.toggle("selected", 防禦已選.includes(btn.dataset.type));
+      });
+    }
+
+    function 更新攻擊選中樣式() {
+      [...atkTypeGrid.querySelectorAll(".type-btn")].forEach(btn => {
+        btn.classList.toggle("selected", 攻擊已選 === btn.dataset.type);
+      });
+    }
+
+    function 建立標籤(屬性) {
+      const span = document.createElement("div");
+      span.className = `type-tag ${屬性}`;
+      span.textContent = 屬性;
+      return span;
+    }
+
+    function 更新防禦已選顯示() {
+      defSelectedInfo.innerHTML = "";
+      if (防禦已選.length === 0) {
+        defSelectedInfo.innerHTML = `<div class="selected-empty">尚未選擇屬性</div>`;
+        return;
+      }
+      防禦已選.forEach(屬性 => {
+        defSelectedInfo.appendChild(建立標籤(屬性));
+      });
+    }
+
+    function 更新攻擊已選顯示() {
+      atkSelectedInfo.innerHTML = "";
+      if (!攻擊已選) {
+        atkSelectedInfo.innerHTML = `<div class="selected-empty">尚未選擇屬性</div>`;
+        return;
+      }
+      atkSelectedInfo.appendChild(建立標籤(攻擊已選));
+    }
+
+    function 切換防禦選擇(屬性) {
+      const index = 防禦已選.indexOf(屬性);
+
+      if (index > -1) {
+        防禦已選.splice(index, 1);
+      } else {
+        if (防禦已選.length >= 2) return;
+        防禦已選.push(屬性);
+      }
+
+      更新防禦選中樣式();
+      更新防禦已選顯示();
+      重新計算防禦分析();
+    }
+
+    function 設定攻擊選擇(屬性) {
+      攻擊已選 = (攻擊已選 === 屬性) ? null : 屬性;
+      更新攻擊選中樣式();
+      更新攻擊已選顯示();
+      重新計算攻擊分析();
+    }
+
+    function 倍率排序值(倍率) {
+      const 對照 = { 4: 6, 2: 5, 1: 4, 0.5: 3, 0.25: 2, 0: 1 };
+      return 對照[倍率] ?? 0;
+    }
+
+    function 倍率顯示文字(倍率) {
+      if (倍率 === 0.25) return "1/4x";
+      if (倍率 === 0.5) return "1/2x";
+      return `${倍率}x`;
+    }
+
+    function 倍率樣式類別(倍率) {
+      if (倍率 === 4) return "m4";
+      if (倍率 === 2) return "m2";
+      if (倍率 === 1) return "m1";
+      if (倍率 === 0.5) return "m05";
+      if (倍率 === 0.25) return "m025";
+      return "m0";
+    }
+
+    function 產生結果列(倍率, 屬性陣列) {
+      const row = document.createElement("div");
+      row.className = "result-row";
+
+      const left = document.createElement("div");
+      left.className = `multiplier ${倍率樣式類別(倍率)}`;
+      left.textContent = 倍率顯示文字(倍率);
+
+      const right = document.createElement("div");
+      right.className = "type-tags";
+
+      屬性陣列.forEach(屬性 => {
+        right.appendChild(建立標籤(屬性));
+      });
+
+      row.appendChild(left);
+      row.appendChild(right);
+      return row;
+    }
+
+    function 重新計算防禦分析() {
+      defResult.innerHTML = "";
+
+      if (防禦已選.length === 0) {
+        defResult.innerHTML = `<div class="result-row"><div class="multiplier m1">-</div><div style="color:#777;">請先選擇防禦屬性</div></div>`;
+        return;
+      }
+
+      const 分組 = {};
+
+      屬性列表.forEach(攻擊屬性 => {
+        let 倍率 = 1;
+        防禦已選.forEach(防禦屬性 => {
+          倍率 *= 取得倍率(攻擊屬性, 防禦屬性);
+        });
+
+        if (!分組[倍率]) 分組[倍率] = [];
+        分組[倍率].push(攻擊屬性);
+      });
+
+      const 排序後倍率 = Object.keys(分組)
+        .map(Number)
+        .sort((a, b) => 倍率排序值(b) - 倍率排序值(a));
+
+      排序後倍率.forEach(倍率 => {
+        defResult.appendChild(產生結果列(倍率, 分組[倍率]));
+      });
+    }
+
+    function 重新計算攻擊分析() {
+      atkResult.innerHTML = "";
+
+      if (!攻擊已選) {
+        atkResult.innerHTML = `<div class="result-row"><div class="multiplier m1">-</div><div style="color:#777;">請先選擇攻擊屬性</div></div>`;
+        return;
+      }
+
+      const 分組 = {};
+
+      屬性列表.forEach(防禦屬性 => {
+        const 倍率 = 取得倍率(攻擊已選, 防禦屬性);
+        if (!分組[倍率]) 分組[倍率] = [];
+        分組[倍率].push(防禦屬性);
+      });
+
+      const 排序後倍率 = Object.keys(分組)
+        .map(Number)
+        .sort((a, b) => 倍率排序值(b) - 倍率排序值(a));
+
+      排序後倍率.forEach(倍率 => {
+        atkResult.appendChild(產生結果列(倍率, 分組[倍率]));
+      });
+    }
+
+    document.getElementById("defResetBtn").addEventListener("click", () => {
+      防禦已選.length = 0;
+      更新防禦選中樣式();
+      更新防禦已選顯示();
+      重新計算防禦分析();
+    });
+
+    document.getElementById("atkResetBtn").addEventListener("click", () => {
+      攻擊已選 = null;
+      更新攻擊選中樣式();
+      更新攻擊已選顯示();
+      重新計算攻擊分析();
+    });
+
+    建立屬性按鈕(defTypeGrid, "def");
+    建立屬性按鈕(atkTypeGrid, "atk");
+    更新防禦已選顯示();
+    更新攻擊已選顯示();
+    重新計算防禦分析();
+    重新計算攻擊分析();
+  </script>
+</body>
+</html>

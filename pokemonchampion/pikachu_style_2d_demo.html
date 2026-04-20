@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>皮卡丘風 2D 橫向動作 DEMO</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", Arial, sans-serif;
+      background: linear-gradient(180deg, #fff9cc 0%, #fffef3 100%);
+      color: #4a3a00;
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .wrap {
+      width: min(100%, 1180px);
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      align-items: start;
+    }
+    .game-box, .panel {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(74,58,0,0.10);
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(74,58,0,0.10);
+    }
+    .game-box { padding: 14px; }
+    .panel { padding: 18px; }
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #bde6ff 0%, #eefaff 62%, #d8f1c5 62%, #bfe6a1 100%);
+      border: 1px solid rgba(22,50,79,0.08);
+    }
+    h1 { font-size: 22px; margin: 0 0 10px; }
+    h2 { font-size: 16px; margin: 16px 0 8px; }
+    p, li { line-height: 1.6; font-size: 14px; }
+    .badge {
+      display: inline-block;
+      background: #fff2a8;
+      color: #7c5e00;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    .stat {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 10px 0;
+      border-bottom: 1px dashed rgba(74,58,0,0.15);
+      font-size: 14px;
+    }
+    .stat:last-child { border-bottom: none; }
+    .hint {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: #fff7df;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #725100;
+    }
+    .footer { margin-top: 14px; font-size: 12px; color: #7c7155; }
+    code {
+      background: #fff6cd;
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    @media (max-width: 900px) {
+      .wrap { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="game-box">
+      <canvas id="game" width="900" height="500"></canvas>
+    </div>
+    <aside class="panel">
+      <div class="badge">皮卡丘風技能版 DEMO</div>
+      <h1>2D 橫向動作遊戲</h1>
+      <p>角色改成黃電系主角風格，加入兩招技能：<strong>10萬伏特</strong>與<strong>雷電球</strong>。</p>
+
+      <h2>操作方式</h2>
+      <ul>
+        <li><code>← →</code>：移動</li>
+        <li><code>↑</code> / <code>Space</code>：跳躍</li>
+        <li><code>Z</code>：10萬伏特（全身發電）</li>
+        <li><code>X</code>：雷電球（拋物線）</li>
+        <li><code>R</code>：重新開始</li>
+      </ul>
+
+      <h2>技能說明</h2>
+      <ul>
+        <li><strong>10萬伏特</strong>：以自身為中心釋放電流，範圍大，適合近距離清怪</li>
+        <li><strong>雷電球</strong>：發射帶重力的電球，會沿拋物線飛出去</li>
+      </ul>
+
+      <h2>即時狀態</h2>
+      <div class="stat"><span>生命值</span><strong id="hpText">3</strong></div>
+      <div class="stat"><span>分數</span><strong id="scoreText">0</strong></div>
+      <div class="stat"><span>剩餘敵人</span><strong id="enemyText">0</strong></div>
+      <div class="stat"><span>訊息</span><strong id="msgText">開始冒險</strong></div>
+
+      <div class="hint">
+        目前這版是「玩法原型」，重點是先把角色邏輯和技能手感做出來。之後如果你有自己的圖，我可以再幫你把黃角色換成正式素材版。
+      </div>
+
+      <div class="footer">
+        你之後還可以再加：技能冷卻圖示、雷電特效、Boss、大絕招、角色動畫、正式美術素材。
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    const hpText = document.getElementById('hpText');
+    const scoreText = document.getElementById('scoreText');
+    const enemyText = document.getElementById('enemyText');
+    const msgText = document.getElementById('msgText');
+
+    const keys = {};
+    const GRAVITY = 0.6;
+    const WORLD_WIDTH = 2500;
+    const GROUND_Y = 390;
+
+    let cameraX = 0;
+    let hitCooldown = 0;
+    let gameOver = false;
+    let win = false;
+    let lightningBurstTimer = 0;
+    let lightningCooldown = 0;
+    let orbCooldown = 0;
+    let particles = [];
+    let projectiles = [];
+
+    const player = {
+      x: 100,
+      y: 0,
+      w: 40,
+      h: 48,
+      vx: 0,
+      vy: 0,
+      speed: 3.6,
+      jump: -11.8,
+      onGround: false,
+      facing: 1,
+      hp: 3,
+      score: 0
+    };
+
+    const platforms = [
+      {x: 0, y: GROUND_Y, w: 550, h: 110},
+      {x: 620, y: GROUND_Y - 60, w: 180, h: 20},
+      {x: 850, y: GROUND_Y - 120, w: 170, h: 20},
+      {x: 1080, y: GROUND_Y - 40, w: 220, h: 20},
+      {x: 1380, y: GROUND_Y, w: 350, h: 110},
+      {x: 1790, y: GROUND_Y - 80, w: 170, h: 20},
+      {x: 1980, y: GROUND_Y, w: 320, h: 110},
+      {x: 2320, y: GROUND_Y - 70, w: 120, h: 20}
+    ];
+
+    const coins = [
+      {x: 675, y: 280, r: 10, taken: false},
+      {x: 740, y: 280, r: 10, taken: false},
+      {x: 905, y: 220, r: 10, taken: false},
+      {x: 970, y: 220, r: 10, taken: false},
+      {x: 1160, y: 290, r: 10, taken: false},
+      {x: 1490, y: 330, r: 10, taken: false},
+      {x: 1845, y: 240, r: 10, taken: false},
+      {x: 1905, y: 240, r: 10, taken: false},
+      {x: 2350, y: 220, r: 10, taken: false}
+    ];
+
+    const enemies = [
+      {x: 420, y: 350, w: 36, h: 36, minX: 330, maxX: 500, vx: 1.1, alive: true},
+      {x: 1130, y: 314, w: 36, h: 36, minX: 1100, maxX: 1240, vx: 1.2, alive: true},
+      {x: 1540, y: 350, w: 36, h: 36, minX: 1450, maxX: 1680, vx: 1.0, alive: true},
+      {x: 2050, y: 350, w: 36, h: 36, minX: 2020, maxX: 2190, vx: 1.3, alive: true},
+      {x: 2360, y: 280, w: 36, h: 36, minX: 2330, maxX: 2420, vx: 0.9, alive: true},
+    ];
+
+    const flag = { x: 2425, y: 270, w: 20, h: 120 };
+
+    function setMessage(text) {
+      msgText.textContent = text;
+    }
+
+    function updateUi() {
+      hpText.textContent = player.hp;
+      scoreText.textContent = player.score;
+      enemyText.textContent = enemies.filter(e => e.alive).length;
+    }
+
+    function rectsOverlap(a, b) {
+      return a.x < b.x + b.w &&
+             a.x + a.w > b.x &&
+             a.y < b.y + b.h &&
+             a.y + a.h > b.y;
+    }
+
+    function circleRectOverlap(circle, rect) {
+      const closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.w));
+      const closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.h));
+      const dx = circle.x - closestX;
+      const dy = circle.y - closestY;
+      return (dx * dx + dy * dy) < (circle.r * circle.r);
+    }
+
+    function resetGame() {
+      player.x = 100;
+      player.y = 200;
+      player.vx = 0;
+      player.vy = 0;
+      player.hp = 3;
+      player.score = 0;
+      player.facing = 1;
+      hitCooldown = 0;
+      gameOver = false;
+      win = false;
+      cameraX = 0;
+      lightningBurstTimer = 0;
+      lightningCooldown = 0;
+      orbCooldown = 0;
+      particles = [];
+      projectiles = [];
+      coins.forEach(c => c.taken = false);
+      enemies.forEach((e, i) => {
+        e.alive = true;
+        [420, 1130, 1540, 2050, 2360].forEach((x, idx) => { if (i === idx) e.x = x; });
+      });
+      setMessage('開始冒險');
+      updateUi();
+    }
+
+    function spawnParticles(x, y, color, count, speed = 3) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const mag = Math.random() * speed + 0.5;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * mag,
+          vy: Math.sin(angle) * mag,
+          life: Math.random() * 20 + 18,
+          maxLife: 38,
+          size: Math.random() * 5 + 2,
+          color
+        });
+      }
+    }
+
+    function castLightningBurst() {
+      if (lightningCooldown > 0 || gameOver) return;
+      lightningBurstTimer = 16;
+      lightningCooldown = 55;
+      setMessage('使出 10萬伏特！');
+      spawnParticles(player.x + player.w/2, player.y + player.h/2, '#ffe24a', 26, 4.2);
+
+      const burst = {
+        x: player.x - 40,
+        y: player.y - 25,
+        w: player.w + 80,
+        h: player.h + 50
+      };
+
+      for (const e of enemies) {
+        if (e.alive && rectsOverlap(burst, e)) {
+          e.alive = false;
+          player.score += 35;
+          spawnParticles(e.x + e.w/2, e.y + e.h/2, '#9de7ff', 22, 4.6);
+        }
+      }
+      updateUi();
+    }
+
+    function castThunderOrb() {
+      if (orbCooldown > 0 || gameOver) return;
+      orbCooldown = 24;
+      const startX = player.facing === 1 ? player.x + player.w + 6 : player.x - 6;
+      const startY = player.y + 18;
+      projectiles.push({
+        x: startX,
+        y: startY,
+        r: 11,
+        vx: player.facing === 1 ? 5.5 : -5.5,
+        vy: -6.2,
+        life: 120,
+        alive: true
+      });
+      setMessage('丟出 雷電球！');
+    }
+
+    function handleInput() {
+      player.vx = 0;
+      if (keys['ArrowLeft']) {
+        player.vx = -player.speed;
+        player.facing = -1;
+      }
+      if (keys['ArrowRight']) {
+        player.vx = player.speed;
+        player.facing = 1;
+      }
+      if ((keys['ArrowUp'] || keys['Space']) && player.onGround) {
+        player.vy = player.jump;
+        player.onGround = false;
+      }
+    }
+
+    function updatePlayer() {
+      handleInput();
+
+      player.x += player.vx;
+      player.x = Math.max(0, Math.min(WORLD_WIDTH - player.w, player.x));
+
+      player.vy += GRAVITY;
+      player.y += player.vy;
+      player.onGround = false;
+
+      for (const p of platforms) {
+        const wasAbove = player.y + player.h - player.vy <= p.y;
+        const horizontalHit = player.x + player.w > p.x && player.x < p.x + p.w;
+        const verticalHit = player.y + player.h >= p.y && player.y + player.h <= p.y + p.h + 20;
+        if (wasAbove && horizontalHit && verticalHit && player.vy >= 0) {
+          player.y = p.y - player.h;
+          player.vy = 0;
+          player.onGround = true;
+        }
+      }
+
+      if (player.y > canvas.height + 120) {
+        player.hp = 0;
+        gameOver = true;
+        setMessage('掉落失敗，按 R 重來');
+      }
+
+      for (const c of coins) {
+        if (!c.taken && circleRectOverlap(c, player)) {
+          c.taken = true;
+          player.score += 10;
+          setMessage('拿到金幣！');
+        }
+      }
+
+      if (hitCooldown > 0) hitCooldown--;
+      if (lightningBurstTimer > 0) lightningBurstTimer--;
+      if (lightningCooldown > 0) lightningCooldown--;
+      if (orbCooldown > 0) orbCooldown--;
+
+      for (const e of enemies) {
+        if (e.alive && rectsOverlap(player, e) && hitCooldown <= 0) {
+          player.hp -= 1;
+          hitCooldown = 60;
+          player.vx += (player.x < e.x ? -4 : 4);
+          player.vy = -5;
+          setMessage('被敵人撞到了！');
+          spawnParticles(player.x + player.w/2, player.y + player.h/2, '#ffffff', 14, 2.8);
+          if (player.hp <= 0) {
+            gameOver = true;
+            setMessage('遊戲結束，按 R 重來');
+          }
+        }
+      }
+
+      if (player.x + player.w > flag.x && player.y + player.h > flag.y) {
+        win = true;
+        gameOver = true;
+        setMessage('過關成功！按 R 再玩一次');
+      }
+
+      updateUi();
+    }
+
+    function updateEnemies() {
+      for (const e of enemies) {
+        if (!e.alive) continue;
+        e.x += e.vx;
+        if (e.x < e.minX || e.x + e.w > e.maxX) e.vx *= -1;
+      }
+    }
+
+    function updateProjectiles() {
+      for (const orb of projectiles) {
+        if (!orb.alive) continue;
+        orb.x += orb.vx;
+        orb.y += orb.vy;
+        orb.vy += 0.25;
+        orb.life--;
+
+        if (Math.random() < 0.7) {
+          particles.push({
+            x: orb.x,
+            y: orb.y,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: (Math.random() - 0.5) * 1.5,
+            life: 10,
+            maxLife: 10,
+            size: Math.random() * 3 + 1,
+            color: '#b8f4ff'
+          });
+        }
+
+        for (const e of enemies) {
+          if (!e.alive) continue;
+          if (circleRectOverlap({x: orb.x, y: orb.y, r: orb.r}, e)) {
+            e.alive = false;
+            orb.alive = false;
+            player.score += 40;
+            setMessage('雷電球命中！');
+            spawnParticles(e.x + e.w/2, e.y + e.h/2, '#9de7ff', 24, 5.0);
+            break;
+          }
+        }
+
+        for (const p of platforms) {
+          if (orb.alive && orb.x + orb.r > p.x && orb.x - orb.r < p.x + p.w && orb.y + orb.r > p.y && orb.y - orb.r < p.y + p.h) {
+            orb.alive = false;
+            spawnParticles(orb.x, orb.y, '#c5f7ff', 16, 3.6);
+          }
+        }
+
+        if (orb.life <= 0 || orb.x < 0 || orb.x > WORLD_WIDTH || orb.y > canvas.height + 100) {
+          orb.alive = false;
+        }
+      }
+      projectiles = projectiles.filter(p => p.alive);
+      updateUi();
+    }
+
+    function updateParticles() {
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life--;
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+      }
+      particles = particles.filter(p => p.life > 0);
+    }
+
+    function updateCamera() {
+      cameraX = player.x - canvas.width * 0.35;
+      cameraX = Math.max(0, Math.min(WORLD_WIDTH - canvas.width, cameraX));
+    }
+
+    function drawBackground() {
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      for (let i = 0; i < 9; i++) {
+        const x = (i * 310 - cameraX * 0.3) % 2800;
+        ctx.beginPath();
+        ctx.ellipse(x, 88 + (i % 3) * 12, 78, 26, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = '#95c97b';
+      ctx.fillRect(0, 385, canvas.width, 120);
+
+      ctx.fillStyle = '#8ab56f';
+      for (let i = -1; i < 8; i++) {
+        const hillX = i * 210 - (cameraX * 0.5 % 210);
+        ctx.beginPath();
+        ctx.arc(hillX + 105, 392, 105, Math.PI, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawPlatforms() {
+      for (const p of platforms) {
+        ctx.fillStyle = '#6ca36d';
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.fillStyle = '#4f7d4f';
+        ctx.fillRect(p.x, p.y, p.w, 8);
+      }
+    }
+
+    function drawCoins() {
+      for (const c of coins) {
+        if (c.taken) continue;
+        ctx.fillStyle = '#ffd84d';
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#c68d00';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    function drawFlag() {
+      ctx.fillStyle = '#6d4c41';
+      ctx.fillRect(flag.x, flag.y, flag.w, flag.h);
+      ctx.fillStyle = '#ff5252';
+      ctx.beginPath();
+      ctx.moveTo(flag.x + flag.w, flag.y);
+      ctx.lineTo(flag.x + 65, flag.y + 18);
+      ctx.lineTo(flag.x + flag.w, flag.y + 36);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawEnemies() {
+      for (const e of enemies) {
+        if (!e.alive) continue;
+        ctx.fillStyle = '#993a3a';
+        ctx.fillRect(e.x, e.y, e.w, e.h);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(e.x + 6, e.y + 8, 6, 6);
+        ctx.fillRect(e.x + 24, e.y + 8, 6, 6);
+      }
+    }
+
+    function drawPikachuLikePlayer() {
+      const x = player.x, y = player.y, w = player.w, h = player.h;
+      ctx.save();
+      ctx.globalAlpha = hitCooldown > 0 && Math.floor(hitCooldown / 5) % 2 === 0 ? 0.45 : 1;
+
+      // tail
+      ctx.fillStyle = '#7a4a00';
+      ctx.fillRect(x + (player.facing === 1 ? w - 2 : -6), y + 18, 8, 20);
+      ctx.fillStyle = '#ffd83d';
+      if (player.facing === 1) {
+        ctx.beginPath();
+        ctx.moveTo(x + w - 2, y + 16);
+        ctx.lineTo(x + w + 18, y + 8);
+        ctx.lineTo(x + w + 9, y + 22);
+        ctx.lineTo(x + w + 22, y + 28);
+        ctx.lineTo(x + w + 6, y + 37);
+        ctx.lineTo(x + w + 13, y + 49);
+        ctx.lineTo(x + w - 2, y + 41);
+        ctx.closePath();
+      } else {
+        ctx.beginPath();
+        ctx.moveTo(x + 2, y + 16);
+        ctx.lineTo(x - 18, y + 8);
+        ctx.lineTo(x - 9, y + 22);
+        ctx.lineTo(x - 22, y + 28);
+        ctx.lineTo(x - 6, y + 37);
+        ctx.lineTo(x - 13, y + 49);
+        ctx.lineTo(x + 2, y + 41);
+        ctx.closePath();
+      }
+      ctx.fill();
+
+      // body
+      ctx.fillStyle = '#ffd83d';
+      ctx.beginPath();
+      ctx.roundRect(x, y + 8, w, h - 8, 14);
+      ctx.fill();
+
+      // ears
+      ctx.fillStyle = '#ffd83d';
+      ctx.beginPath();
+      ctx.moveTo(x + 8, y + 10);
+      ctx.lineTo(x + 3, y - 10);
+      ctx.lineTo(x + 13, y + 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x + w - 8, y + 10);
+      ctx.lineTo(x + w - 3, y - 10);
+      ctx.lineTo(x + w - 13, y + 0);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#111';
+      ctx.beginPath();
+      ctx.moveTo(x + 6, y - 7);
+      ctx.lineTo(x + 3, y - 16);
+      ctx.lineTo(x + 9, y - 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x + w - 6, y - 7);
+      ctx.lineTo(x + w - 3, y - 16);
+      ctx.lineTo(x + w - 9, y - 12);
+      ctx.closePath();
+      ctx.fill();
+
+      // eyes
+      ctx.fillStyle = '#111';
+      ctx.beginPath();
+      ctx.arc(x + 12, y + 20, 2.5, 0, Math.PI * 2);
+      ctx.arc(x + w - 12, y + 20, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // cheeks
+      ctx.fillStyle = '#ff5c5c';
+      ctx.beginPath();
+      ctx.arc(x + 8, y + 28, 4.5, 0, Math.PI * 2);
+      ctx.arc(x + w - 8, y + 28, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // stripes
+      ctx.fillStyle = '#7a4a00';
+      ctx.fillRect(x + 8, y + 17, 6, 12);
+      ctx.fillRect(x + 18, y + 15, 6, 14);
+      ctx.fillRect(x + 28, y + 18, 5, 11);
+
+      // feet
+      ctx.fillStyle = '#7a4a00';
+      ctx.fillRect(x + 7, y + h - 2, 8, 3);
+      ctx.fillRect(x + w - 15, y + h - 2, 8, 3);
+
+      // lightning aura
+      if (lightningBurstTimer > 0) {
+        const cx = x + w/2;
+        const cy = y + h/2;
+        const t = lightningBurstTimer / 16;
+        for (let i = 0; i < 8; i++) {
+          const angle = (Math.PI * 2 / 8) * i + (1 - t) * 0.8;
+          const r = 28 + (1 - t) * 25;
+          const px = cx + Math.cos(angle) * r;
+          const py = cy + Math.sin(angle) * r;
+          ctx.strokeStyle = i % 2 === 0 ? '#fff78a' : '#8df0ff';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(px - 5, py - 5);
+          ctx.lineTo(px + 3, py + 2);
+          ctx.lineTo(px - 2, py + 10);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = 'rgba(255, 245, 120, 0.18)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 52 - (1 - t) * 10, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawProjectiles() {
+      for (const orb of projectiles) {
+        ctx.fillStyle = '#a8f6ff';
+        ctx.beginPath();
+        ctx.arc(orb.x, orb.y, orb.r + 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#e9ffff';
+        ctx.beginPath();
+        ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#fff77b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(orb.x - 4, orb.y - 6);
+        ctx.lineTo(orb.x + 1, orb.y - 1);
+        ctx.lineTo(orb.x - 2, orb.y + 4);
+        ctx.lineTo(orb.x + 5, orb.y + 8);
+        ctx.stroke();
+      }
+    }
+
+    function drawParticles() {
+      for (const p of particles) {
+        ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawWorld() {
+      ctx.save();
+      ctx.translate(-cameraX, 0);
+      drawPlatforms();
+      drawCoins();
+      drawFlag();
+      drawEnemies();
+      drawProjectiles();
+      drawPikachuLikePlayer();
+      drawParticles();
+      ctx.restore();
+    }
+
+    function drawHud() {
+      ctx.fillStyle = 'rgba(255,255,255,0.88)';
+      ctx.fillRect(12, 12, 300, 104);
+
+      ctx.fillStyle = '#4a3a00';
+      ctx.font = 'bold 18px Microsoft JhengHei';
+      ctx.fillText(`HP: ${player.hp}`, 24, 38);
+      ctx.fillText(`Score: ${player.score}`, 24, 64);
+      ctx.fillText(`敵人: ${enemies.filter(e => e.alive).length}`, 24, 90);
+
+      ctx.font = '14px Microsoft JhengHei';
+      ctx.fillText(`Z 10萬伏特 ${lightningCooldown > 0 ? '(' + lightningCooldown + ')' : '(可用)'}`, 145, 42);
+      ctx.fillText(`X 雷電球 ${orbCooldown > 0 ? '(' + orbCooldown + ')' : '(可用)'}`, 145, 68);
+      ctx.fillText(`R 重來`, 145, 94);
+
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(9, 20, 35, 0.55)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 36px Microsoft JhengHei';
+        ctx.fillText(win ? '過關成功！' : '遊戲結束', canvas.width / 2, 195);
+        ctx.font = '18px Microsoft JhengHei';
+        ctx.fillText('按 R 重新開始', canvas.width / 2, 233);
+        ctx.font = '15px Microsoft JhengHei';
+        ctx.fillText('目前已完成：皮卡丘風角色 + 兩招電系技能', canvas.width / 2, 265);
+        ctx.textAlign = 'left';
+      }
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
+
+      if (!gameOver) {
+        updatePlayer();
+        updateEnemies();
+        updateProjectiles();
+        updateParticles();
+        updateCamera();
+      } else {
+        updateParticles();
+      }
+
+      drawWorld();
+      drawHud();
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('keydown', e => {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'Space'].includes(e.code)) {
+        e.preventDefault();
+      }
+      keys[e.code] = true;
+      keys[e.key] = true;
+
+      if (e.code === 'KeyZ') castLightningBurst();
+      if (e.code === 'KeyX') castThunderOrb();
+      if (e.code === 'KeyR') resetGame();
+    });
+
+    window.addEventListener('keyup', e => {
+      keys[e.code] = false;
+      keys[e.key] = false;
+    });
+
+    resetGame();
+    loop();
+  </script>
+</body>
+</html>

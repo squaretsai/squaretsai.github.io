@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 字幕翻譯下載器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>YouTube <span>Subtitle</span> Translator</h1>
+            <p>貼上網址，立即獲取繁體中文字幕</p>
+        </header>
+
+        <main>
+            <div class="input-group">
+                <input type="text" id="youtube-url" placeholder="請在此處貼上 YouTube 網址..." autocomplete="off">
+                <button id="fetch-btn">開始轉換</button>
+            </div>
+
+            <div id="status-container" class="hidden">
+                <div class="loader"></div>
+                <p id="status-text">正在處理中，請稍候...</p>
+            </div>
+
+            <div id="result-container" class="hidden">
+                <div class="video-preview">
+                    <img id="video-thumbnail" src="" alt="Video Thumbnail">
+                    <div class="info">
+                        <h3 id="video-title">正在獲取資訊...</h3>
+                        <p id="video-lang">來源語言: 偵測中</p>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button id="download-txt" class="secondary-btn">下載 TXT</button>
+                    <button id="copy-btn" class="secondary-btn">複製全文</button>
+                </div>
+
+                <div class="transcript-box">
+                    <textarea id="translated-output" readonly></textarea>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 YouTube Subtitle Translator | Premium Coding Assistant</p>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
